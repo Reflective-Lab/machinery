@@ -1,0 +1,49 @@
+name: Security
+
+# Runs the same `just security-audit` recipe the operator runs locally,
+# plus secret scanning (gitleaks) that doesn't have a local Justfile
+# equivalent yet — that drift is tracked in
+# `KB/06-operations/ci-cd-inventory.md` gap class C and will be
+# addressed by an `just security-secrets` recipe once gitleaks is
+# bootstrapped into the train.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"  # Mondays 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: just security-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.96.0"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - uses: extractions/setup-just@v4
+      - run: just security-audit
+
+  secrets:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install and run gitleaks
+        run: |
+          GITLEAKS_VERSION="8.27.2"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar xz -C /usr/local/bin gitleaks
+          gitleaks detect --source . --verbose

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reflective-lab.github.io/commerce-rails/contracts/EntitlementProjection.schema.json",
+  "title": "EntitlementProjection",
+  "description": "Rich entitlement read returned by Commerce-Rails for app-shell initialization and entitlement transitions. Companion to the is_entitled bool gate. Field set is panel-locked per the 2026-06-15 three-architect review (RR B2 amendment): adding new optional fields is non-breaking; renaming or removing a field requires a new dated panel review. Source: commerce-rails v0.2.2, commerce-rails-stripe/src/lib.rs. Source review: REVIEW_quorum-sense_2026-06-15.md. Active handoff: HANDOFF_quorum-sense_2026-06-15.md.",
+  "type": "object",
+  "required": ["entitled"],
+  "additionalProperties": false,
+  "properties": {
+    "entitled": {
+      "type": "boolean",
+      "description": "True if the firebase_uid has an active subscription whose plan grants the named app. Mirrors the result of CommerceRails::is_entitled. Apps gate access on this; the hot-path uses is_entitled directly for performance."
+    },
+    "checkout_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Static checkout URL configured at the deploy boundary (env CR_CHECKOUT_URL or builder with_checkout_url). Absent when not configured. For dynamic per-customer checkout sessions, call create_checkout_session directly."
+    },
+    "portal_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Static billing-portal URL configured at the deploy boundary (env CR_PORTAL_URL or builder with_portal_url). Absent when not configured. For dynamic per-customer portal sessions, call create_portal_session directly."
+    },
+    "signup_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Static signup URL configured at the deploy boundary (env CR_SIGNUP_URL or builder with_signup_url). Apps show this to not-yet-entitled users. Absent when not configured."
+    },
+    "next_renewal": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the next subscription renewal in ISO 8601. Absent when there is no stored subscription projection for the customer (e.g. user has never subscribed)."
+    },
+    "plan_label": {
+      "type": "string",
+      "enum": ["free", "starter", "team", "enterprise"],
+      "description": "Lowercase plan label matching BillingPlan::as_str(). Absent when no stored projection."
+    }
+  }
+}

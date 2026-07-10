@@ -1,0 +1,16 @@
+[package]
+name = "commerce-rails-contracts"
+description = "Contract types and traits for the Reflective Commerce Rails layer (billing plans, subscription projections, webhook actions). Adapter-agnostic; consumed by commerce-rails-stripe and runtime-runway."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "commerce_rails_contracts"
+path = "src/lib.rs"
+
+[lints]
+workspace = true

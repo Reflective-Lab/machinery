@@ -1,0 +1,23 @@
+# RUSTSEC IDs to ignore at `just security-audit` time.
+#
+# Format: one RUSTSEC ID per line. Blank lines and `#` comments are
+# ignored. Drift between repos is trackable by reading this file per
+# workspace.
+#
+# Each ignore MUST be justified inline:
+#   # Reason: <transitive crate>, <why we can't fix>, <exposure surface>
+#   RUSTSEC-YYYY-NNNN
+#
+# Removing an ignore is preferred over keeping it. Re-evaluate this
+# file every dependency-update PR.
+
+# Reason: number_prefix 0.4.0 (unmaintained), transitive via
+# runway-storage -> fastembed -> hf-hub -> indicatif; no maintained
+# replacement reachable without upstream moves. Display-formatting
+# only, no untrusted-input surface. Added 2026-07-02.
+RUSTSEC-2025-0119
+
+# Reason: paste 1.0.15 (unmaintained proc-macro), transitive via
+# runway-storage -> fastembed (tokenizers, ravif); compile-time only,
+# no runtime surface. No fixed upstream version. Added 2026-07-02.
+RUSTSEC-2024-0436
