@@ -1,7 +1,13 @@
 # Quality Gates
 
 Build-Depot owns the canonical quality-gate semantics for the Reflective
-software factory.
+software factory — and, as of 2026-07-10, the implementations too: the
+doctor-family scripts live in `build-depot/scripts/factory/`
+(`quality-doctor.sh`, `agents-doctor.sh`, `shim-doctor.sh`,
+`project-doctor.sh`, `fleet-status.sh`). The root workspace `Justfile`
+recipes are thin runners that invoke these scripts with cwd = workspace
+root, per the adoption contract (thin runners, factory doctrine owned
+here).
 
 ## Workspace Gate
 
