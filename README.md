@@ -1,5 +1,11 @@
 # Machinery v1.0
 
+[![Version](https://img.shields.io/github/v/release/Reflective-Lab/machinery)](https://github.com/Reflective-Lab/machinery/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-459%20passing-brightgreen)](#testing)
+[![Platforms](https://img.shields.io/badge/platforms-Node%20%7C%20Rust-blue)](#architecture)
+[![Code style: Rust/TS](https://img.shields.io/badge/code%20style-Rust%2BTypeScript-orange)](Justfile)
+
 Unified operational platform for Reflective applications. One repository, four strong boundaries, coordinated authority.
 
 ```

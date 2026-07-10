@@ -1,0 +1,25 @@
+# Machinery Code Owners
+
+# Default owners for all files in the repository
+* @Reflective-Lab/machinery
+
+# Build-Depot (Factory Authority)
+/build-depot/ @Reflective-Lab/machinery
+
+# Runtime-Runway (Deployment Authority)
+/runtime-runway/ @Reflective-Lab/machinery
+
+# Commerce-Rails (Billing Authority)
+/commerce-rails/ @Reflective-Lab/machinery
+
+# Chart-Room (Governance)
+/chart-room/ @Reflective-Lab/machinery
+
+# Documentation & Configuration
+README.md @Reflective-Lab/machinery
+Justfile @Reflective-Lab/machinery
+CONTRIBUTING.md @Reflective-Lab/machinery
+AGENTS.md @Reflective-Lab/machinery
+SECURITY.md @Reflective-Lab/machinery
+CHANGELOG.md @Reflective-Lab/machinery
+LICENSE @Reflective-Lab/machinery

@@ -1,0 +1,35 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Source code
+*.rs eol=lf
+*.ts eol=lf
+*.tsx eol=lf
+*.js eol=lf
+*.jsx eol=lf
+*.toml eol=lf
+*.md eol=lf
+*.sh eol=lf
+
+# Binary files
+*.lock binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.onnx binary
+*.safetensors binary
+*.db binary
+
+# Documentation
+*.md eol=lf text
+LICENSE eol=lf text
+CHANGELOG.md eol=lf text
+CONTRIBUTING.md eol=lf text
+SECURITY.md eol=lf text
+AGENTS.md eol=lf text
+
+# Configuration
+.editorconfig eol=lf text
+.gitattributes eol=lf text
+.gitignore eol=lf text
+Justfile eol=lf text
