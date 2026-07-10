@@ -1,0 +1,10 @@
+query signals_by_repo($repo: String) {
+    @description("Factory learning signals linked to a repository through SignalInRepo.")
+    match {
+        $s: FactorySignal
+        $r: Repository { name: $repo }
+        $s -[SignalInRepo]-> $r
+    }
+    return { $s.id, $s.aggregate_key, $s.category, $s.source, $s.kind, $s.title, $s.status, $s.severity, $s.observed_at, $s.first_seen_at, $s.last_seen_at, $s.event_count, $s.affected_users, $s.finding_id, $s.external_url }
+    order { $s.observed_at desc, $s.category asc }
+}

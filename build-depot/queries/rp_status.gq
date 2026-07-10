@@ -1,0 +1,7 @@
+// RP-* standing properties and their enforcement status
+query rp_status() {
+    @description("All RP-* standing properties with enforcement status and what's tracking them. Enforced properties appear first")
+    match { $p: RPProperty }
+    return { $p.id, $p.property_name, $p.enforcement_status, $p.tracked_by }
+    order { $p.enforcement_status asc, $p.id asc }
+}

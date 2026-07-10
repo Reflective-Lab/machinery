@@ -1,0 +1,10 @@
+query incidents_by_repo($repo: String) {
+    @description("Incidents linked to a repository through IncidentInRepo. Pass repo: 'runtime-runway', 'quorum-sense', etc.")
+    match {
+        $i: Incident
+        $r: Repository { name: $repo }
+        $i -[IncidentInRepo]-> $r
+    }
+    return { $i.id, $i.status, $i.severity, $i.title, $i.opened_at, $i.linked_finding }
+    order { $i.status asc, $i.severity asc, $i.opened_at asc }
+}

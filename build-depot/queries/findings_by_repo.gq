@@ -1,0 +1,10 @@
+query findings_by_repo($repo: String) {
+    @description("Open findings linked to a specific repository via FindingInRepo edge. Pass repo: 'runtime-runway', 'commerce-rails', etc.")
+    match {
+        $f: Finding { status: "Open" }
+        $r: Repository { name: $repo }
+        $f -[FindingInRepo]-> $r
+    }
+    return { $f.id, $f.bucket, $f.title, $f.effort, $f.next_action, $f.cycles_open }
+    order { $f.bucket asc, $f.date asc }
+}

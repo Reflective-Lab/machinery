@@ -1,0 +1,10 @@
+query adrs_by_finding($finding_id: String) {
+    @description("Architecture decisions linked to a factory finding.")
+    match {
+        $adr: ADR
+        $f: Finding { id: $finding_id }
+        $adr -[ADRDecidesFinding]-> $f
+    }
+    return { $adr.path, $adr.title, $adr.status }
+    order { $adr.path asc }
+}

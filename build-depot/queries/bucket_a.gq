@@ -1,0 +1,6 @@
+// Must-fix-now open findings with full context
+query bucket_a() {
+    @description("Bucket A open findings — must fix now. Returns title, area, next action, cycles open, and owner")
+    match { $f: Finding { bucket: "A", status: "Open" } }
+    return { $f.id, $f.title, $f.area, $f.next_action, $f.cycles_open, $f.owner }
+}

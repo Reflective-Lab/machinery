@@ -1,0 +1,7 @@
+// Open findings that Codex can implement without a human product decision
+query codex_safe() {
+    @description("Open findings marked Codex-safe — can be implemented under the Autonomy Contract without human approval")
+    match { $f: Finding { codex_safe: "Yes", status: "Open" } }
+    return { $f.id, $f.bucket, $f.area, $f.title, $f.effort, $f.next_action }
+    order { $f.bucket asc, $f.date asc }
+}

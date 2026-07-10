@@ -1,0 +1,10 @@
+query risks_by_finding($finding_id: String) {
+    @description("Risk register entries linked to an accepted-risk or risk-bearing finding.")
+    match {
+        $risk: Risk
+        $f: Finding { id: $finding_id }
+        $risk -[RiskTracksFinding]-> $f
+    }
+    return { $risk.id, $risk.title, $risk.status, $risk.owner, $risk.revisit_date }
+    order { $risk.id asc }
+}

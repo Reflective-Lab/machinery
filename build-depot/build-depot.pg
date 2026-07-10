@@ -1,0 +1,165 @@
+// Build-Depot — Reflective Software Factory
+// Nodes: Finding, RPProperty, Standard, Repository, Incident, PullRequest, CheckRun, Deployment, Risk, ADR, Owner, FactorySignal
+// Edges: FindingWorksOnRP, FindingToStandard, FindingSupersedes, FindingInRepo, IncidentInRepo,
+//        PullRequestAddressesFinding, CheckRunInRepo, DeploymentInRepo, RiskTracksFinding,
+//        ADRDecidesFinding, OwnerOwnsFinding, SignalInRepo, SignalSupportsFinding
+// NDJSON edge records use stable endpoint references:
+// {"type":"FindingInRepo","from":{"type":"Finding","key":{"id":"QF-..."}},"to":{"type":"Repository","key":{"name":"build-depot"}}}
+
+node Finding {
+    @key(id)
+    id: String
+    date: String
+    bucket: String
+    area: String
+    status: String
+    title: String
+    effort: String?
+    owner: String?
+    codex_safe: String?
+    confidence: String?
+    cycles_open: I32?
+    last_reviewed: String?
+    standard_promoted: String?
+    drift_check: String?
+    next_action: String?
+    repo: String?          // set by factory plugins; null for cross-repo findings
+}
+
+node RPProperty {
+    @key(id)
+    id: String
+    property_name: String
+    enforcement_status: String
+    tracked_by: String?
+}
+
+node Standard {
+    @key(path)
+    path: String
+    title: String
+}
+
+node Repository {
+    @key(name)
+    name: String           // slug matching GitHub repo name
+    language: String
+    purpose: String?
+    layer: String?         // platform, runtime, commerce, app
+    ci_status: String?     // Green, Red, Flaky, Unknown
+    open_findings: I32?    // maintained by debt-tracker plugin
+    last_release: String?  // semver tag
+    sentry_project: String?
+    linear_label: String?
+    deployed_to: String?   // "cloud-run-europe-west1", "crates.io", etc.
+    adoption_cohort: String?
+    adoption_tier: String?  // Tier0, Tier1, Tier2, Tier3
+    adoption_state: String? // adopted, partial, blocked, exempt
+    adoption_missing_required: String?
+    adoption_exception_refs: String?
+    adoption_last_scanned: String?
+    adoption_scan_revision: String?
+}
+
+node Incident {
+    @key(id)
+    id: String             // Sentry issue ID
+    repo: String           // Repository.name
+    title: String?
+    severity: String       // P1, P2, P3
+    status: String         // Open, Resolved, Ignored
+    opened_at: String
+    linked_finding: String?
+}
+
+node PullRequest {
+    @key(id)
+    id: String              // repo#number or provider-stable equivalent
+    repo: String
+    number: I32
+    title: String?
+    url: String?
+    state: String?
+    head_sha: String?
+}
+
+node CheckRun {
+    @key(id)
+    id: String              // GitHub check_run/check_suite id or stable fallback
+    repo: String
+    name: String?
+    status: String?
+    conclusion: String?
+    completed_at: String?
+}
+
+node Deployment {
+    @key(id)
+    id: String              // provider deployment id or repo/environment/version fallback
+    repo: String
+    environment: String?
+    status: String?
+    version: String?
+    deployed_at: String?
+}
+
+node Risk {
+    @key(id)
+    id: String              // risk register path/anchor or stable risk id
+    title: String?
+    status: String?
+    owner: String?
+    revisit_date: String?
+}
+
+node ADR {
+    @key(path)
+    path: String
+    title: String
+    status: String?
+}
+
+node Owner {
+    @key(id)
+    id: String              // normalized owner name or email
+    name: String
+    email: String?
+}
+
+node FactorySignal {
+    @key(id)
+    id: String              // source-stable signal id
+    aggregate_key: String?  // source-stable aggregation key, e.g. sentry issue id or check-run id
+    category: String        // quality_gate, security_scan, dependency, test, github_lifecycle, runtime_telemetry, product_feedback, architecture_drift, agent_behavior, operational_hygiene, data_durability, cost_capacity, delivery, repository_adoption
+    source: String          // github, linear, sentry, just, scheduled-scan, operator, etc.
+    kind: String            // check_run, dependency_advisory, flaky_test, sentry_issue, support_ticket, etc.
+    title: String
+    status: String?
+    severity: String?
+    observed_at: String
+    first_seen_at: String?
+    last_seen_at: String?
+    event_count: I32?
+    affected_users: I32?
+    repo: String?
+    finding_id: String?
+    external_url: String?
+    evidence_ref: String?
+    metric_name: String?
+    metric_value: F64?
+    unit: String?
+}
+
+edge FindingWorksOnRP: Finding -> RPProperty
+edge FindingToStandard: Finding -> Standard
+edge FindingSupersedes: Finding -> Finding
+edge FindingInRepo: Finding -> Repository
+edge IncidentInRepo: Incident -> Repository
+edge PullRequestAddressesFinding: PullRequest -> Finding
+edge CheckRunInRepo: CheckRun -> Repository
+edge DeploymentInRepo: Deployment -> Repository
+edge RiskTracksFinding: Risk -> Finding
+edge ADRDecidesFinding: ADR -> Finding
+edge OwnerOwnsFinding: Owner -> Finding
+edge SignalInRepo: FactorySignal -> Repository
+edge SignalSupportsFinding: FactorySignal -> Finding

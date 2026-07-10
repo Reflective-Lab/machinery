@@ -1,0 +1,6 @@
+query scorecard_findings() {
+    @description("Scorecard finding slice: finding status, bucket, owner, repo field, and next action")
+    match { $f: Finding }
+    return { $f.id, $f.status, $f.bucket, $f.area, $f.owner, $f.repo, $f.cycles_open, $f.next_action, $f.drift_check, $f.standard_promoted }
+    order { $f.status asc, $f.bucket asc, $f.date asc }
+}

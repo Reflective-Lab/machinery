@@ -1,0 +1,10 @@
+query findings_by_owner($owner_id: String) {
+    @description("Findings owned by a person or agent via OwnerOwnsFinding.")
+    match {
+        $o: Owner { id: $owner_id }
+        $f: Finding
+        $o -[OwnerOwnsFinding]-> $f
+    }
+    return { $o.name, $f.id, $f.status, $f.bucket, $f.title, $f.repo, $f.next_action }
+    order { $f.status asc, $f.bucket asc, $f.date asc }
+}

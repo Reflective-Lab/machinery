@@ -1,0 +1,10 @@
+query findings_by_rp($property: String) {
+    @description("Findings linked to a recurring property through FindingWorksOnRP. Pass property: 'RP-CI-PARITY', etc.")
+    match {
+        $f: Finding
+        $p: RPProperty { id: $property }
+        $f -[FindingWorksOnRP]-> $p
+    }
+    return { $f.id, $f.status, $f.bucket, $f.title, $f.next_action, $p.id, $p.enforcement_status }
+    order { $f.status asc, $f.bucket asc, $f.date asc }
+}

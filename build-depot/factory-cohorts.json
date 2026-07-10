@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "cohorts": [
+    {
+      "id": "A",
+      "name": "Factory proof cohort",
+      "wrapper": "virtual",
+      "big_repo_decision": "keep-separate",
+      "decision_reason": "These repos prove the factory across control-plane, runtime, commerce, templates, and subsystem surfaces, but they do not share one atomic release or deployment lifecycle.",
+      "adoption_target": "full role-appropriate Build-Depot adoption",
+      "members": [
+        {
+          "repo": "build-depot",
+          "tier": "Tier0",
+          "role": "software factory control plane"
+        },
+        {
+          "repo": "commerce-rails",
+          "tier": "Tier1",
+          "role": "commercial platform risk"
+        },
+        {
+          "repo": "runtime-runway",
+          "tier": "Tier1",
+          "role": "production runtime platform"
+        },
+        {
+          "repo": "forge-templates",
+          "tier": "Tier2",
+          "role": "template propagation proof"
+        },
+        {
+          "repo": "lattice-mesh",
+          "tier": "Tier2",
+          "role": "active subsystem proof"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "App family rollout",
+      "wrapper": "virtual",
+      "big_repo_decision": "keep-separate",
+      "decision_reason": "These repos should share the same app adoption contract while retaining separate product ownership.",
+      "adoption_target": "app contract: AGENTS pointer, Justfile, just ci, CI calling Just, security evidence or accepted risk, Linear label",
+      "members": [
+        {
+          "repo": "alias-apps",
+          "tier": "Tier2",
+          "role": "app family"
+        },
+        {
+          "repo": "blueprint-apps",
+          "tier": "Tier2",
+          "role": "app family"
+        },
+        {
+          "repo": "marquee-apps",
+          "tier": "Tier2",
+          "role": "app family"
+        },
+        {
+          "repo": "studio-apps",
+          "tier": "Tier2",
+          "role": "app family"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Bedrock consolidation transition",
+      "wrapper": "bedrock-consolidated",
+      "big_repo_decision": "consolidate",
+      "decision_reason": "These repos are already moving into bedrock-consolidated, so deep adoption should target the consolidated repo instead of pre-consolidation repos.",
+      "adoption_target": "full Tier-1 adoption targets bedrock-consolidated; pre-consolidation repos keep compatibility pointers only",
+      "members": [
+        {
+          "repo": "bedrock-platform",
+          "tier": "Tier3",
+          "role": "transitioning into bedrock-consolidated"
+        },
+        {
+          "repo": "arena-tests",
+          "tier": "Tier3",
+          "role": "transitioning into bedrock-consolidated"
+        },
+        {
+          "repo": "atelier-showcase",
+          "tier": "Tier3",
+          "role": "transitioning into bedrock-consolidated"
+        },
+        {
+          "repo": "mosaic-extensions",
+          "tier": "Tier3",
+          "role": "transitioning into bedrock-consolidated"
+        },
+        {
+          "repo": "bedrock-consolidated",
+          "tier": "Tier1",
+          "role": "future consolidated adoption target"
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Docs and collateral governance",
+      "wrapper": "virtual",
+      "big_repo_decision": "not-applicable",
+      "decision_reason": "Storytelling, business plans, masterplan, and similar material should be governed as knowledge collateral, not treated as code services.",
+      "adoption_target": "document contract: owner, freshness, source-of-truth links, Build-Depot policy pointer, optional docs checks",
+      "members": [
+        {
+          "repo": "beacon-sites",
+          "tier": "Tier3",
+          "role": "docs and site collateral"
+        }
+      ]
+    }
+  ]
+}

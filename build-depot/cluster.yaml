@@ -1,0 +1,8 @@
+version: 1
+metadata:
+  name: reflective-build-depot
+storage: ./store
+graphs:
+  build-depot:
+    schema: build-depot.pg
+    queries: queries/

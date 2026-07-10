@@ -1,0 +1,10 @@
+query standards_from_findings() {
+    @description("Standards promoted from findings, preserving the finding-to-standard provenance edge")
+    match {
+        $f: Finding
+        $s: Standard
+        $f -[FindingToStandard]-> $s
+    }
+    return { $f.id, $f.status, $f.bucket, $f.title, $s.path, $s.title }
+    order { $s.path asc, $f.id asc }
+}
