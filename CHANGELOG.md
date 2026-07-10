@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - commerce-rails: reqwest 0.12→0.13 (coordinated wave with runway and quorum-sense); runway-storage path-dep pin corrected to 3.6.0
 - Version alignment with bedrock 4.0.0: sha2 0.11, strum 0.28, reqwest 0.13 (`form`/`query` features now explicit)
 - Bumped Bedrock pin v4.0.0 → v4.0.1 (typed `ReasoningBudget` provider contract); no source changes needed
+- Registry endgame changed: Shipyard dropped (owner decision), replaced by a self-hosted Kellnr registry on the build server (~August 2026); all Shipyard wording scrubbed from README, CONTRIBUTING context, and build-depot standards docs. Runway CI secret renamed `SHIPYARD_SSH_KEY` → `BEDROCK_SSH_KEY` — **the new secret must be created in GitHub before these workflows next run**
 
 ### Security
 - Cleared all 19 open Dependabot alerts, all in `chart-room/strategic/validator/Cargo.lock` (openssl, quinn-proto, rustls-webpki, bytes, time, keccak, rand, git2)
