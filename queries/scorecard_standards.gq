@@ -1,0 +1,10 @@
+query scorecard_standards() {
+    @description("Scorecard standard slice: standards and the findings that promoted them")
+    match {
+        $f: Finding
+        $s: Standard
+        $f -[FindingToStandard]-> $s
+    }
+    return { $s.path, $s.title, $f.id, $f.status, $f.bucket }
+    order { $s.path asc, $f.id asc }
+}

@@ -1,0 +1,6 @@
+query repo_health() {
+    @description("All repositories with layer, CI status, open finding count, deployment target, and adoption state")
+    match { $r: Repository }
+    return { $r.name, $r.layer, $r.language, $r.ci_status, $r.open_findings, $r.deployed_to, $r.linear_label, $r.adoption_cohort, $r.adoption_tier, $r.adoption_state }
+    order { $r.layer asc, $r.name asc }
+}

@@ -1,0 +1,6 @@
+query repository_adoption() {
+    @description("Repository adoption status by tier, including required gaps and tracked exceptions")
+    match { $r: Repository }
+    return { $r.name, $r.adoption_cohort, $r.adoption_tier, $r.adoption_state, $r.adoption_missing_required, $r.adoption_exception_refs, $r.adoption_last_scanned, $r.adoption_scan_revision, $r.linear_label, $r.sentry_project }
+    order { $r.adoption_cohort asc, $r.adoption_tier asc, $r.adoption_state asc, $r.name asc }
+}

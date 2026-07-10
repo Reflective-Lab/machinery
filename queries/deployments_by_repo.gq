@@ -1,0 +1,10 @@
+query deployments_by_repo($repo: String) {
+    @description("Release and deployment facts linked to a repository.")
+    match {
+        $d: Deployment
+        $r: Repository { name: $repo }
+        $d -[DeploymentInRepo]-> $r
+    }
+    return { $d.id, $d.environment, $d.status, $d.version, $d.deployed_at }
+    order { $d.deployed_at desc, $d.environment asc }
+}

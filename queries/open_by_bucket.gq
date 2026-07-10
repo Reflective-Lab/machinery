@@ -1,0 +1,7 @@
+// Open findings for a specific bucket (A, B, C, or D)
+query open_by_bucket($bucket: String) {
+    @description("Open findings for a specific bucket. Pass bucket: 'A', 'B', 'C', or 'D'")
+    match { $f: Finding { bucket: $bucket, status: "Open" } }
+    return { $f.id, $f.title, $f.area, $f.effort, $f.next_action, $f.cycles_open, $f.owner }
+    order { $f.date asc }
+}

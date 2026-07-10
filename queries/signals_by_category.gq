@@ -1,0 +1,6 @@
+query signals_by_category($category: String) {
+    @description("Factory learning signals by category, for security, dependency, runtime, delivery, cost, and other learning loops.")
+    match { $s: FactorySignal { category: $category } }
+    return { $s.id, $s.aggregate_key, $s.source, $s.kind, $s.title, $s.status, $s.severity, $s.repo, $s.finding_id, $s.observed_at, $s.first_seen_at, $s.last_seen_at, $s.event_count, $s.affected_users }
+    order { $s.observed_at desc, $s.repo asc }
+}

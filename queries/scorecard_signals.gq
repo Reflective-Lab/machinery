@@ -1,0 +1,6 @@
+query scorecard_signals() {
+    @description("Scorecard signal slice across categories, sources, repos, statuses, and linked findings.")
+    match { $s: FactorySignal }
+    return { $s.id, $s.aggregate_key, $s.category, $s.source, $s.kind, $s.status, $s.severity, $s.repo, $s.finding_id, $s.observed_at, $s.first_seen_at, $s.last_seen_at, $s.event_count, $s.affected_users }
+    order { $s.category asc, $s.source asc, $s.observed_at desc }
+}

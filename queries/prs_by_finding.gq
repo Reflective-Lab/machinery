@@ -1,0 +1,10 @@
+query prs_by_finding($finding_id: String) {
+    @description("Pull requests that cite or address a factory finding.")
+    match {
+        $pr: PullRequest
+        $f: Finding { id: $finding_id }
+        $pr -[PullRequestAddressesFinding]-> $f
+    }
+    return { $pr.id, $pr.repo, $pr.number, $pr.title, $pr.state, $pr.head_sha, $pr.url }
+    order { $pr.repo asc, $pr.number asc }
+}

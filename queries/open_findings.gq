@@ -1,0 +1,7 @@
+// All findings: id, bucket, area, status, effort, cycles open, owner
+query open_findings() {
+    @description("All findings with bucket, status, area, effort, and owner — ordered by bucket then date")
+    match { $f: Finding }
+    return { $f.id, $f.bucket, $f.area, $f.status, $f.effort, $f.cycles_open, $f.owner }
+    order { $f.bucket asc, $f.date asc }
+}

@@ -1,0 +1,10 @@
+query check_runs_by_repo($repo: String) {
+    @description("GitHub check runs and suites linked to a repository.")
+    match {
+        $c: CheckRun
+        $r: Repository { name: $repo }
+        $c -[CheckRunInRepo]-> $r
+    }
+    return { $c.id, $c.name, $c.status, $c.conclusion, $c.completed_at }
+    order { $c.completed_at desc, $c.name asc }
+}

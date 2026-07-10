@@ -1,0 +1,10 @@
+query open_incidents() {
+    @description("Open Sentry incidents with repository, severity, title, and linked finding when present")
+    match {
+        $i: Incident { status: "Open" }
+        $r: Repository
+        $i -[IncidentInRepo]-> $r
+    }
+    return { $i.id, $r.name, $i.severity, $i.title, $i.opened_at, $i.linked_finding }
+    order { $i.severity asc, $i.opened_at asc }
+}
