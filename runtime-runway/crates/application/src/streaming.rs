@@ -25,7 +25,7 @@
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use converge_core::{Fact, StreamingCallback};
+use converge_core::{ContextFact, StreamingCallback};
 use serde::Serialize;
 
 /// Output format for streaming.
@@ -99,7 +99,7 @@ impl StreamingCallback for StreamingHandler {
         // For now, we only emit facts and final status
     }
 
-    fn on_fact(&self, cycle: u32, fact: &Fact) {
+    fn on_fact(&self, cycle: u32, fact: &ContextFact) {
         self.fact_count.fetch_add(1, Ordering::SeqCst);
 
         match self.format {
@@ -108,7 +108,10 @@ impl StreamingCallback for StreamingHandler {
                 let key_str = format!("{:?}", fact.key());
                 println!(
                     "[cycle:{}] fact:{}:{} | {}",
-                    cycle, key_str, fact.id, fact.content
+                    cycle,
+                    key_str,
+                    fact.id(),
+                    fact.text().unwrap_or_default()
                 );
             }
             OutputFormat::Json => {
@@ -116,8 +119,8 @@ impl StreamingCallback for StreamingHandler {
                     cycle,
                     event_type: "fact".to_string(),
                     key: format!("{:?}", fact.key()),
-                    id: fact.id.clone(),
-                    content: fact.content.clone(),
+                    id: fact.id().to_string(),
+                    content: fact.text().unwrap_or_default().to_string(),
                 };
                 if let Ok(json) = serde_json::to_string(&event) {
                     println!("{json}");
@@ -160,10 +163,10 @@ struct StreamingStatus {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use converge_core::{Context, ContextKey, Engine};
+    use converge_core::{ContextKey, ContextState, Engine};
 
-    fn promoted_fact(key: ContextKey, id: &str, content: &str) -> Fact {
-        let mut ctx = Context::new();
+    fn promoted_fact(key: ContextKey, id: &str, content: &str) -> ContextFact {
+        let mut ctx = ContextState::new();
         let _ = ctx.add_input(key, id, content);
         let rt = tokio::runtime::Runtime::new().expect("create runtime");
         rt.block_on(async {

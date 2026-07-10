@@ -18,13 +18,11 @@ path = "src/main.rs"
 [dependencies]
 converge-core.workspace = true
 converge-experience.workspace = true
-converge-provider.workspace = true
+manifold-adapters.workspace = true
 async-trait.workspace = true
 
 # Optional subsystems
-converge-knowledge = { workspace = true, optional = true }
 converge-llm = { workspace = true, optional = true }
-converge-analytics = { workspace = true, optional = true }
 converge-optimization = { workspace = true, optional = true }
 
 # TUI (optional)
@@ -62,11 +60,9 @@ hostname.workspace = true
 [features]
 default = ["tui"]
 tui = ["dep:ratatui", "dep:crossterm"]
-knowledge = ["dep:converge-knowledge"]
 llm = ["dep:converge-llm"]
-analytics = ["dep:converge-analytics"]
 optimization = ["dep:converge-optimization"]
-full = ["tui", "knowledge", "llm", "analytics", "optimization"]
+full = ["tui", "llm", "optimization"]
 
 [lints]
 workspace = true

@@ -9,10 +9,6 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_VERSION: "1.96.0"
-  # Clone sibling repos at the same branch as this PR so cross-repo changes
-  # (e.g. RFL-128 contracts/ move) resolve consistently. Falls back to main
-  # on direct pushes (github.head_ref is empty) and for repos without the branch.
-  REFLECTIVE_SIBLING_REF: ${{ github.head_ref || 'main' }}
 
 jobs:
   ci:
@@ -20,8 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Reflective sibling dependencies
-        run: bash scripts/ci/checkout-reflective-siblings.sh
+      - name: Set up SSH for Bedrock git dependencies (RFL-195)
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SHIPYARD_SSH_KEY }}
       - name: Install protoc
         run: |
           sudo apt-get update

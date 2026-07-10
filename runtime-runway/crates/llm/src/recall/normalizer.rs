@@ -9,6 +9,7 @@ use super::types::{
     CandidateProvenance, CandidateSourceType, RecallCandidate, RecallTraceLink, RelevanceLevel,
     StopReason,
 };
+use converge_core::UnitInterval;
 use serde::{Deserialize, Serialize};
 
 /// Normalized recall results with metadata.
@@ -42,7 +43,7 @@ impl NormalizedRecall {
     pub fn above_threshold(&self, threshold: f64) -> Vec<&RecallCandidate> {
         self.candidates
             .iter()
-            .filter(|c| c.final_score >= threshold)
+            .filter(|c| c.final_score.as_f64() >= threshold)
             .collect()
     }
 
@@ -138,14 +139,17 @@ impl RecallNormalizer {
             return None;
         }
 
+        let final_score = UnitInterval::clamped(final_score);
+
         Some(RecallCandidate {
             id,
             summary,
-            raw_score,
+            raw_score: UnitInterval::clamped(raw_score),
             final_score,
             relevance: RelevanceLevel::from_score(final_score),
             source_type,
             provenance,
+            confidence: UnitInterval::clamped(0.5),
         })
     }
 

@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tracing::{info, warn};
 
 use converge_core::traits::DynChatBackend;
-use converge_provider::{ChatBackendSelectionConfig, select_chat_backend};
+use manifold::{ChatBackendSelectionConfig, select_chat_backend};
 
 use crate::agents::MockInsightProvider;
 
@@ -40,14 +40,14 @@ pub fn create_chat_backend_or_mock() -> Arc<dyn DynChatBackend> {
 
 #[cfg(test)]
 mod tests {
-    use converge_provider::ChatBackendSelectionConfig;
+    use manifold::ChatBackendSelectionConfig;
 
     #[test]
     fn default_selection_config_is_interactive() {
         let config = ChatBackendSelectionConfig::default();
         assert_eq!(
             config.criteria,
-            converge_core::model_selection::SelectionCriteria::interactive()
+            converge_core::SelectionCriteria::interactive()
         );
     }
 }

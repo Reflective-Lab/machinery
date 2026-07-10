@@ -359,6 +359,7 @@ fn timestamp_now() -> String {
 mod tests {
     use super::*;
     use crate::recall::HashEmbedder;
+    use converge_core::UnitInterval;
 
     #[test]
     fn test_mock_provider_basic() {
@@ -395,7 +396,7 @@ mod tests {
 
         for (c1, c2) in r1.candidates.iter().zip(r2.candidates.iter()) {
             assert_eq!(c1.id, c2.id);
-            assert!((c1.final_score - c2.final_score).abs() < 1e-6);
+            assert!((c1.final_score.as_f64() - c2.final_score.as_f64()).abs() < 1e-6);
         }
     }
 
@@ -408,7 +409,7 @@ mod tests {
         let policy = RecallPolicy {
             enabled: true,
             max_k_total: 2,
-            min_score_threshold: 0.0,
+            min_score_threshold: UnitInterval::ZERO,
             ..Default::default()
         };
 

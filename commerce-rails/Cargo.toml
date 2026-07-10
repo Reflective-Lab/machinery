@@ -40,12 +40,12 @@ anyhow = "1"
 async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
 hmac = "0.12"
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.13", features = ["json", "form", "query"] }
 # QF-CR-03: persistent EntitlementStore over runway-storage::DocumentStore.
 # Path dep on sibling repo (see workspace layout — same pattern marquee-apps use
 # for bedrock-platform/converge). Pulls the full StorageKit (local redb +
 # remote Firestore backends); CR uses only the DocumentStore surface.
-runway-storage = { path = "../runtime-runway/crates/runway-storage", version = "3.4.2" }
+runway-storage = { path = "../runtime-runway/crates/runway-storage", version = "3.6.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 sha2 = "0.10"

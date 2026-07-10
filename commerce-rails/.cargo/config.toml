@@ -1,0 +1,5 @@
+# Checked in (RFL-195): runway-storage (path dep) pulls helm-event-substrate
+# from the private bedrock-platform repo as a git dependency; cargo must
+# shell out to the git CLI to authenticate.
+[net]
+git-fetch-with-cli = true

@@ -24,24 +24,18 @@ license = "MIT"
 repository = "https://github.com/Reflective-Lab/runway"
 
 [workspace.dependencies]
-# Converge crates — pinned to a specific GitHub release tag by default.
-# For local SDK work, copy `.cargo/config.toml.example` to `.cargo/config.toml`
-# or run `just use-local-converge`.
-converge-model = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-pack = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0", features = ["strum"] }
-converge-protocol = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-kernel = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-client = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-core = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-provider-api = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-provider = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-domain = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-experience = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-knowledge = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-optimization = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-analytics = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-policy = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0" }
-converge-storage = { git = "https://github.com/Reflective-Lab/converge", tag = "v3.4.0", default-features = false }
+# Bedrock crates — pinned to the bedrock-platform GitHub release tag until
+# Shipyard registry publish lands (RFL-194); then these flip to
+# `registry = "reflective-labs"` with the same versions.
+# For local Bedrock work, run `just use-local-converge`.
+converge-core = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
+converge-provider = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
+converge-experience = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
+converge-optimization = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
+converge-storage = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0", default-features = false }
+# Provider adapters — env-driven chat backend selection moved from
+# converge-provider to manifold at 4.0.0 (lib name: `manifold`).
+manifold-adapters = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0", default-features = false, features = ["anthropic", "gemini", "openai", "openrouter", "mistral"] }
 
 # Internal
 converge-llm = { path = "crates/llm" }
@@ -94,7 +88,7 @@ prost-types = "0.13"
 rand = "0.8"
 ratatui = "0.29"
 regex = "1.11"
-reqwest = { version = "0.12", features = ["blocking", "json"] }
+reqwest = { version = "0.13", features = ["blocking", "json", "form", "query"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 hmac = "0.12"
@@ -105,8 +99,8 @@ hmac = "0.12"
 # CryptoProvider". The `use_pem` feature is required by runway-auth for
 # Firebase JWKS public-key decoding.
 jsonwebtoken = { version = "10.3", default-features = false, features = ["aws_lc_rs", "use_pem"] }
-sha2 = "0.10"
-strum = { version = "0.26", features = ["derive"] }
+sha2 = "0.11"
+strum = { version = "0.28", features = ["derive"] }
 tempfile = "3"
 thiserror = "2"
 tiktoken-rs = "0.5"

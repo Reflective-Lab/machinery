@@ -11,7 +11,7 @@ use crate::inference::{GenerationParams, InferenceEngine};
 use crate::model::LlamaModel;
 use crate::tokenizer::Tokenizer;
 use burn::backend::NdArray;
-use converge_core::{AgentEffect, ContextKey, ProposedFact, Suggestor};
+use converge_core::{AgentEffect, ContextKey, ProposedFact, Suggestor, TextPayload};
 use serde::{Deserialize, Serialize};
 use std::fmt::Write;
 
@@ -62,7 +62,7 @@ impl LlmAgent {
     }
 
     /// Build prompt from context using the template.
-    fn build_prompt(&self, ctx: &dyn converge_core::ContextView) -> String {
+    fn build_prompt(&self, ctx: &dyn converge_core::Context) -> String {
         let mut prompt = self.prompt_template.system.clone();
         prompt.push_str("\n\n");
 
@@ -72,7 +72,12 @@ impl LlmAgent {
             if !facts.is_empty() {
                 let _ = write!(prompt, "## {key:?}\n\n");
                 for fact in facts {
-                    let _ = writeln!(prompt, "- {}: {}", fact.id, fact.content);
+                    let _ = writeln!(
+                        prompt,
+                        "- {}: {}",
+                        fact.id(),
+                        fact.text().unwrap_or_default()
+                    );
                 }
                 prompt.push('\n');
             }
@@ -110,7 +115,7 @@ impl Suggestor for LlmAgent {
         &[ContextKey::Seeds, ContextKey::Signals]
     }
 
-    fn accepts(&self, ctx: &dyn converge_core::ContextView) -> bool {
+    fn accepts(&self, ctx: &dyn converge_core::Context) -> bool {
         // Check if we have input to process
         let has_seeds = !ctx.get(ContextKey::Seeds).is_empty();
 
@@ -130,12 +135,12 @@ impl Suggestor for LlmAgent {
         let has_validated = ctx
             .get(self.output_key)
             .iter()
-            .any(|f| f.id.starts_with(&my_prefix));
+            .any(|f| f.id().starts_with(&my_prefix));
 
         has_seeds && !has_pending && !has_validated
     }
 
-    async fn execute(&self, ctx: &dyn converge_core::ContextView) -> AgentEffect {
+    async fn execute(&self, ctx: &dyn converge_core::Context) -> AgentEffect {
         let prompt = self.build_prompt(ctx);
 
         tracing::info!(
@@ -150,13 +155,13 @@ impl Suggestor for LlmAgent {
                 // LLM agents MUST emit ProposedFact, not Fact.
                 // A separate ValidationAgent promotes proposals to facts.
                 // See: converge-platform DECISIONS.md §3
-                let proposal = ProposedFact {
-                    key: self.output_key,
-                    id: format!("{}-output", self.name),
-                    content: generated,
-                    confidence: 0.0, // To be set by evaluation/validation
-                    provenance: format!("llm:{}", self.name),
-                };
+                let proposal = ProposedFact::new(
+                    self.output_key,
+                    format!("{}-output", self.name),
+                    TextPayload::new(generated),
+                    format!("llm:{}", self.name),
+                )
+                .with_confidence(0.0); // To be set by evaluation/validation
                 AgentEffect::with_proposal(proposal)
             }
             Err(e) => {
@@ -169,7 +174,7 @@ impl Suggestor for LlmAgent {
                     ProposedFact::new(
                         ContextKey::Diagnostic,
                         format!("{}-error", self.name),
-                        format!("LLM inference failed: {e}"),
+                        TextPayload::new(format!("LLM inference failed: {e}")),
                         format!("system:{}", self.name),
                     )
                     .with_confidence(1.0),
@@ -260,10 +265,10 @@ impl Default for ReasoningConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use converge_core::{Context, Engine};
+    use converge_core::{ContextState, Engine};
 
-    fn promoted_context(entries: &[(ContextKey, &str, &str)]) -> Context {
-        let mut ctx = Context::new();
+    fn promoted_context(entries: &[(ContextKey, &str, &str)]) -> ContextState {
+        let mut ctx = ContextState::new();
         for (key, id, content) in entries {
             ctx.add_input(*key, *id, *content).unwrap();
         }
@@ -283,7 +288,7 @@ mod tests {
         let config = LlmConfig::default();
         let agent = LlmAgent::new("test-agent", config);
 
-        let mut ctx = Context::new();
+        let mut ctx = ContextState::new();
         assert!(!agent.accepts(&ctx)); // No seeds
 
         ctx = promoted_context(&[(ContextKey::Seeds, "seed-1", "test seed")]);
@@ -333,7 +338,7 @@ mod tests {
         let _ = ctx.add_proposal(ProposedFact::new(
             ContextKey::Hypotheses,
             "test-agent-output",
-            "pending proposal",
+            TextPayload::new("pending proposal"),
             "test-agent",
         ));
 
@@ -387,7 +392,7 @@ mod tests {
         let _ = ctx.add_proposal(ProposedFact::new(
             ContextKey::Hypotheses,
             "test-agent-output",
-            "generated content",
+            TextPayload::new("generated content"),
             "test-agent",
         ));
 

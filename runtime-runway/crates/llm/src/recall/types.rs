@@ -153,7 +153,7 @@ impl RecallHint {
         Self {
             id: candidate.id.clone(),
             summary: candidate.summary.clone(),
-            score: candidate.final_score,
+            score: candidate.final_score.as_f64(),
             relevance: candidate.relevance.as_str().to_string(),
         }
     }
@@ -213,6 +213,7 @@ impl DecisionRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use converge_core::UnitInterval;
 
     #[test]
     fn test_recall_policy_enabled() {
@@ -228,9 +229,18 @@ mod tests {
 
     #[test]
     fn test_relevance_from_score() {
-        assert_eq!(RelevanceLevel::from_score(0.9), RelevanceLevel::High);
-        assert_eq!(RelevanceLevel::from_score(0.6), RelevanceLevel::Medium);
-        assert_eq!(RelevanceLevel::from_score(0.3), RelevanceLevel::Low);
+        assert_eq!(
+            RelevanceLevel::from_score(UnitInterval::clamped(0.9)),
+            RelevanceLevel::High
+        );
+        assert_eq!(
+            RelevanceLevel::from_score(UnitInterval::clamped(0.6)),
+            RelevanceLevel::Medium
+        );
+        assert_eq!(
+            RelevanceLevel::from_score(UnitInterval::clamped(0.3)),
+            RelevanceLevel::Low
+        );
     }
 
     #[test]

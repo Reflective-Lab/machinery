@@ -15,12 +15,12 @@ jobs:
   audit:
     name: Audit
     runs-on: ubuntu-latest
-    env:
-      REFLECTIVE_SIBLING_REF: ${{ github.head_ref || 'main' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Reflective sibling dependencies
-        run: bash scripts/ci/checkout-reflective-siblings.sh
+      - name: Set up SSH for Bedrock git dependencies (RFL-195)
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SHIPYARD_SSH_KEY }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: "1.96.0"

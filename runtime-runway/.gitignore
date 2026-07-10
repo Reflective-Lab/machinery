@@ -19,7 +19,7 @@ Thumbs.db
 # Rust
 **/*.rs.bk
 Cargo.lock
-.cargo/config.toml
+# .cargo/config.toml is checked in since RFL-195 (git-fetch-with-cli for private bedrock-platform)
 
 # Terraform
 ops/infra/terraform/.terraform/

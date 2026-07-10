@@ -33,8 +33,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout Reflective sibling dependencies
-        run: bash scripts/ci/checkout-reflective-siblings.sh
+      - name: Set up SSH for Bedrock git dependencies (RFL-195)
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SHIPYARD_SSH_KEY }}
       - name: Install protoc
         run: |
           sudo apt-get update

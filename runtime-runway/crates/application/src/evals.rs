@@ -15,7 +15,7 @@ use std::path::Path;
 use std::time::{Duration, Instant};
 use uuid::Uuid;
 
-use converge_core::{Context as ConvergeContext, ContextKey, Engine};
+use converge_core::{ContextKey, ContextState, Engine};
 use strum::IntoEnumIterator;
 
 use crate::packs::SeedFact;
@@ -144,9 +144,9 @@ pub async fn run_eval(fixture: &EvalFixture) -> EvalResult {
         "Starting eval run"
     );
 
-    let mut context = ConvergeContext::new();
+    let mut context = ContextState::new();
     for seed in &fixture.seeds {
-        if let Err(e) = context.add_input(ContextKey::Seeds, &seed.id, &seed.content) {
+        if let Err(e) = context.add_input(ContextKey::Seeds, seed.id.as_str(), seed.content.as_str()) {
             return EvalResult::error(
                 &fixture.eval_id,
                 run_id,
@@ -241,7 +241,7 @@ pub async fn run_eval(fixture: &EvalFixture) -> EvalResult {
     }
 
     for fact_prefix in &expected.must_contain_facts {
-        let found = all_facts.iter().any(|f| f.id.starts_with(fact_prefix));
+        let found = all_facts.iter().any(|f| f.id().starts_with(fact_prefix));
         checks.push(EvalCheck {
             name: format!("contains:{fact_prefix}"),
             passed: found,
@@ -255,7 +255,7 @@ pub async fn run_eval(fixture: &EvalFixture) -> EvalResult {
     }
 
     for fact_prefix in &expected.must_not_contain_facts {
-        let found = all_facts.iter().any(|f| f.id.starts_with(fact_prefix));
+        let found = all_facts.iter().any(|f| f.id().starts_with(fact_prefix));
         checks.push(EvalCheck {
             name: format!("excludes:{fact_prefix}"),
             passed: !found,
