@@ -20,7 +20,7 @@ exclude = [
 # RP-LAYERING (RFL-171): event ledger and lease/session-ownership contracts
 # now live in this neutral substrate crate; runway-storage implements the
 # traits and re-exports them so callers see no breakage.
-helm-event-substrate = { version = "0.1.0", path = "../../../bedrock-platform/helms/contracts/crates/helm-event-substrate", default-features = false }
+helm-event-substrate = { version = "4.0.0", path = "../../../../framework/bedrock/foundation/helm/contracts/crates/helm-event-substrate", default-features = false }
 runway-secrets = { path = "../runway-secrets", version = "3.4.2" }
 
 anyhow = { workspace = true }
