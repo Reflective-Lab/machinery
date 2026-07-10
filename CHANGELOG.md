@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Verified no secrets, API keys, or credentials are committed anywhere in the repo
 - Confirmed build reproduces cleanly from a fresh clone (Rust check + Bun typecheck + all 459 tests)
 
+## Linear Issue
+- [RFL-212](https://linear.app/reflective-labs/issue/RFL-212/machinery-v10-consolidate-4-separate-repos-into-unified-platform) — machinery v1.0 consolidation (DONE)
+
 ## [1.0.0] - 2026-07-10
 
 ### Added
