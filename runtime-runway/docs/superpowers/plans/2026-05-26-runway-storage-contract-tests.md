@@ -63,7 +63,7 @@
 - [ ] **Step 1: Confirm clean working tree**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 git status
 ```
 

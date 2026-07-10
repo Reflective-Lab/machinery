@@ -39,7 +39,7 @@
 - [ ] **Step 1: Inspect WIP**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 git status
 git diff --stat
 ```
@@ -86,7 +86,7 @@ mod tests {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 cargo test -p runway-auth auth_layer_stores_local_dev_flag
 ```
 
@@ -835,7 +835,7 @@ allows tests to construct hosts without setting process env."
 - [ ] **Step 1: Confirm no remaining env reads in the targeted scope**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 grep -rn 'env::var("LOCAL_DEV"\|env::var("STORAGE_PATH"\|env::var("FIREBASE_PROJECT_ID"\|env::var("ROUTE_PREFIX"\|env::var("APP_URL"' crates/ \
   | grep -v 'src/config.rs'
 ```

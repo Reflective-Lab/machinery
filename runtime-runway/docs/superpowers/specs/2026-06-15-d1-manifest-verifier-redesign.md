@@ -2,7 +2,7 @@
 
 **Status:** **Implemented 2026-06-15** (Phase 1 + Phase 2) — supersedes the runtime-introspection framing in the original D1 backlog entry. All three checks enforced strict-always in `RunwayAppHost::serve()`. The §8 open questions were resolved by implementation: **Option A** (explicit registration API) was taken; the Phase-1/Phase-2 split shipped as designed; check 3 derives `handler_id` from `std::any::type_name` (reviewer may later upgrade to a proc-macro compile-error form if a closure-handler `_test` exposure is ever found). App adoption (apps register domain routes via `route_*` and declare them in `domain_routes`) is the remaining downstream step, tracked in the Quorum handoff.
 **Owner:** `[RR-ARCH]` (Runtime-Runway).
-**Originating review:** `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md` Round 1 (sharpened by HELMS F3 Round 2).
+**Originating review:** `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md` Round 1 (sharpened by HELMS F3 Round 2).
 **RR backlog entry:** `runtime-runway/QUALITY_BACKLOG.md` → `D1`.
 **Severity:** A — strict-always gate; `serve()` must `Err` on manifest/router divergence in every environment (no flag, per `CLAUDE.md`).
 

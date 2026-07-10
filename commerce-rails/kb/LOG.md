@@ -81,9 +81,9 @@ landing. Replaces the in-memory `Mutex<HashMap>` store with a persistent
 backend over `runway-storage::DocumentStore` (redb local, Firestore
 remote) and introduces CR-owned `CustomerId` identity. Source: the
 frozen three-architect review
-`/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md` and
+`(reflective-root)/REVIEW_quorum-sense_2026-06-15.md` and
 the implementor handoff at
-`/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md`.
+`(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`.
 
 Changes:
 

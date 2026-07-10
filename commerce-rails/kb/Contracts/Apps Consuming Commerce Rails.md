@@ -6,14 +6,14 @@ source: REVIEW_quorum-sense_2026-06-15
 
 **Audience:** You are reading this if you are building a marquee app that needs subscription, entitlement, or commercial gating. This document is the **consumer contract** — the only Commerce-Rails surface you should depend on.
 
-> **For implementors:** the action surface lives in the active handoff at [`/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md) (ACTIVE; signed by all three architects 2026-06-15). This contract defines *what* to consume; the handoff tells you *when* each piece ships and *what you do* at each call-site. Read this contract to understand the shape; read the handoff to plan your work.
+> **For implementors:** the action surface lives in the active handoff at [`(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md) (ACTIVE; signed by all three architects 2026-06-15). This contract defines *what* to consume; the handoff tells you *when* each piece ships and *what you do* at each call-site. Read this contract to understand the shape; read the handoff to plan your work.
 
-**Workspace anchor:** [`/Users/kpernyer/dev/reflective/BOUNDARY_REGISTRY.md`](../../../BOUNDARY_REGISTRY.md)
+**Workspace anchor:** [`(reflective-root)/BOUNDARY_REGISTRY.md`](../../../BOUNDARY_REGISTRY.md)
 **Sibling boundary docs (cross-link):**
-- Runtime-Runway: [`/Users/kpernyer/dev/reflective/runtime-runway/kb/Architecture/App Execution Container.md`](../../../runtime-runway/kb/Architecture/App%20Execution%20Container.md)
+- Runtime-Runway: [`(reflective-root)/runtime-runway/kb/Architecture/App Execution Container.md`](../../../runtime-runway/kb/Architecture/App%20Execution%20Container.md)
 - Helms: pending — see `BOUNDARY_REGISTRY.md`
-**Frozen panel review:** [`/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md`](../../../REVIEW_quorum-sense_2026-06-15.md)
-**Active implementor handoff:** [`/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md)
+**Frozen panel review:** [`(reflective-root)/REVIEW_quorum-sense_2026-06-15.md`](../../../REVIEW_quorum-sense_2026-06-15.md)
+**Active implementor handoff:** [`(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md)
 
 ---
 
@@ -155,6 +155,6 @@ Reference implementation: [`marquee-apps/quorum-sense/crates/quorum-server/src/m
 - [`Commerce Rail Surface.md`](Commerce%20Rail%20Surface.md) — full domain vocabulary (commands, entities, receipts).
 - [`Stripe Connect Boundary.md`](../Adapters/Stripe%20Connect%20Boundary.md) — provider-adapter rules; not consumer-facing.
 - [`Operating Authority Boundary.md`](../Architecture/Operating%20Authority%20Boundary.md) — what CR owns and does not own.
-- [`/Users/kpernyer/dev/reflective/commerce-rails/QUALITY_BACKLOG.md`](../../QUALITY_BACKLOG.md) — open structural-debt items (CR-08/09/10/11) that this contract assumes will land.
+- [`(reflective-root)/commerce-rails/QUALITY_BACKLOG.md`](../../QUALITY_BACKLOG.md) — open structural-debt items (CR-08/09/10/11) that this contract assumes will land.
 
 — Maintained by `[CR-ARCH]`. Changes require panel review when they alter the contract surface; non-breaking additions can land via PR with `[CR-ARCH]` sign-off.

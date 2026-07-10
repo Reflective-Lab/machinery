@@ -3402,7 +3402,7 @@ end of each review cycle so this file remains a single-page status.
 - Discovered during: paired session (trybuild walkthrough)
 - Evidence: `bedrock-platform/organism/crates/pack/tests/compile_fail/
   fact_no_new.stderr` was blessed in commit `af9b754` and captured the absolute
-  local path `/Users/kpernyer/dev/reflective/bedrock-platform/converge/crates/pack/
+  local path `(reflective-root)/bedrock-platform/converge/crates/pack/
   src/fact.rs:1123:5` along with current line numbers. Test passed only on the
   blesser's machine. Repaired in commit `3e1a7c8` by restoring
   `$CARGO/converge-pack-$VERSION/` placeholders and adding a runtime skip guard for

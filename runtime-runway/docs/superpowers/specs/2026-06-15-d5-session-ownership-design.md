@@ -2,8 +2,8 @@
 
 **Status:** Design approved 2026-06-15.
 **Owner:** `[RR-ARCH]` (Runtime-Runway).
-**Originating review:** `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md` (panel finding HELMS F5; RR Round-2 accept).
-**Implementor handoff row:** `/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md` Section 2 — `D5`.
+**Originating review:** `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md` (panel finding HELMS F5; RR Round-2 accept).
+**Implementor handoff row:** `(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md` Section 2 — `D5`.
 **RR backlog entry:** `runtime-runway/QUALITY_BACKLOG.md` → `D5`.
 **Severity:** A — hard gate for `--max-instances > 1` on every marquee app (paired with `QF-CR-03` + `QF-CR-08`).
 **Target window:** ~3–4 weeks (panel estimate; new scope).

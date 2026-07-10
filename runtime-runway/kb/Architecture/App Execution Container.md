@@ -1,11 +1,11 @@
 # App Execution Container
 
 > **Boundary cross-links** (per panel review 2026-06-15):
-> - Workspace anchor (read first): `/Users/kpernyer/dev/reflective/BOUNDARY_REGISTRY.md`
-> - Active implementor handoff: `/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md` (signed by all three architects 2026-06-15)
-> - Commerce-Rails authority: `/Users/kpernyer/dev/reflective/commerce-rails/kb/Architecture/Operating Authority Boundary.md`
-> - Helms authority: `/Users/kpernyer/dev/reflective/bedrock-platform/helms/kb/Architecture/Operating Authority Boundary.md`
-> - Frozen panel review (historical): `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md`
+> - Workspace anchor (read first): `(reflective-root)/BOUNDARY_REGISTRY.md`
+> - Active implementor handoff: `(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md` (signed by all three architects 2026-06-15)
+> - Commerce-Rails authority: `(reflective-root)/commerce-rails/kb/Architecture/Operating Authority Boundary.md`
+> - Helms authority: `(reflective-root)/bedrock-platform/helms/kb/Architecture/Operating Authority Boundary.md`
+> - Frozen panel review (historical): `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md`
 
 Runtime Runway owns the standard server execution container for Reflective apps.
 

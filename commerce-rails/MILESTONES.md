@@ -34,7 +34,7 @@
 **Epic:** E6
 
 **Driver:** quorum-sense.
-**Origin:** panel review `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md` (Round 1 finding by `[CR-ARCH]`, ratified by all three architects in Round 3). The original M2 named *Wolfgang* (now in `studio-apps/`); quorum-sense overtook as the first application proving Commerce Rails in a deployed Runtime Runway environment.
+**Origin:** panel review `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md` (Round 1 finding by `[CR-ARCH]`, ratified by all three architects in Round 3). The original M2 named *Wolfgang* (now in `studio-apps/`); quorum-sense overtook as the first application proving Commerce Rails in a deployed Runtime Runway environment.
 
 Done when:
 

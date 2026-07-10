@@ -51,7 +51,7 @@ The current method returns `"marquee"` as a placeholder. v1's actual first produ
 - [ ] **Step 1: Survey existing uses of `"marquee"` as an entitlement key**
 
 ```bash
-grep -rnE '"marquee"' /Users/kpernyer/dev/reflective/commerce-rails --include="*.rs" 2>/dev/null | head -10
+grep -rnE '"marquee"' (reflective-root)/commerce-rails --include="*.rs" 2>/dev/null | head -10
 ```
 
 If `"marquee"` appears in tests or other modules as an expected entitlement key, those tests need updating too. Count how many places need changes — informs whether Step 2 is a one-liner or wider sweep.
@@ -336,9 +336,9 @@ End-to-end: construct a `CommerceRails`, simulate the 3 webhook actions in order
 - [ ] **Step 1: Survey existing tests for setup pattern**
 
 ```bash
-ls /Users/kpernyer/dev/reflective/commerce-rails/crates/commerce-rails-stripe/tests/ 2>/dev/null
-find /Users/kpernyer/dev/reflective/commerce-rails -name "*.rs" -path "*/tests/*" 2>/dev/null | head -5
-grep -rnE "CommerceRails::new\b|CommerceRailsConfig::" /Users/kpernyer/dev/reflective/commerce-rails --include="*.rs" 2>/dev/null | head -10
+ls (reflective-root)/commerce-rails/crates/commerce-rails-stripe/tests/ 2>/dev/null
+find (reflective-root)/commerce-rails -name "*.rs" -path "*/tests/*" 2>/dev/null | head -5
+grep -rnE "CommerceRails::new\b|CommerceRailsConfig::" (reflective-root)/commerce-rails --include="*.rs" 2>/dev/null | head -10
 ```
 
 Find existing test patterns. If there are no tests in `crates/commerce-rails-stripe/tests/`, the unit-test idiom is `#[cfg(test)] mod tests { ... }` inside `lib.rs` — but the plan calls for an integration test, so create one.

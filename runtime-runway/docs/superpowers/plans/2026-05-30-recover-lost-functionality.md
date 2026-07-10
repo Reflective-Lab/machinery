@@ -48,7 +48,7 @@
 
 - [ ] **A1: Recover the pre-deletion file from git**
   ```bash
-  cd /Users/kpernyer/dev/reflective/bedrock-platform/helms
+  cd (reflective-root)/bedrock-platform/helms
   git show af4cd23^:crates/application-server/src/http_api.rs > /tmp/old-http-api.rs
   wc -l /tmp/old-http-api.rs    # expect ~2,302
   ```
@@ -71,7 +71,7 @@
   ```bash
   for path in $(grep -oE '/v1/[^"]+' /tmp/old-http-api-routes.txt | sort -u); do
     echo "=== $path ==="
-    rg -l "$path" /Users/kpernyer/dev/reflective/marquee-apps/ 2>/dev/null
+    rg -l "$path" (reflective-root)/marquee-apps/ 2>/dev/null
   done
   ```
 
@@ -114,7 +114,7 @@
 
 - [ ] **B1: Recover the pre-deletion service.rs**
   ```bash
-  cd /Users/kpernyer/dev/reflective/bedrock-platform/helms
+  cd (reflective-root)/bedrock-platform/helms
   git show af4cd23^:crates/application-server/src/service.rs > /tmp/old-service.rs
   ```
 
@@ -123,8 +123,8 @@
 - [ ] **B3: Grep frontend code for any of the gRPC service client paths.** The `apps/desktop/src-tauri/` directory in helms likely has Rust clients. The Tauri/Svelte frontend may have gRPC-web clients.
   ```bash
   rg -l "IdentityService|TruthCatalogService|ModuleRegistryService" \
-    /Users/kpernyer/dev/reflective/bedrock-platform/helms/apps/ \
-    /Users/kpernyer/dev/reflective/marquee-apps/ \
+    (reflective-root)/bedrock-platform/helms/apps/ \
+    (reflective-root)/marquee-apps/ \
     2>/dev/null
   ```
 
@@ -169,16 +169,16 @@ The user has separately landed `commerce-rails/crates/commerce-rails-stripe` (re
 
 - [ ] **C1: Recover the 5 truth bodies from git**
   ```bash
-  cd /Users/kpernyer/dev/reflective/bedrock-platform/helms
+  cd (reflective-root)/bedrock-platform/helms
   git show a63811c^:crates/application-server/src/truth_runtime/activate_subscription.rs > /tmp/activate_subscription.rs
   # repeat for the other 4 files
   ```
 
-- [ ] **C2: Survey `/Users/kpernyer/dev/reflective/commerce-rails/`** for whether equivalent business logic already exists. If yes, the truth wrappers are just dispatch shells.
+- [ ] **C2: Survey `(reflective-root)/commerce-rails/`** for whether equivalent business logic already exists. If yes, the truth wrappers are just dispatch shells.
   ```bash
-  ls /Users/kpernyer/dev/reflective/commerce-rails/crates/
+  ls (reflective-root)/commerce-rails/crates/
   rg -l "activate_subscription|upgrade_subscription_plan|reconcile_model_usage" \
-    /Users/kpernyer/dev/reflective/commerce-rails/ 2>/dev/null
+    (reflective-root)/commerce-rails/ 2>/dev/null
   ```
 
 - [ ] **C3: Decide: are these "truths" in the platform-truth sense, or are they commerce operations that don't need the truth contract at all?** The truth pattern carries `JobReadinessPacket` + receipt families — meaningful for HITL governance. Subscription operations may or may not warrant that.
@@ -230,8 +230,8 @@ The user has separately landed `commerce-rails/crates/commerce-rails-stripe` (re
 - [ ] **D2: Search KB and experiments dirs for "EXP-002" or "data_transformer"**
   ```bash
   rg -l "EXP-002|data_transformer|data transformer" \
-    /Users/kpernyer/dev/reflective/bedrock-platform/helms/kb/ \
-    /Users/kpernyer/dev/reflective/bedrock-platform/helms/experiments/ \
+    (reflective-root)/bedrock-platform/helms/kb/ \
+    (reflective-root)/bedrock-platform/helms/experiments/ \
     2>/dev/null
   ```
 

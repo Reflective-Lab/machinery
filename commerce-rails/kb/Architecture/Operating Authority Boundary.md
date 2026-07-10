@@ -4,14 +4,14 @@ source: mixed
 ---
 # Operating Authority Boundary
 
-> **Workspace anchor:** [`/Users/kpernyer/dev/reflective/BOUNDARY_REGISTRY.md`](../../../BOUNDARY_REGISTRY.md)
+> **Workspace anchor:** [`(reflective-root)/BOUNDARY_REGISTRY.md`](../../../BOUNDARY_REGISTRY.md)
 > **Sibling boundary docs (read these for non-CR concerns):**
-> - Runtime-Runway: [`/Users/kpernyer/dev/reflective/runtime-runway/kb/Architecture/App Execution Container.md`](../../../runtime-runway/kb/Architecture/App%20Execution%20Container.md)
+> - Runtime-Runway: [`(reflective-root)/runtime-runway/kb/Architecture/App Execution Container.md`](../../../runtime-runway/kb/Architecture/App%20Execution%20Container.md)
 > - Helms: pending — see `BOUNDARY_REGISTRY.md` for the live link
 >
 > **Consumer-facing contract for marquee apps:** [`../Contracts/Apps Consuming Commerce Rails.md`](../Contracts/Apps%20Consuming%20Commerce%20Rails.md)
-> **Frozen panel review:** [`/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md`](../../../REVIEW_quorum-sense_2026-06-15.md)
-> **Active implementor handoff:** [`/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md) — ACTIVE since 2026-06-15.
+> **Frozen panel review:** [`(reflective-root)/REVIEW_quorum-sense_2026-06-15.md`](../../../REVIEW_quorum-sense_2026-06-15.md)
+> **Active implementor handoff:** [`(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md) — ACTIVE since 2026-06-15.
 
 Commerce Rails owns Reflective Labs commercial authority.
 

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Rust edition 2024, rust-version 1.96.0, `async-trait`, `tokio`, `axum 0.8`, `tower`, `redb` (local), `reqwest` + Firestore REST API (remote), `chrono`, `uuid`. Workspace-pinned deps only.
 
-**Spec:** `/Users/kpernyer/dev/reflective/runtime-runway/docs/superpowers/specs/2026-06-15-d5-session-ownership-design.md` (SHA `9d0504c`).
+**Spec:** `(reflective-root)/runtime-runway/docs/superpowers/specs/2026-06-15-d5-session-ownership-design.md` (SHA `9d0504c`).
 
 **Branch to work on:** `d5-session-ownership-design` (already exists; spec committed; implementation work goes here).
 
@@ -187,7 +187,7 @@ mod tests {
 - [ ] **Step 5: Build and run tests**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 cargo test -p runway-storage --lib traits::lease
 ```
 Expected: 2 tests pass.
@@ -1458,7 +1458,7 @@ If `Arc` is not yet imported in the file, add `use std::sync::Arc;` to the top.
 - [ ] **Step 4: Run the local lease contract test**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 cargo test -p runway-storage --test contract_local lease_contract -- --nocapture
 ```
 Expected: all 12 contract tests pass.
@@ -2765,7 +2765,7 @@ EOF
 - [ ] **Step 1: Full workspace test run**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/runtime-runway
+cd (reflective-root)/runtime-runway
 cargo test --workspace --all-targets
 ```
 Expected: all tests pass.

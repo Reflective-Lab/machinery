@@ -1096,18 +1096,18 @@ EOF
 
 ### Task 2.1: Create workspace root
 
-**Files:** New directory `/Users/kpernyer/dev/reflective/atelier-showcase/`
+**Files:** New directory `(reflective-root)/atelier-showcase/`
 
 - [ ] **Step 1: Create the workspace**
 
 ```bash
-mkdir -p /Users/kpernyer/dev/reflective/atelier-showcase/{crm-showcase/src,crates}
-cd /Users/kpernyer/dev/reflective/atelier-showcase
+mkdir -p (reflective-root)/atelier-showcase/{crm-showcase/src,crates}
+cd (reflective-root)/atelier-showcase
 ```
 
 - [ ] **Step 2: Write workspace `Cargo.toml`**
 
-Write `/Users/kpernyer/dev/reflective/atelier-showcase/Cargo.toml`:
+Write `(reflective-root)/atelier-showcase/Cargo.toml`:
 
 ```toml
 [workspace]
@@ -1294,7 +1294,7 @@ async fn main() -> anyhow::Result<()> {
 - [ ] **Step 4: Verify the workspace builds**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/atelier-showcase
+cd (reflective-root)/atelier-showcase
 cargo build
 ```
 Expected: All 10 crates compile (placeholders, no logic).
@@ -1321,7 +1321,7 @@ gh pr create --title "feat(atelier-showcase): bootstrap workspace + skeletons" -
 - [ ] **Step 1: Create the directory and Cargo.toml**
 
 ```bash
-mkdir -p /Users/kpernyer/dev/reflective/bedrock-platform/helms/crates/helm-operator-control/src
+mkdir -p (reflective-root)/bedrock-platform/helms/crates/helm-operator-control/src
 ```
 
 Write `Cargo.toml`:
@@ -1353,7 +1353,7 @@ truth-catalog = { path = "../truth-catalog" }
 capability-core = { path = "../capability-core" }
 ```
 
-(Engineer: confirm the relative path to `runway-app-host`. Helm is at `stack/bedrock-platform/helms/crates/helm-operator-control/`; runway is at `reflective/runtime-runway/crates/runway-app-host/`. The dotdot count above assumes a common parent at `/Users/kpernyer/dev/`. Adjust.)
+(Engineer: confirm the relative path to `runway-app-host`. Helm is at `stack/bedrock-platform/helms/crates/helm-operator-control/`; runway is at `reflective/runtime-runway/crates/runway-app-host/`. The dotdot count above assumes a common parent at `(reflective-root)/..`. Adjust.)
 
 - [ ] **Step 2: Add to Helm workspace members**
 
@@ -1365,7 +1365,7 @@ Edit `stack/bedrock-platform/helms/Cargo.toml` `[workspace] members =`, add:
 - [ ] **Step 3: Verify workspace still builds**
 
 ```bash
-cd /Users/kpernyer/dev/reflective/bedrock-platform/helms
+cd (reflective-root)/bedrock-platform/helms
 cargo build -p helm-operator-control
 ```
 Expected: PASS (empty crate compiles).
@@ -2258,7 +2258,7 @@ gh pr create --title "feat(catalyst-backend): runnable proof binary" --body "Boo
 - [ ] **Step 1: Search for consumers**
 
 ```bash
-cd /Users/kpernyer/dev/reflective
+cd (reflective-root)
 rg -l "application-server" --type rust --type toml \
    stack/ reflective/ marquee-apps/ movement/ \
    | grep -v "stack/bedrock-platform/helms/crates/application-server"
@@ -2435,7 +2435,7 @@ ENTRYPOINT ["/usr/local/bin/catalyst-backend"]
 - [ ] **Step 2: Test build locally**
 
 ```bash
-cd /Users/kpernyer/dev/reflective
+cd (reflective-root)
 docker build -f marquee-apps/catalyst-biz/backend/Dockerfile -t catalyst-backend:dev .
 ```
 Expected: image builds in <5 min. Test run:

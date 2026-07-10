@@ -2,11 +2,11 @@
 
 Per-repo finding ledger for commerce-rails. Append-only.
 
-> **For implementors:** the active implementor brief is `/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md` (signed by all three architects 2026-06-15). This backlog tracks CR-side commitments referenced from that handoff. If you are looking for "what to do this week" as a Quorum engineer, go to the handoff first.
+> **For implementors:** the active implementor brief is `(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md` (signed by all three architects 2026-06-15). This backlog tracks CR-side commitments referenced from that handoff. If you are looking for "what to do this week" as a Quorum engineer, go to the handoff first.
 
-Originating review: `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md` (FROZEN; signed by all three architects 2026-06-15).
-Workspace anchor: `/Users/kpernyer/dev/reflective/BOUNDARY_REGISTRY.md`.
-Active implementor handoff: `/Users/kpernyer/dev/reflective/HANDOFF_quorum-sense_2026-06-15.md`.
+Originating review: `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md` (FROZEN; signed by all three architects 2026-06-15).
+Workspace anchor: `(reflective-root)/BOUNDARY_REGISTRY.md`.
+Active implementor handoff: `(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`.
 
 ## Conventions
 
@@ -148,8 +148,8 @@ M2 split landed. See above.
 
 ## Cross-references
 
-- Workspace registry: `/Users/kpernyer/dev/reflective/BOUNDARY_REGISTRY.md`
-- Frozen review: `/Users/kpernyer/dev/reflective/REVIEW_quorum-sense_2026-06-15.md`
-- Runtime-Runway backlog: `/Users/kpernyer/dev/reflective/runtime-runway/QUALITY_BACKLOG.md`
+- Workspace registry: `(reflective-root)/BOUNDARY_REGISTRY.md`
+- Frozen review: `(reflective-root)/REVIEW_quorum-sense_2026-06-15.md`
+- Runtime-Runway backlog: `(reflective-root)/runtime-runway/QUALITY_BACKLOG.md`
 - Helms backlog: pending — link here when filed
 - Architectural docs: `kb/Architecture/Operating Authority Boundary.md`, `kb/Contracts/Commerce Rail Surface.md`, `kb/Contracts/Apps Consuming Commerce Rails.md`

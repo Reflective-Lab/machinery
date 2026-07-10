@@ -221,7 +221,7 @@ Each implements `HelmModule`. Each holds its own state. None reaches outside its
 
 ## 6. `stack/atelier-showcase` bootstrap
 
-New workspace at `/Users/kpernyer/dev/reflective/atelier-showcase/`. Mirrors Helm's conventions (Cargo workspace, `crates/` directory, top-level `README.md`, `CLAUDE.md`, `MILESTONES.md`).
+New workspace at `(reflective-root)/atelier-showcase/`. Mirrors Helm's conventions (Cargo workspace, `crates/` directory, top-level `README.md`, `CLAUDE.md`, `MILESTONES.md`).
 
 ### 6.1 Layout
 

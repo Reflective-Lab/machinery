@@ -234,8 +234,8 @@ Expected: clean.
 - [ ] **Step 7: Commit**
 
 ```bash
-git -C /Users/kpernyer/dev/reflective/runtime-runway add crates/runway-storage/src/remote/lease.rs
-git -C /Users/kpernyer/dev/reflective/runtime-runway commit -m "$(cat <<'EOF'
+git -C (reflective-root)/runtime-runway add crates/runway-storage/src/remote/lease.rs
+git -C (reflective-root)/runtime-runway commit -m "$(cat <<'EOF'
 refactor(d5): Firestore lease CAS helpers (read_current, patch_conditional, delete_conditional)
 
 Private helpers that will replace the non-atomic GET→PATCH sequences in
@@ -474,8 +474,8 @@ Expected: clean.
 - [ ] **Step 9: Commit**
 
 ```bash
-git -C /Users/kpernyer/dev/reflective/runtime-runway add crates/runway-storage/src/remote/lease.rs
-git -C /Users/kpernyer/dev/reflective/runtime-runway commit -m "$(cat <<'EOF'
+git -C (reflective-root)/runtime-runway add crates/runway-storage/src/remote/lease.rs
+git -C (reflective-root)/runtime-runway commit -m "$(cat <<'EOF'
 fix(d5): FirestoreLeaseStore — atomic CAS via Firestore precondition writes
 
 Replaces the non-atomic GET→decide→PATCH sequence with conditional writes:
@@ -512,7 +512,7 @@ Adds a test that demonstrates the invariant the CAS fix enforces: N concurrent `
 - [ ] **Step 1: Check whether a `[[test]]` entry is needed**
 
 ```bash
-grep -n 'firestore_lease\|\[\[test\]\]' /Users/kpernyer/dev/reflective/runtime-runway/crates/runway-storage/Cargo.toml
+grep -n 'firestore_lease\|\[\[test\]\]' (reflective-root)/runtime-runway/crates/runway-storage/Cargo.toml
 ```
 If no `[[test]]` sections exist (Cargo discovers test files in `tests/` automatically), no Cargo.toml change is needed. If the file uses an explicit list, add the entry.
 
@@ -693,7 +693,7 @@ async fn concurrent_steal_of_expired_scope_has_exactly_one_winner() {
 - [ ] **Step 3: Check that `futures` is available as a dev-dependency**
 
 ```bash
-grep 'futures' /Users/kpernyer/dev/reflective/runtime-runway/crates/runway-storage/Cargo.toml
+grep 'futures' (reflective-root)/runtime-runway/crates/runway-storage/Cargo.toml
 ```
 If absent, add to `[dev-dependencies]`:
 ```toml
@@ -738,10 +738,10 @@ Expected: clean.
 - [ ] **Step 7: Commit**
 
 ```bash
-git -C /Users/kpernyer/dev/reflective/runtime-runway add \
+git -C (reflective-root)/runtime-runway add \
     crates/runway-storage/tests/firestore_lease_concurrent_test.rs \
     crates/runway-storage/Cargo.toml
-git -C /Users/kpernyer/dev/reflective/runtime-runway commit -m "$(cat <<'EOF'
+git -C (reflective-root)/runtime-runway commit -m "$(cat <<'EOF'
 test(d5): concurrent mutual-exclusion tests for FirestoreLeaseStore CAS
 
 Two emulator-gated tests (FIRESTORE_EMULATOR_HOST required):
