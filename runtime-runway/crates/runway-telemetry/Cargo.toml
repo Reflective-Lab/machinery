@@ -16,13 +16,12 @@ tracing = { workspace = true }
 tracing-opentelemetry = { workspace = true }
 tracing-subscriber = { workspace = true }
 
-# Optional: sentry. Default-on preserves existing behavior for consumers that
-# don't override; binaries that don't want the sentry-types coherence break
-# under rustc 1.96 (e.g., quorum-server while the ecosystem catches up) can
-# `default-features = false` and skip the sentry chain entirely.
+# Sentry is part of the Runtime Runway developer-support contract. Binaries
+# that must opt out temporarily can use `default-features = false`, but
+# production startup still fails when Sentry is unavailable or unconfigured.
 sentry = { workspace = true, optional = true }
 sentry-tracing = { version = "0.33", optional = true }
 
 [features]
-default = []
+default = ["sentry"]
 sentry = ["dep:sentry", "dep:sentry-tracing"]

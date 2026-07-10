@@ -187,8 +187,10 @@ GCP Secret Manager client. Secrets are named `{env}-{app}-{key}`. All values hel
 
 ### runway-telemetry
 
-OpenTelemetry → Cloud Trace (OTLP/HTTP), Sentry error tracking, JSON structured logging → Cloud Logging.
-Returns a `TelemetryGuard` that shuts down the tracer provider on drop.
+OpenTelemetry -> Cloud Trace or another OTLP backend, Sentry developer-support
+incidents, and JSON structured logging -> Cloud Logging. Sentry is default-on
+and required when `ENV=prod` or `ENV=production`. Returns a `TelemetryGuard`
+that shuts down the tracer provider on drop.
 
 ## Runtime Ownership
 

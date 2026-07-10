@@ -114,8 +114,16 @@ just api-freeze 3
 | `FIREBASE_API_KEY` | (from Wolfgang .env.production) | Token verification |
 | `GCS_BUCKET` | `wolfgang-kb-prod-runway-api` | Object store bucket |
 | `ROUTE_PREFIX` | `/api-server` | Mount path matching Firebase Hosting rewrite |
-| `OTLP_ENDPOINT` | (optional) | Cloud Trace OTLP endpoint |
-| `SENTRY_DSN` | (optional) | Sentry error tracking |
+| `ENV` | `prod` | Deployment environment; production requires Sentry |
+| `SENTRY_DSN` | Secret Manager value | Required in production for developer-support incidents |
+| `SENTRY_RELEASE` | release tag or commit SHA | Optional explicit Sentry release |
+| `OTEL_SERVICE_NAME` | service name | Optional override for OTel `service.name` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | backend base endpoint | Preferred OTLP base endpoint; `/v1/traces` is appended |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | backend trace endpoint | Exact OTLP traces endpoint when a backend requires it |
+| `OTEL_EXPORTER_OTLP_HEADERS` | secret headers | Optional OTLP auth/routing headers |
+| `OTEL_EXPORTER_OTLP_TRACES_HEADERS` | secret headers | Optional trace-specific OTLP headers |
+| `OTEL_RESOURCE_ATTRIBUTES` | key/value list | Optional extra OTel resource attributes |
+| `OTLP_ENDPOINT` | (legacy optional) | Compatibility alias for trace endpoint |
 
 ---
 

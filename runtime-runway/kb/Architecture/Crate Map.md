@@ -110,13 +110,13 @@ let key = secrets.get("firebase-api-key").await?;   // fetches + caches
 
 ### runway-telemetry
 
-OTel tracing → Cloud Trace (OTLP/HTTP), Sentry error tracking, JSON structured logs. Call once at `main()` top, hold the guard for process lifetime:
+OTel tracing -> Cloud Trace or any OTLP backend, Sentry error tracking, and JSON structured logs. Call once at `main()` top, hold the guard for process lifetime:
 
 ```rust
 let _guard = runway_telemetry::init(TelemetryConfig::from_env("api-server"))?;
 ```
 
-`TelemetryGuard` flushes spans and Sentry events on drop (clean shutdown).
+`TelemetryGuard` flushes spans and Sentry events on drop (clean shutdown). Sentry is default-on and required for production services. See [[Observability Contract]].
 
 ---
 
