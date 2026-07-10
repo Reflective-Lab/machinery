@@ -8,9 +8,9 @@ status: executed 2026-07-10 (git-tag interim; registry flip pending RFL-194)
 # Phase 2: Runtime-Runway Migration to Bedrock 4.0.0
 
 **Interim strategy:** Bedrock 4.0.0 is released on GitHub
-(`Reflective-Lab/bedrock-platform` tag `v4.0.0`) but not yet published to the
+(`Reflective-Lab/bedrock-platform` tag `v4.0.1`) but not yet published to the
 Shipyard registry (RFL-194). All Bedrock deps therefore use
-`git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0"`.
+`git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1"`.
 When Shipyard publishes, each line flips to
 `{ version = "4.0.0", registry = "reflective-labs" }` — nothing else changes.
 
@@ -33,7 +33,7 @@ copy.
 
 ### Live deps repointed (5 + 2 + 1)
 - `converge-core`, `converge-provider`, `converge-experience`,
-  `converge-optimization`, `converge-storage` → git+tag v4.0.0.
+  `converge-optimization`, `converge-storage` → git+tag v4.0.1.
 - `helm-module-contracts`, `helm-event-substrate` (runway-app-host,
   runway-storage): fragile `../../../../framework/bedrock` path deps → git+tag.
 - **New:** `manifold-adapters` (lib name `manifold`) — env-driven chat backend
@@ -86,8 +86,8 @@ agents, main, ui, evals, streaming, llm_backend).
 
 ## Registry flip (follow-up, gated on RFL-194)
 
-1. Replace every `git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0"`
-   with `version = "4.0.0", registry = "reflective-labs"` (workspace +
+1. Replace every `git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1"`
+   with `version = "4.0.1", registry = "reflective-labs"` (workspace +
    runway-app-host + runway-storage + commerce-rails transitive).
 2. Add registry config + credentials to `.cargo/config.toml` and CI.
 3. Keep `git-fetch-with-cli` (harmless; Shipyard is a git registry).

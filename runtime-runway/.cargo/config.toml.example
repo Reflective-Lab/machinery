@@ -1,6 +1,6 @@
 # Local Bedrock development: append this patch section to .cargo/config.toml
 # (which IS checked in — keep the [net] section) to build against a local
-# bedrock-platform checkout instead of the pinned v4.0.0 tag.
+# bedrock-platform checkout instead of the pinned release tag.
 # Adjust the path to your reflective monorepo layout.
 [patch."ssh://git@github.com/Reflective-Lab/bedrock-platform"]
 converge-core = { path = "../../framework/bedrock/foundation/converge/crates/core" }
