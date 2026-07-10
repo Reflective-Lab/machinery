@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-10
+
 ### Security
 - Removed absolute user paths (`/Users/kpernyer/...`) from tracked docs across all 4 sub-projects, replacing with `(reflective-root)` placeholder
 - Verified no secrets, API keys, or credentials are committed anywhere in the repo
 - Confirmed build reproduces cleanly from a fresh clone (Rust check + Bun typecheck + all 459 tests)
 
-## Linear Issue
+### Changed
+- Archived repositories (build-depot, runtime-runway, commerce-rails, chart-room) now private on GitHub
+- Bedrock v4.0.0 is now explicit prerequisite in CONTRIBUTING.md
+- Clarified CI/CD ownership (per-project workflows remain in place)
+
+## Linear Issues
 - [RFL-212](https://linear.app/reflective-labs/issue/RFL-212/machinery-v10-consolidate-4-separate-repos-into-unified-platform) — machinery v1.0 consolidation (DONE)
 
 ## [1.0.0] - 2026-07-10
