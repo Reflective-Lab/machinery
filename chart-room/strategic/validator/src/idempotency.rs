@@ -159,7 +159,8 @@ mod tests {
 
         // All characters should be lowercase hex
         assert!(
-            key.chars().all(|c| c.is_ascii_hexdigit() && !c.is_uppercase()),
+            key.chars()
+                .all(|c| c.is_ascii_hexdigit() && !c.is_uppercase()),
             "Key must be lowercase hex"
         );
     }

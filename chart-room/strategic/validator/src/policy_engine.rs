@@ -8,8 +8,8 @@
 //! - Validating policies against schemas
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Entities, EntityUid, PolicySet, Request, Schema, Validator,
-    ValidationMode,
+    Authorizer, Context, Decision, Entities, EntityUid, PolicySet, Request, Schema, ValidationMode,
+    Validator,
 };
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -38,7 +38,7 @@ pub struct AuthorityViolation {
 pub enum ViolationType {
     /// AUTH-03: Extended team cannot approve high-risk gates
     ExtendedOnHighRiskGate,
-    /// AUTH-02: Extended team not in gate's elevated_approvers
+    /// AUTH-02: Extended team not in gate's `elevated_approvers`
     ExtendedNotElevated,
     /// General authority insufficient
     InsufficientAuthority,
@@ -165,7 +165,10 @@ impl PolicyEngine {
     pub fn new(schema_path: &Path, policy_paths: &[PathBuf]) -> Result<Self, PolicyEngineError> {
         // Load schema
         let schema_src = std::fs::read_to_string(schema_path).map_err(|e| {
-            PolicyEngineError::SchemaLoadError(format!("Failed to read {}: {e}", schema_path.display()))
+            PolicyEngineError::SchemaLoadError(format!(
+                "Failed to read {}: {e}",
+                schema_path.display()
+            ))
         })?;
 
         let schema = Schema::from_str(&schema_src).map_err(|e| {
@@ -218,7 +221,7 @@ impl PolicyEngine {
             Err(e) => {
                 return AuthorizationResult::Error {
                     message: format!("Invalid principal UID: {e}"),
-                }
+                };
             }
         };
 
@@ -227,7 +230,7 @@ impl PolicyEngine {
             Err(e) => {
                 return AuthorizationResult::Error {
                     message: format!("Invalid action UID: {e}"),
-                }
+                };
             }
         };
 
@@ -236,7 +239,7 @@ impl PolicyEngine {
             Err(e) => {
                 return AuthorizationResult::Error {
                     message: format!("Invalid resource UID: {e}"),
-                }
+                };
             }
         };
 
@@ -249,8 +252,9 @@ impl PolicyEngine {
                 let expr = cedar_policy::RestrictedExpression::from_str(&format!("\"{v}\""))
                     .unwrap_or_else(|_| {
                         // Fallback: try as unquoted literal
-                        cedar_policy::RestrictedExpression::from_str(v)
-                            .unwrap_or_else(|_| cedar_policy::RestrictedExpression::from_str("\"\"").unwrap())
+                        cedar_policy::RestrictedExpression::from_str(v).unwrap_or_else(|_| {
+                            cedar_policy::RestrictedExpression::from_str("\"\"").unwrap()
+                        })
                     });
                 (k.clone(), expr)
             })
@@ -261,7 +265,7 @@ impl PolicyEngine {
             Err(e) => {
                 return AuthorizationResult::Error {
                     message: format!("Invalid context: {e}"),
-                }
+                };
             }
         };
 
@@ -271,7 +275,7 @@ impl PolicyEngine {
             Err(e) => {
                 return AuthorizationResult::Error {
                     message: format!("Failed to create request: {e}"),
-                }
+                };
             }
         };
 
@@ -301,13 +305,16 @@ impl PolicyEngine {
                 let policy_ids: Vec<String> = response
                     .diagnostics()
                     .reason()
-                    .map(|pid| pid.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect();
 
                 // Analyze denial to build structured violation
                 let missing_authority = analyze_denial(request, &policy_ids);
 
-                AuthorizationResult::Deny { reasons, missing_authority }
+                AuthorizationResult::Deny {
+                    reasons,
+                    missing_authority,
+                }
             }
         }
     }
@@ -326,10 +333,7 @@ impl PolicyEngine {
         if result.validation_passed() {
             Ok(())
         } else {
-            let errors: Vec<String> = result
-                .validation_errors()
-                .map(|e| format!("{e}"))
-                .collect();
+            let errors: Vec<String> = result.validation_errors().map(|e| format!("{e}")).collect();
             Err(errors)
         }
     }
@@ -346,16 +350,16 @@ fn analyze_denial(
 
     // Check if any policy ID indicates high-risk forbid
     // Policy IDs from authority-rules.cedar will contain identifiable patterns
-    let is_high_risk_forbid = policy_ids.iter().any(|pid| {
-        pid.contains("high") || pid.contains("forbid")
-    });
+    let is_high_risk_forbid = policy_ids
+        .iter()
+        .any(|pid| pid.contains("high") || pid.contains("forbid"));
 
     // Determine team from principal UID
     // If principal contains "Extended" or matches Extended patterns
     let principal_team = if request.principal.contains("Extended") {
         "Extended".to_string()
     } else {
-        "Core".to_string()  // Default assumption
+        "Core".to_string() // Default assumption
     };
 
     // Build violation based on available info
@@ -384,7 +388,7 @@ fn analyze_denial(
 pub fn extract_entity_id(uid: &str) -> Option<String> {
     // Find the quoted ID at the end: Type::"id"
     if let Some(start) = uid.rfind("::\"") {
-        let id_start = start + 3;  // Skip ::"
+        let id_start = start + 3; // Skip ::"
         if let Some(end) = uid[id_start..].find('"') {
             return Some(uid[id_start..id_start + end].to_string());
         }
@@ -504,10 +508,7 @@ mod tests {
             extract_entity_id("ConvergePersonas::Gate::\"production-deploy\""),
             Some("production-deploy".to_string())
         );
-        assert_eq!(
-            extract_entity_id("invalid-uid"),
-            None
-        );
+        assert_eq!(extract_entity_id("invalid-uid"), None);
     }
 
     #[test]

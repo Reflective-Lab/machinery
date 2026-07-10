@@ -126,6 +126,13 @@
       "status": "Enforced (via .github/workflows/doctor.yml; root-repo scope)",
       "tracked_by": "QF-2026-07-03-01",
       "enforcement": "Policy in `AGENTS.md > Shims, disabled tests, and conditional escapes are first-class debt` (2026-07-03); standard `KB/05-engineering/standards/first-class-shims.md`; mechanical check `just shim-doctor` (scripts/factory/shim-doctor.sh) wired into `just doctor` and `.github/workflows/doctor.yml`. Scope v1: root-repo tracked files; fleet rollout residual."
+    },
+    {
+      "id": "RP-DEP-CATALOG",
+      "property": "Each concern (HTTP, time, errors, async runtime, hashing, ...) resolves to exactly one blessed library at one version line across every project. No sprawl, no cross-project version drift.",
+      "enforcement": "Catalog at `build-depot/docs/operations/approved-libraries.md` names the blessed library per concern (answers sprawl). Per-workspace `cargo-deny` `[bans]` enforces locally; `commerce-rails/deny.toml` present (`multiple-versions = warn`), `runtime-runway/deny.toml` landed 2026-07-10 mirroring that shape (tracked by QF-2026-07-10-01). Cross-project drift detector in Build-Depot — parse each repo's `[workspace.dependencies]` + `package.json` against the catalog and flag off-catalog libraries or version divergence (e.g. `sha2` 0.11 vs 0.10) — is future work.",
+      "status": "Aspired (catalog authored + runtime-runway deny.toml landed; multiple-versions hardening to deny + cross-project detector pending)",
+      "tracked_by": "QF-2026-07-10-01"
     }
   ]
 }

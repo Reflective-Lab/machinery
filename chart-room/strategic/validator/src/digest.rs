@@ -202,18 +202,46 @@ impl DigestReport {
         // Summary
         md.push_str("## Summary\n\n");
         let total = self.summary.total_executions;
-        #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let pass_pct = if total > 0 { (self.summary.pass_count as f64 / total as f64 * 100.0) as usize } else { 0 };
-        #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let warn_pct = if total > 0 { (self.summary.warn_count as f64 / total as f64 * 100.0) as usize } else { 0 };
-        #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let stop_pct = if total > 0 { (self.summary.stop_count as f64 / total as f64 * 100.0) as usize } else { 0 };
+        #[allow(
+            clippy::cast_precision_loss,
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss
+        )]
+        let pass_pct = if total > 0 {
+            (self.summary.pass_count as f64 / total as f64 * 100.0) as usize
+        } else {
+            0
+        };
+        #[allow(
+            clippy::cast_precision_loss,
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss
+        )]
+        let warn_pct = if total > 0 {
+            (self.summary.warn_count as f64 / total as f64 * 100.0) as usize
+        } else {
+            0
+        };
+        #[allow(
+            clippy::cast_precision_loss,
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss
+        )]
+        let stop_pct = if total > 0 {
+            (self.summary.stop_count as f64 / total as f64 * 100.0) as usize
+        } else {
+            0
+        };
 
         let _ = writeln!(md, "- **Total gate executions:** {total}");
         let _ = writeln!(md, "- **PASS:** {} ({pass_pct}%)", self.summary.pass_count);
         let _ = writeln!(md, "- **WARN:** {} ({warn_pct}%)", self.summary.warn_count);
         let _ = writeln!(md, "- **STOP:** {} ({stop_pct}%)", self.summary.stop_count);
-        let _ = writeln!(md, "- **Acknowledgments:** {} ({:.1}%)", self.summary.ack_count, self.ack_rate);
+        let _ = writeln!(
+            md,
+            "- **Acknowledgments:** {} ({:.1}%)",
+            self.summary.ack_count, self.ack_rate
+        );
         md.push('\n');
 
         // Activity by Gate
@@ -224,7 +252,11 @@ impl DigestReport {
         let mut gates: Vec<_> = self.by_gate.iter().collect();
         gates.sort_by_key(|(gate_id, _)| *gate_id);
         for (gate_id, stats) in gates {
-            let _ = writeln!(md, "| {} | {} | {} | {} | {} |", gate_id, stats.total, stats.pass_count, stats.warn_count, stats.stop_count);
+            let _ = writeln!(
+                md,
+                "| {} | {} | {} | {} | {} |",
+                gate_id, stats.total, stats.pass_count, stats.warn_count, stats.stop_count
+            );
         }
         md.push('\n');
 
@@ -250,20 +282,50 @@ impl DigestReport {
         } else {
             for signature in &self.pressure_signatures {
                 let formatted = match signature {
-                    PressureSignature::WarnSpike { gate_id, count, threshold } => {
-                        format!("- WARN spike on gate `{gate_id}`: {count} warnings (threshold: {threshold})")
+                    PressureSignature::WarnSpike {
+                        gate_id,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- WARN spike on gate `{gate_id}`: {count} warnings (threshold: {threshold})"
+                        )
                     }
-                    PressureSignature::RepeatedTrigger { check_id, count, threshold } => {
-                        format!("- Repeated trigger `{check_id}`: {count} times (threshold: {threshold})")
+                    PressureSignature::RepeatedTrigger {
+                        check_id,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- Repeated trigger `{check_id}`: {count} times (threshold: {threshold})"
+                        )
                     }
-                    PressureSignature::OverrideUsed { gate_id, stop_checks } => {
-                        format!("- Override active on gate `{gate_id}`: bypassing {}", stop_checks.join(", "))
+                    PressureSignature::OverrideUsed {
+                        gate_id,
+                        stop_checks,
+                    } => {
+                        format!(
+                            "- Override active on gate `{gate_id}`: bypassing {}",
+                            stop_checks.join(", ")
+                        )
                     }
-                    PressureSignature::RepeatedAck { check_id, count, threshold } => {
-                        format!("- Repeated acknowledgment for `{check_id}`: {count} times (threshold: {threshold}) - may indicate unaddressed root cause")
+                    PressureSignature::RepeatedAck {
+                        check_id,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- Repeated acknowledgment for `{check_id}`: {count} times (threshold: {threshold}) - may indicate unaddressed root cause"
+                        )
                     }
-                    PressureSignature::RepeatedCounterVoice { voice, count, threshold } => {
-                        format!("- Counter-voice `{voice}` consulted {count} times (threshold: {threshold}) - may indicate recurring friction")
+                    PressureSignature::RepeatedCounterVoice {
+                        voice,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- Counter-voice `{voice}` consulted {count} times (threshold: {threshold}) - may indicate recurring friction"
+                        )
                     }
                 };
                 let _ = writeln!(md, "{formatted}");
@@ -280,16 +342,34 @@ impl DigestReport {
         } else {
             for red_flag in &self.red_flags {
                 let formatted = match red_flag {
-                    PressureSignature::OverrideUsed { gate_id, stop_checks } => {
-                        format!("- **OVERRIDE ACTIVE**: Gate `{gate_id}` bypassing institutional STOP checks: {} - Requires executive review", stop_checks.join(", "))
+                    PressureSignature::OverrideUsed {
+                        gate_id,
+                        stop_checks,
+                    } => {
+                        format!(
+                            "- **OVERRIDE ACTIVE**: Gate `{gate_id}` bypassing institutional STOP checks: {} - Requires executive review",
+                            stop_checks.join(", ")
+                        )
                     }
-                    PressureSignature::WarnSpike { gate_id, count, threshold } => {
-                        format!("- **SELL/SCALE PRESSURE**: Gate `{gate_id}` showing {count} warnings (threshold: {threshold}) - Promotional pressure overrunning deliberate gates")
+                    PressureSignature::WarnSpike {
+                        gate_id,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- **SELL/SCALE PRESSURE**: Gate `{gate_id}` showing {count} warnings (threshold: {threshold}) - Promotional pressure overrunning deliberate gates"
+                        )
                     }
-                    PressureSignature::RepeatedAck { check_id, count, threshold } => {
-                        format!("- **INSTITUTIONAL FRICTION**: Check `{check_id}` acknowledged {count} times (threshold: {threshold}) - Suggests unaddressed systemic issue")
+                    PressureSignature::RepeatedAck {
+                        check_id,
+                        count,
+                        threshold,
+                    } => {
+                        format!(
+                            "- **INSTITUTIONAL FRICTION**: Check `{check_id}` acknowledged {count} times (threshold: {threshold}) - Suggests unaddressed systemic issue"
+                        )
                     }
-                    _ => String::new()
+                    _ => String::new(),
                 };
                 if !formatted.is_empty() {
                     let _ = writeln!(md, "{formatted}");
@@ -578,22 +658,31 @@ fn is_institutional_overrun(
         PressureSignature::OverrideUsed { .. } => thresholds.override_always_flags,
 
         // High WARN spike on SELL/SCALE gates = promotional pressure
-        PressureSignature::WarnSpike { gate_id, count, threshold } => {
+        PressureSignature::WarnSpike {
+            gate_id,
+            count,
+            threshold,
+        } => {
             let is_sell_scale = config.sell_scale_gates.contains(gate_id);
             #[allow(clippy::cast_precision_loss)]
-            let exceeds_multiplier = *count as f64 > (*threshold as f64 * config.institutional_overrun_multiplier);
+            let exceeds_multiplier =
+                *count as f64 > (*threshold as f64 * config.institutional_overrun_multiplier);
             is_sell_scale && exceeds_multiplier
         }
 
         // Repeated acks indicate persistent institutional friction
-        PressureSignature::RepeatedAck { count, threshold, .. } => {
+        PressureSignature::RepeatedAck {
+            count, threshold, ..
+        } => {
             #[allow(clippy::cast_precision_loss)]
-            let exceeds = *count as f64 > (*threshold as f64 * config.institutional_overrun_multiplier);
+            let exceeds =
+                *count as f64 > (*threshold as f64 * config.institutional_overrun_multiplier);
             exceeds
         }
 
         // Other signatures are operational awareness, not red flags
-        PressureSignature::RepeatedTrigger { .. } | PressureSignature::RepeatedCounterVoice { .. } => false,
+        PressureSignature::RepeatedTrigger { .. }
+        | PressureSignature::RepeatedCounterVoice { .. } => false,
     }
 }
 
@@ -605,7 +694,10 @@ fn is_institutional_overrun(
 ///
 /// * `stats` - Aggregated digest statistics
 /// * `thresholds` - Active threshold profile
-pub fn detect_pressure_signatures(stats: &DigestStats, thresholds: &ProfileThresholds) -> Vec<PressureSignature> {
+pub fn detect_pressure_signatures(
+    stats: &DigestStats,
+    thresholds: &ProfileThresholds,
+) -> Vec<PressureSignature> {
     let mut signatures = Vec::new();
 
     // WARN spike detection
@@ -670,8 +762,12 @@ fn current_iso_week() -> String {
 }
 
 /// Compute top N triggers sorted by count descending
-fn compute_top_triggers(trigger_counts: &HashMap<String, usize>, limit: usize) -> Vec<(String, usize)> {
-    let mut triggers: Vec<_> = trigger_counts.iter()
+fn compute_top_triggers(
+    trigger_counts: &HashMap<String, usize>,
+    limit: usize,
+) -> Vec<(String, usize)> {
+    let mut triggers: Vec<_> = trigger_counts
+        .iter()
         .map(|(check_id, count)| (check_id.clone(), *count))
         .collect();
 

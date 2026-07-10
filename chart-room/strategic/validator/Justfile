@@ -1,0 +1,45 @@
+# strategy-validator — canonical factory gate surface.
+#
+# Rules and tooling are decided by Build-Depot (the factory control plane):
+#   machinery/build-depot/docs/operations/quality-gates.md
+#   machinery/build-depot/KB/05-engineering/standards/ci-parity.md   (RP-CI-PARITY)
+#   machinery/build-depot/docs/operations/approved-libraries.md      (RP-DEP-CATALOG)
+#
+# This project OWNS its local truth (its code, tests, deny.toml) but DEFERS to
+# Build-Depot for what the gates mean. `just ci` here must give the same verdict
+# as CI on the same commit.
+
+# Show available recipes
+default:
+    @just --list
+
+# Full local CI gate — canonical RP-CI-PARITY shape (fmt-check → check → lint → test)
+ci: fmt-check check lint test
+
+# Type-check without producing artifacts
+check:
+    cargo check --all-targets
+
+# Format check only (CI runs this)
+fmt-check:
+    cargo fmt --all -- --check
+
+# Format all files
+fmt:
+    cargo fmt --all
+
+# Clippy with all warnings denied
+lint:
+    cargo clippy --all-targets -- -D warnings
+
+# All tests (unit + integration + doc)
+test:
+    cargo test --all-targets
+
+# Supply-chain gate — advisories catch vulnerable versions BEFORE Dependabot;
+# bans enforce the RP-DEP-CATALOG blessed-library policy.
+security-audit:
+    cargo deny check advisories bans
+
+# Pre-publish / pre-merge gate
+delivery-preflight: ci

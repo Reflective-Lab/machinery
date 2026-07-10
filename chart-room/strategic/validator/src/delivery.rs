@@ -9,8 +9,8 @@
 //! - Error categorization (transient, permanent, timeout, TLS, auth)
 
 use std::env;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use backoff::Error as BackoffError;
@@ -21,7 +21,9 @@ use lettre::{Message, SmtpTransport, Transport};
 use tokio::task::spawn_blocking;
 
 use crate::metrics;
-use crate::reliability::{create_backoff, create_circuit_breaker, CircuitBreakerConfig, RetryConfig};
+use crate::reliability::{
+    CircuitBreakerConfig, RetryConfig, create_backoff, create_circuit_breaker,
+};
 
 /// Configuration errors
 #[derive(Debug)]
@@ -40,26 +42,42 @@ impl std::fmt::Display for ConfigError {
             Self::MissingEnvVar(var) => {
                 writeln!(f, "Missing required environment variable: {var}\n")?;
                 writeln!(f, "Configure SMTP settings:")?;
-                writeln!(f, "  SMTP_HOST         - Your SMTP provider (e.g., smtp.gmail.com)")?;
+                writeln!(
+                    f,
+                    "  SMTP_HOST         - Your SMTP provider (e.g., smtp.gmail.com)"
+                )?;
                 writeln!(f, "  SMTP_USERNAME     - SMTP username")?;
                 writeln!(f, "  SMTP_PASSWORD     - SMTP password or App Password")?;
                 writeln!(f, "  SMTP_FROM_ADDRESS - Sender email address")?;
                 writeln!(f)?;
                 writeln!(f, "Optional:")?;
                 writeln!(f, "  SMTP_PORT         - Port (default: 587)")?;
-                write!(f, "  SMTP_FROM_NAME    - Sender name (default: \"Strategy Validator\")")
+                write!(
+                    f,
+                    "  SMTP_FROM_NAME    - Sender name (default: \"Strategy Validator\")"
+                )
             }
             Self::MissingEnvVars(vars) => {
-                writeln!(f, "Missing required environment variables: {}\n", vars.join(", "))?;
+                writeln!(
+                    f,
+                    "Missing required environment variables: {}\n",
+                    vars.join(", ")
+                )?;
                 writeln!(f, "Configure SMTP settings:")?;
-                writeln!(f, "  SMTP_HOST         - Your SMTP provider (e.g., smtp.gmail.com)")?;
+                writeln!(
+                    f,
+                    "  SMTP_HOST         - Your SMTP provider (e.g., smtp.gmail.com)"
+                )?;
                 writeln!(f, "  SMTP_USERNAME     - SMTP username")?;
                 writeln!(f, "  SMTP_PASSWORD     - SMTP password or App Password")?;
                 writeln!(f, "  SMTP_FROM_ADDRESS - Sender email address")?;
                 writeln!(f)?;
                 writeln!(f, "Optional:")?;
                 writeln!(f, "  SMTP_PORT         - Port (default: 587)")?;
-                write!(f, "  SMTP_FROM_NAME    - Sender name (default: \"Strategy Validator\")")
+                write!(
+                    f,
+                    "  SMTP_FROM_NAME    - Sender name (default: \"Strategy Validator\")"
+                )
             }
             Self::InvalidPort => {
                 write!(f, "Invalid SMTP_PORT: must be a number between 1 and 65535")
@@ -137,11 +155,14 @@ impl SmtpConfig {
 
         // Load optional variables
         let port = match env::var("SMTP_PORT") {
-            Ok(port_str) => port_str.parse::<u16>().map_err(|_| ConfigError::InvalidPort)?,
+            Ok(port_str) => port_str
+                .parse::<u16>()
+                .map_err(|_| ConfigError::InvalidPort)?,
             Err(_) => 587,
         };
 
-        let from_name = env::var("SMTP_FROM_NAME").unwrap_or_else(|_| "Strategy Validator".to_string());
+        let from_name =
+            env::var("SMTP_FROM_NAME").unwrap_or_else(|_| "Strategy Validator".to_string());
 
         Ok(Self {
             host: host.expect("host checked above"),
@@ -222,7 +243,11 @@ impl std::fmt::Display for DeliveryError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Config(err) => write!(f, "Configuration error: {err}"),
-            Self::Smtp { message, category, is_retryable } => {
+            Self::Smtp {
+                message,
+                category,
+                is_retryable,
+            } => {
                 write!(f, "SMTP error ({category}): {message}")?;
                 if *is_retryable {
                     write!(f, " [retryable]")
@@ -341,12 +366,16 @@ pub async fn send_digest_email(
     // Parse sender mailbox
     let from_mailbox: Mailbox = format!("{} <{}>", config.from_name, config.from_address)
         .parse()
-        .map_err(|e: lettre::address::AddressError| DeliveryError::Message(format!("Invalid from address: {e}")))?;
+        .map_err(|e: lettre::address::AddressError| {
+            DeliveryError::Message(format!("Invalid from address: {e}"))
+        })?;
 
     // Parse recipient mailbox
     let to_mailbox: Mailbox = recipient
         .parse()
-        .map_err(|e: lettre::address::AddressError| DeliveryError::Message(format!("Invalid recipient address: {e}")))?;
+        .map_err(|e: lettre::address::AddressError| {
+            DeliveryError::Message(format!("Invalid recipient address: {e}"))
+        })?;
 
     // Create plain text version (markdown as-is)
     let plain_text = markdown_body.to_string();
@@ -593,14 +622,15 @@ impl DeliveryLogger {
     ) -> Result<(), rusqlite::Error> {
         let timestamp = chrono::Utc::now().timestamp();
 
-        let (error_message, error_category, smtp_code): (String, Option<&str>, Option<i32>) = match error {
-            DeliveryError::Smtp { message, category, .. } => {
-                (message.clone(), Some(category.as_str()), None)
-            }
-            DeliveryError::Config(e) => (e.to_string(), Some("config"), None),
-            DeliveryError::Message(e) => (e.clone(), Some("message"), None),
-            DeliveryError::Runtime(e) => (e.clone(), Some("runtime"), None),
-        };
+        let (error_message, error_category, smtp_code): (String, Option<&str>, Option<i32>) =
+            match error {
+                DeliveryError::Smtp {
+                    message, category, ..
+                } => (message.clone(), Some(category.as_str()), None),
+                DeliveryError::Config(e) => (e.to_string(), Some("config"), None),
+                DeliveryError::Message(e) => (e.clone(), Some("message"), None),
+                DeliveryError::Runtime(e) => (e.clone(), Some("runtime"), None),
+            };
 
         self.conn.execute(
             r"
@@ -699,9 +729,9 @@ impl DeliveryLogger {
         let timestamp = chrono::Utc::now().timestamp();
 
         let (error_message, error_category): (String, Option<&str>) = match error {
-            DeliveryError::Smtp { message, category, .. } => {
-                (message.clone(), Some(category.as_str()))
-            }
+            DeliveryError::Smtp {
+                message, category, ..
+            } => (message.clone(), Some(category.as_str())),
             DeliveryError::Config(e) => (e.to_string(), Some("config")),
             DeliveryError::Message(e) => (e.clone(), Some("message")),
             DeliveryError::Runtime(e) => (e.clone(), Some("runtime")),
@@ -1078,13 +1108,20 @@ mod tests {
         // Test with missing vars by checking result without setting them
         // This test assumes the test environment doesn't have these vars set
         // If they are set, the test will be skipped
-        if saved_host.is_some() || saved_username.is_some() || saved_password.is_some() || saved_from.is_some() {
+        if saved_host.is_some()
+            || saved_username.is_some()
+            || saved_password.is_some()
+            || saved_from.is_some()
+        {
             // Skip test if any env vars are already set
             return;
         }
 
         let result = SmtpConfig::from_env();
-        assert!(result.is_err(), "Expected SmtpConfig::from_env() to fail when env vars are missing");
+        assert!(
+            result.is_err(),
+            "Expected SmtpConfig::from_env() to fail when env vars are missing"
+        );
     }
 
     #[test]
@@ -1096,7 +1133,15 @@ mod tests {
         let logger = DeliveryLogger::new(db_path.to_str().unwrap()).unwrap();
 
         // Verify table exists by logging a success
-        logger.log_success("test@example.com", "Test Subject", "msg-123", "2026-05", Some("test-key")).unwrap();
+        logger
+            .log_success(
+                "test@example.com",
+                "Test Subject",
+                "msg-123",
+                "2026-05",
+                Some("test-key"),
+            )
+            .unwrap();
     }
 
     #[test]
@@ -1111,13 +1156,15 @@ mod tests {
         assert!(!logger.has_idempotency_key("key-123").unwrap());
 
         // Log success with idempotency key
-        logger.log_success(
-            "test@example.com",
-            "Test Subject",
-            "msg-123",
-            "2026-05",
-            Some("key-123")
-        ).unwrap();
+        logger
+            .log_success(
+                "test@example.com",
+                "Test Subject",
+                "msg-123",
+                "2026-05",
+                Some("key-123"),
+            )
+            .unwrap();
 
         // Now should exist
         assert!(logger.has_idempotency_key("key-123").unwrap());
@@ -1137,13 +1184,15 @@ mod tests {
         let error = DeliveryError::Message("Test error".to_string());
 
         // Log failure with idempotency key
-        logger.log_failure(
-            "test@example.com",
-            "Test Subject",
-            &error,
-            "2026-05",
-            Some("fail-key-123")
-        ).unwrap();
+        logger
+            .log_failure(
+                "test@example.com",
+                "Test Subject",
+                &error,
+                "2026-05",
+                Some("fail-key-123"),
+            )
+            .unwrap();
 
         // Should exist even for failures
         assert!(logger.has_idempotency_key("fail-key-123").unwrap());
@@ -1161,7 +1210,10 @@ mod tests {
 
     #[test]
     fn test_html_escape() {
-        assert_eq!(html_escape("<script>alert('xss')</script>"), "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;");
+        assert_eq!(
+            html_escape("<script>alert('xss')</script>"),
+            "&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;"
+        );
         assert_eq!(html_escape("a & b"), "a &amp; b");
     }
 
@@ -1174,31 +1226,37 @@ mod tests {
         let logger = DeliveryLogger::new(db_path.to_str().unwrap()).unwrap();
 
         // Log a quiet_hours decision
-        logger.log_routing_decision(
-            "test@example.com",
-            "2026-W05",
-            "quiet_hours",
-            "Suppressed during configured quiet hours (22:00-06:00)",
-            Some("key-quiet-123")
-        ).unwrap();
+        logger
+            .log_routing_decision(
+                "test@example.com",
+                "2026-W05",
+                "quiet_hours",
+                "Suppressed during configured quiet hours (22:00-06:00)",
+                Some("key-quiet-123"),
+            )
+            .unwrap();
 
         // Log a rate_limited decision
-        logger.log_routing_decision(
-            "test@example.com",
-            "2026-W05",
-            "rate_limited",
-            "Recipient exceeded 10 alerts/hour limit",
-            Some("key-rate-123")
-        ).unwrap();
+        logger
+            .log_routing_decision(
+                "test@example.com",
+                "2026-W05",
+                "rate_limited",
+                "Recipient exceeded 10 alerts/hour limit",
+                Some("key-rate-123"),
+            )
+            .unwrap();
 
         // Log a duplicate decision
-        logger.log_routing_decision(
-            "test@example.com",
-            "2026-W05",
-            "duplicate",
-            "Idempotency key already exists in delivery log",
-            Some("key-dup-123")
-        ).unwrap();
+        logger
+            .log_routing_decision(
+                "test@example.com",
+                "2026-W05",
+                "duplicate",
+                "Idempotency key already exists in delivery log",
+                Some("key-dup-123"),
+            )
+            .unwrap();
 
         // Verify all idempotency keys exist
         assert!(logger.has_idempotency_key("key-quiet-123").unwrap());
@@ -1221,15 +1279,17 @@ mod tests {
         };
 
         // Log a dead letter entry
-        logger.log_dead_letter(
-            "test@example.com",
-            "Weekly Digest",
-            "# Summary\nTest body content",
-            &error,
-            3,
-            "2026-W05",
-            Some("dlq-key-123"),
-        ).unwrap();
+        logger
+            .log_dead_letter(
+                "test@example.com",
+                "Weekly Digest",
+                "# Summary\nTest body content",
+                &error,
+                3,
+                "2026-W05",
+                Some("dlq-key-123"),
+            )
+            .unwrap();
 
         // Verify list_dead_letters returns it
         let entries = logger.list_dead_letters(24, 10).unwrap();
@@ -1259,23 +1319,27 @@ mod tests {
         let logger = DeliveryLogger::new(db_path.to_str().unwrap()).unwrap();
 
         // Log a "sent" entry
-        logger.log_success(
-            "sent@example.com",
-            "Test Sent",
-            "msg-123",
-            "2026-W05",
-            Some("sent-key-123"),
-        ).unwrap();
+        logger
+            .log_success(
+                "sent@example.com",
+                "Test Sent",
+                "msg-123",
+                "2026-W05",
+                Some("sent-key-123"),
+            )
+            .unwrap();
 
         // Log a "failed" entry
         let failed_error = DeliveryError::Message("Bad format".to_string());
-        logger.log_failure(
-            "failed@example.com",
-            "Test Failed",
-            &failed_error,
-            "2026-W05",
-            Some("failed-key-123"),
-        ).unwrap();
+        logger
+            .log_failure(
+                "failed@example.com",
+                "Test Failed",
+                &failed_error,
+                "2026-W05",
+                Some("failed-key-123"),
+            )
+            .unwrap();
 
         // Log two "dead_letter" entries with different error types
         let dlq_error_1 = DeliveryError::Smtp {
@@ -1283,30 +1347,34 @@ mod tests {
             category: ErrorCategory::Transient,
             is_retryable: true,
         };
-        logger.log_dead_letter(
-            "dlq1@example.com",
-            "Test DLQ 1",
-            "Body 1",
-            &dlq_error_1,
-            3,
-            "2026-W05",
-            Some("dlq-key-1"),
-        ).unwrap();
+        logger
+            .log_dead_letter(
+                "dlq1@example.com",
+                "Test DLQ 1",
+                "Body 1",
+                &dlq_error_1,
+                3,
+                "2026-W05",
+                Some("dlq-key-1"),
+            )
+            .unwrap();
 
         let dlq_error_2 = DeliveryError::Smtp {
             message: "Auth failed".to_string(),
             category: ErrorCategory::Auth,
             is_retryable: false,
         };
-        logger.log_dead_letter(
-            "dlq2@example.com",
-            "Test DLQ 2",
-            "Body 2",
-            &dlq_error_2,
-            5,
-            "2026-W05",
-            Some("dlq-key-2"),
-        ).unwrap();
+        logger
+            .log_dead_letter(
+                "dlq2@example.com",
+                "Test DLQ 2",
+                "Body 2",
+                &dlq_error_2,
+                5,
+                "2026-W05",
+                Some("dlq-key-2"),
+            )
+            .unwrap();
 
         // Verify list_dead_letters only returns dead_letter status
         let entries = logger.list_dead_letters(24, 10).unwrap();
@@ -1314,7 +1382,11 @@ mod tests {
 
         // Should not contain "sent" or "failed" entries
         for entry in &entries {
-            assert!(entry.recipient.starts_with("dlq"), "Expected only DLQ entries, got: {}", entry.recipient);
+            assert!(
+                entry.recipient.starts_with("dlq"),
+                "Expected only DLQ entries, got: {}",
+                entry.recipient
+            );
         }
 
         // Verify stats show correct unique error types
@@ -1346,16 +1418,20 @@ mod tests {
             db_path.to_str().unwrap(),
             RetryConfig::default(),
             CircuitBreakerConfig::default(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // Manually log a success with idempotency key
-        sender.logger().log_success(
-            "user@example.com",
-            "Weekly Digest",
-            "msg-abc",
-            "2026-W05",
-            Some("idem-key-123"),
-        ).unwrap();
+        sender
+            .logger()
+            .log_success(
+                "user@example.com",
+                "Weekly Digest",
+                "msg-abc",
+                "2026-W05",
+                Some("idem-key-123"),
+            )
+            .unwrap();
 
         // Create a runtime for the async test
         let rt = tokio::runtime::Runtime::new().unwrap();

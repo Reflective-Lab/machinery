@@ -164,29 +164,65 @@ enum FixtureType {
 #[derive(Debug, Clone)]
 #[allow(dead_code)] // All variants used by main binary
 pub enum SemanticError {
-    MissingPrimary { gate_id: String, missing_voice: String },
-    AckMissing { fixture_path: String },
-    AckNotReadable { ack_path: String, reason: String },
-    CounterVoiceMismatch { ack_path: String, actual: String, valid: Vec<String> },
-    AckWarningNotInResults { ack_path: String, check_id: String },
-    StopNotClassA { fixture_path: String },
+    MissingPrimary {
+        gate_id: String,
+        missing_voice: String,
+    },
+    AckMissing {
+        fixture_path: String,
+    },
+    AckNotReadable {
+        ack_path: String,
+        reason: String,
+    },
+    CounterVoiceMismatch {
+        ack_path: String,
+        actual: String,
+        valid: Vec<String>,
+    },
+    AckWarningNotInResults {
+        ack_path: String,
+        check_id: String,
+    },
+    StopNotClassA {
+        fixture_path: String,
+    },
 }
 
 impl std::fmt::Display for SemanticError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::MissingPrimary { gate_id, missing_voice } =>
-                write!(f, "E_VAL01_MISSING_PRIMARY: gate '{gate_id}' missing primary voice '{missing_voice}'"),
-            Self::AckMissing { fixture_path } =>
-                write!(f, "E_VAL02_ACK_MISSING: WARN outcome requires acknowledgment_ref in '{fixture_path}'"),
-            Self::AckNotReadable { ack_path, reason } =>
-                write!(f, "E_VAL02_ACK_MISSING: acknowledgment file not readable '{ack_path}': {reason}"),
-            Self::CounterVoiceMismatch { ack_path, actual, valid } =>
-                write!(f, "E_VAL02_COUNTER_VOICE_MISMATCH: '{ack_path}' consulted '{actual}', valid: {valid:?}"),
-            Self::AckWarningNotInResults { ack_path, check_id } =>
-                write!(f, "E_VAL02_ACK_MISSING: ack '{ack_path}' references '{check_id}' not found in lens_results"),
-            Self::StopNotClassA { fixture_path } =>
-                write!(f, "E_VAL03_STOP_NOT_CLASS_A: STOP outcome requires at least one Class A STOP finding in '{fixture_path}'"),
+            Self::MissingPrimary {
+                gate_id,
+                missing_voice,
+            } => write!(
+                f,
+                "E_VAL01_MISSING_PRIMARY: gate '{gate_id}' missing primary voice '{missing_voice}'"
+            ),
+            Self::AckMissing { fixture_path } => write!(
+                f,
+                "E_VAL02_ACK_MISSING: WARN outcome requires acknowledgment_ref in '{fixture_path}'"
+            ),
+            Self::AckNotReadable { ack_path, reason } => write!(
+                f,
+                "E_VAL02_ACK_MISSING: acknowledgment file not readable '{ack_path}': {reason}"
+            ),
+            Self::CounterVoiceMismatch {
+                ack_path,
+                actual,
+                valid,
+            } => write!(
+                f,
+                "E_VAL02_COUNTER_VOICE_MISMATCH: '{ack_path}' consulted '{actual}', valid: {valid:?}"
+            ),
+            Self::AckWarningNotInResults { ack_path, check_id } => write!(
+                f,
+                "E_VAL02_ACK_MISSING: ack '{ack_path}' references '{check_id}' not found in lens_results"
+            ),
+            Self::StopNotClassA { fixture_path } => write!(
+                f,
+                "E_VAL03_STOP_NOT_CLASS_A: STOP outcome requires at least one Class A STOP finding in '{fixture_path}'"
+            ),
         }
     }
 }
@@ -245,7 +281,11 @@ struct ValidationResult {
 pub fn load_lens_packs(config_dir: &Path) -> LensPacksConfig {
     let config_path = config_dir.join("lens_packs.yaml");
     let content = fs::read_to_string(&config_path).unwrap_or_else(|_| {
-        eprintln!("{} Lens packs config not found: {}", "Error:".red(), config_path.display());
+        eprintln!(
+            "{} Lens packs config not found: {}",
+            "Error:".red(),
+            config_path.display()
+        );
         std::process::exit(1);
     });
     serde_yaml::from_str(&content).unwrap_or_else(|e| {
@@ -290,7 +330,17 @@ fn main() {
             delivery_policy,
             acks_dir,
         }) => {
-            handle_digest(&fixtures_dir, &output_dir, week.as_ref(), config.as_ref(), deliver, recipients, &delivery_db, delivery_policy.as_ref(), &acks_dir);
+            handle_digest(
+                &fixtures_dir,
+                &output_dir,
+                week.as_ref(),
+                config.as_ref(),
+                deliver,
+                recipients,
+                &delivery_db,
+                delivery_policy.as_ref(),
+                &acks_dir,
+            );
         }
         Some(Commands::Ack {
             finding_id,
@@ -308,10 +358,7 @@ fn main() {
         }) => {
             handle_escalate(&finding_id, &notes, &output_dir, yes);
         }
-        Some(Commands::Assign {
-            finding_id,
-            owner,
-        }) => {
+        Some(Commands::Assign { finding_id, owner }) => {
             handle_assign(&finding_id, &owner);
         }
         Some(Commands::Audit {
@@ -340,15 +387,27 @@ fn handle_validate(
 
     // Normalize paths
     let schemas_dir = fs::canonicalize(&schemas_dir).unwrap_or_else(|_| {
-        eprintln!("{} Schemas directory not found: {}", "Error:".red(), schemas_dir.display());
+        eprintln!(
+            "{} Schemas directory not found: {}",
+            "Error:".red(),
+            schemas_dir.display()
+        );
         std::process::exit(1);
     });
     let fixtures_dir = fs::canonicalize(&fixtures_dir).unwrap_or_else(|_| {
-        eprintln!("{} Fixtures directory not found: {}", "Error:".red(), fixtures_dir.display());
+        eprintln!(
+            "{} Fixtures directory not found: {}",
+            "Error:".red(),
+            fixtures_dir.display()
+        );
         std::process::exit(1);
     });
     let config_dir = fs::canonicalize(&config_dir).unwrap_or_else(|_| {
-        eprintln!("{} Config directory not found: {}", "Error:".red(), config_dir.display());
+        eprintln!(
+            "{} Config directory not found: {}",
+            "Error:".red(),
+            config_dir.display()
+        );
         std::process::exit(1);
     });
 
@@ -377,7 +436,11 @@ fn handle_validate(
     for entry in WalkDir::new(&fixtures_dir)
         .into_iter()
         .filter_map(std::result::Result::ok)
-        .filter(|e| e.path().extension().is_some_and(|ext| ext == "yaml" || ext == "yml"))
+        .filter(|e| {
+            e.path()
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+        })
     {
         let path = entry.path();
         let relative_path = path.strip_prefix(&fixtures_dir).unwrap_or(path);
@@ -389,7 +452,13 @@ fn handle_validate(
             FixtureType::Override => &override_schema,
         };
 
-        let result = validate_fixture(path, compiled_schema, fixture_type, &fixtures_dir, &lens_packs);
+        let result = validate_fixture(
+            path,
+            compiled_schema,
+            fixture_type,
+            &fixtures_dir,
+            &lens_packs,
+        );
         results.push(result);
     }
 
@@ -410,7 +479,7 @@ fn handle_detect(
     fixtures: Option<PathBuf>,
     config: Option<PathBuf>,
 ) {
-    use strategy_validator::{detector, DetectorError, DetectorExitCode};
+    use strategy_validator::{DetectorError, DetectorExitCode, detector};
 
     // Resolve paths relative to binary or use provided paths
     let base_dir = std::env::current_dir().unwrap();
@@ -419,11 +488,19 @@ fn handle_detect(
 
     // Normalize paths
     let fixtures_dir = fs::canonicalize(&fixtures_dir).unwrap_or_else(|_| {
-        eprintln!("{} Fixtures directory not found: {}", "Error:".red(), fixtures_dir.display());
+        eprintln!(
+            "{} Fixtures directory not found: {}",
+            "Error:".red(),
+            fixtures_dir.display()
+        );
         std::process::exit(DetectorExitCode::ConfigError as i32);
     });
     let config_dir = fs::canonicalize(&config_dir).unwrap_or_else(|_| {
-        eprintln!("{} Config directory not found: {}", "Error:".red(), config_dir.display());
+        eprintln!(
+            "{} Config directory not found: {}",
+            "Error:".red(),
+            config_dir.display()
+        );
         std::process::exit(DetectorExitCode::ConfigError as i32);
     });
 
@@ -435,7 +512,11 @@ fn handle_detect(
     // Run detector
     match detector::run_detector(&fixtures_dir, &config_dir, output_dir, week) {
         Ok(report) => {
-            println!("{} Drift report generated for week {}", "Success:".green(), report.week);
+            println!(
+                "{} Drift report generated for week {}",
+                "Success:".green(),
+                report.week
+            );
             println!("  Total findings: {}", report.summary.total);
             println!("  Output: {}", output_dir.display());
 
@@ -453,7 +534,9 @@ fn handle_detect(
             // Determine exit code based on error type
             let exit_code = match e {
                 DetectorError::Config(_) => DetectorExitCode::ConfigError,
-                DetectorError::Io(_) | DetectorError::Git(_) | DetectorError::Serialization(_) => DetectorExitCode::IoError,
+                DetectorError::Io(_) | DetectorError::Git(_) | DetectorError::Serialization(_) => {
+                    DetectorExitCode::IoError
+                }
             };
             std::process::exit(exit_code as i32);
         }
@@ -462,7 +545,12 @@ fn handle_detect(
 
 /// Validate SMTP environment variables
 fn validate_smtp_env() -> Result<Vec<String>, Vec<String>> {
-    let required_vars = ["SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "SMTP_FROM_ADDRESS"];
+    let required_vars = [
+        "SMTP_HOST",
+        "SMTP_USERNAME",
+        "SMTP_PASSWORD",
+        "SMTP_FROM_ADDRESS",
+    ];
     let missing: Vec<String> = required_vars
         .iter()
         .filter(|var| std::env::var(var).is_err())
@@ -490,14 +578,19 @@ fn handle_digest(
     delivery_policy_path: Option<&PathBuf>,
     acks_dir: &Path,
 ) {
-    use strategy_validator::{digest, thresholds, routing, routing_config, idempotency, slack, sla};
-    use strategy_validator::reliability::{RetryConfig, CircuitBreakerConfig};
     use chrono::Timelike;
+    use strategy_validator::reliability::{CircuitBreakerConfig, RetryConfig};
+    use strategy_validator::{
+        digest, idempotency, routing, routing_config, sla, slack, thresholds,
+    };
 
     // If deliver is true, validate SMTP env vars before generation
     if deliver {
         if let Err(missing) = validate_smtp_env() {
-            eprintln!("{} Missing required SMTP environment variables:", "Error:".red());
+            eprintln!(
+                "{} Missing required SMTP environment variables:",
+                "Error:".red()
+            );
             for var in &missing {
                 eprintln!("  - {var}");
             }
@@ -517,7 +610,11 @@ fn handle_digest(
 
     // Normalize fixtures path
     let fixtures_dir = std::fs::canonicalize(fixtures_dir).unwrap_or_else(|_| {
-        eprintln!("{} Fixtures directory not found: {}", "Error:".red(), fixtures_dir.display());
+        eprintln!(
+            "{} Fixtures directory not found: {}",
+            "Error:".red(),
+            fixtures_dir.display()
+        );
         std::process::exit(2);
     });
 
@@ -533,15 +630,28 @@ fn handle_digest(
     println!();
 
     // Run digest
-    match digest::run_digest(&fixtures_dir, output_dir, week.cloned(), active_thresholds, &threshold_config.red_flags) {
+    match digest::run_digest(
+        &fixtures_dir,
+        output_dir,
+        week.cloned(),
+        active_thresholds,
+        &threshold_config.red_flags,
+    ) {
         Ok(report) => {
-            println!("{} Weekly digest generated for week {}", "Success:".green(), report.week);
+            println!(
+                "{} Weekly digest generated for week {}",
+                "Success:".green(),
+                report.week
+            );
             println!("  Total executions: {}", report.summary.total_executions);
-            println!("  PASS: {}, WARN: {}, STOP: {}",
-                report.summary.pass_count,
-                report.summary.warn_count,
-                report.summary.stop_count);
-            println!("  Pressure signatures: {}", report.pressure_signatures.len());
+            println!(
+                "  PASS: {}, WARN: {}, STOP: {}",
+                report.summary.pass_count, report.summary.warn_count, report.summary.stop_count
+            );
+            println!(
+                "  Pressure signatures: {}",
+                report.pressure_signatures.len()
+            );
             println!("  Red flags: {}", report.red_flags.len());
 
             // Detect SLA breaches
@@ -578,9 +688,15 @@ fn handle_digest(
                         Ok(policy) => {
                             println!("Loaded delivery policy: {}", policy_path.display());
                             println!("  Routing rules: {}", policy.routing_rules.len());
-                            println!("  Rate limit: {} alerts/hour", policy.rate_limiting.max_alerts_per_hour);
+                            println!(
+                                "  Rate limit: {} alerts/hour",
+                                policy.rate_limiting.max_alerts_per_hour
+                            );
                             if let Some(ref qh) = policy.quiet_hours {
-                                println!("  Quiet hours: {:02}:00-{:02}:00 ({})", qh.start_hour, qh.end_hour, qh.timezone);
+                                println!(
+                                    "  Quiet hours: {:02}:00-{:02}:00 ({})",
+                                    qh.start_hour, qh.end_hour, qh.timezone
+                                );
                             }
                             println!();
                             Some(policy)
@@ -607,7 +723,12 @@ fn handle_digest(
                 if let Some(ref policy) = delivery_policy {
                     if let Some(ref qh) = policy.quiet_hours {
                         if routing::is_quiet_hours(current_hour, qh.start_hour, qh.end_hour) {
-                            println!("{} Currently in quiet hours ({:02}:00-{:02}:00)", "⏸".yellow(), qh.start_hour, qh.end_hour);
+                            println!(
+                                "{} Currently in quiet hours ({:02}:00-{:02}:00)",
+                                "⏸".yellow(),
+                                qh.start_hour,
+                                qh.end_hour
+                            );
                             println!("Delivery suppressed for non-critical alerts");
                             println!();
                         }
@@ -618,9 +739,15 @@ fn handle_digest(
                 let mut recipient_list: Vec<String> = if recipients.is_empty() {
                     // Try to read from SMTP_RECIPIENTS env var
                     if let Ok(env_recipients) = std::env::var("SMTP_RECIPIENTS") {
-                        env_recipients.split(',').map(|s| s.trim().to_string()).collect()
+                        env_recipients
+                            .split(',')
+                            .map(|s| s.trim().to_string())
+                            .collect()
                     } else {
-                        eprintln!("{} No recipients specified. Use --recipients or set SMTP_RECIPIENTS environment variable.", "Error:".red());
+                        eprintln!(
+                            "{} No recipients specified. Use --recipients or set SMTP_RECIPIENTS environment variable.",
+                            "Error:".red()
+                        );
                         std::process::exit(2);
                     }
                 } else {
@@ -643,7 +770,9 @@ fn handle_digest(
                 }
 
                 // Create delivery logger
-                let logger = match strategy_validator::delivery::DeliveryLogger::new(delivery_db.to_str().unwrap()) {
+                let logger = match strategy_validator::delivery::DeliveryLogger::new(
+                    delivery_db.to_str().unwrap(),
+                ) {
                     Ok(l) => l,
                     Err(e) => {
                         eprintln!("{} Failed to create delivery logger: {}", "Error:".red(), e);
@@ -687,7 +816,10 @@ fn handle_digest(
                     );
 
                     // Check for duplicate
-                    if logger.has_idempotency_key(&idempotency_key).unwrap_or(false) {
+                    if logger
+                        .has_idempotency_key(&idempotency_key)
+                        .unwrap_or(false)
+                    {
                         println!("{} Skipping {} (duplicate)", "⊘".yellow(), recipient);
                         duplicate_count += 1;
                         continue;
@@ -703,7 +835,9 @@ fn handle_digest(
                     // Check quiet hours (skip for critical)
                     if let Some(ref policy) = delivery_policy {
                         if let Some(ref qh) = policy.quiet_hours {
-                            if severity != "STOP" && routing::is_quiet_hours(current_hour, qh.start_hour, qh.end_hour) {
+                            if severity != "STOP"
+                                && routing::is_quiet_hours(current_hour, qh.start_hour, qh.end_hour)
+                            {
                                 println!("{} Skipping {} (quiet hours)", "⏸".yellow(), recipient);
                                 quiet_hours_count += 1;
                                 continue;
@@ -720,7 +854,12 @@ fn handle_digest(
 
                     match result {
                         Ok(message_id) => {
-                            println!("{} Sent to {} (message_id: {})", "✓".green(), recipient, message_id);
+                            println!(
+                                "{} Sent to {} (message_id: {})",
+                                "✓".green(),
+                                recipient,
+                                message_id
+                            );
                             success_count += 1;
                         }
                         Err(e) => {
@@ -772,7 +911,12 @@ fn handle_digest(
                             // Find Slack channel from routing
                             // Use first gate_id from report for routing lookup
                             if let Some(gate_id) = report.by_gate.keys().next() {
-                                if let Some(channel) = routing::find_slack_channel(policy, gate_id, Some(severity), None) {
+                                if let Some(channel) = routing::find_slack_channel(
+                                    policy,
+                                    gate_id,
+                                    Some(severity),
+                                    None,
+                                ) {
                                     // Generate idempotency key for Slack
                                     let slack_idemp_key = idempotency::generate_idempotency_key(
                                         gate_id,
@@ -800,7 +944,8 @@ fn handle_digest(
                                                 report.red_flags.len()
                                             );
 
-                                            let finding_id = format!("digest-{}-{}", report.week, gate_id);
+                                            let finding_id =
+                                                format!("digest-{}-{}", report.week, gate_id);
 
                                             let send_result = rt.block_on(sender.send(
                                                 &channel,
@@ -815,22 +960,38 @@ fn handle_digest(
 
                                             match send_result {
                                                 Ok(()) => {
-                                                    println!("{} Sent Slack alert to {}", "✓".green(), channel);
+                                                    println!(
+                                                        "{} Sent Slack alert to {}",
+                                                        "✓".green(),
+                                                        channel
+                                                    );
                                                     slack_success += 1;
                                                 }
                                                 Err(e) => {
-                                                    eprintln!("{} Slack alert failed: {}", "✗".red(), e);
+                                                    eprintln!(
+                                                        "{} Slack alert failed: {}",
+                                                        "✗".red(),
+                                                        e
+                                                    );
                                                     slack_failure += 1;
                                                 }
                                             }
                                         }
                                         Err(e) => {
-                                            eprintln!("{} Failed to create Slack sender: {}", "✗".red(), e);
+                                            eprintln!(
+                                                "{} Failed to create Slack sender: {}",
+                                                "✗".red(),
+                                                e
+                                            );
                                             slack_failure += 1;
                                         }
                                     }
                                 } else {
-                                    println!("{} No Slack channel configured for gate {}", "⊘".yellow(), gate_id);
+                                    println!(
+                                        "{} No Slack channel configured for gate {}",
+                                        "⊘".yellow(),
+                                        gate_id
+                                    );
                                     slack_skipped += 1;
                                 }
                             }
@@ -883,7 +1044,13 @@ async fn send_digest_to_recipient(
     match delivery::send_digest_email(&config, recipient, &subject, &body).await {
         Ok(message_id) => {
             // Log success
-            let _ = logger.log_success(recipient, &subject, &message_id, &report.week, idempotency_key);
+            let _ = logger.log_success(
+                recipient,
+                &subject,
+                &message_id,
+                &report.week,
+                idempotency_key,
+            );
             Ok(message_id)
         }
         Err(e) => {
@@ -984,7 +1151,7 @@ fn handle_audit(
     week: Option<String>,
     acks_dir: &Path,
 ) {
-    use strategy_validator::audit::{query_acks, format_audit_table, AuditFilter};
+    use strategy_validator::audit::{AuditFilter, format_audit_table, query_acks};
 
     let filter = AuditFilter {
         finding_id: finding,
@@ -1007,17 +1174,29 @@ fn handle_audit(
 fn load_schema(schemas_dir: &Path, name: &str) -> JSONSchema {
     let schema_path = schemas_dir.join(format!("{name}.schema.json"));
     let schema_content = fs::read_to_string(&schema_path).unwrap_or_else(|_| {
-        eprintln!("{} Failed to read schema: {}", "Error:".red(), schema_path.display());
+        eprintln!(
+            "{} Failed to read schema: {}",
+            "Error:".red(),
+            schema_path.display()
+        );
         std::process::exit(1);
     });
 
     let schema_json: Value = serde_json::from_str(&schema_content).unwrap_or_else(|e| {
-        eprintln!("{} Invalid JSON in schema {}: {e}", "Error:".red(), schema_path.display());
+        eprintln!(
+            "{} Invalid JSON in schema {}: {e}",
+            "Error:".red(),
+            schema_path.display()
+        );
         std::process::exit(1);
     });
 
     JSONSchema::compile(&schema_json).unwrap_or_else(|e| {
-        eprintln!("{} Invalid schema {}: {e}", "Error:".red(), schema_path.display());
+        eprintln!(
+            "{} Invalid schema {}: {e}",
+            "Error:".red(),
+            schema_path.display()
+        );
         std::process::exit(1);
     })
 }
@@ -1059,8 +1238,11 @@ fn validate_semantic(
 
     // VAL-01: Primaries present
     if let Some(gate_config) = lens_packs.gates.get(&execution.gate_id) {
-        let voices_present: std::collections::HashSet<_> =
-            execution.lens_results.iter().map(|r| r.voice.as_str()).collect();
+        let voices_present: std::collections::HashSet<_> = execution
+            .lens_results
+            .iter()
+            .map(|r| r.voice.as_str())
+            .collect();
 
         for primary in &gate_config.primary_voices {
             if !voices_present.contains(primary.as_str()) {
@@ -1076,7 +1258,9 @@ fn validate_semantic(
     if execution.decision.outcome == "WARN" {
         match &execution.acknowledgment_ref {
             None => {
-                errors.push(SemanticError::AckMissing { fixture_path: path_str.clone() });
+                errors.push(SemanticError::AckMissing {
+                    fixture_path: path_str.clone(),
+                });
             }
             Some(ack_ref) => {
                 // Resolve ack path relative to fixture's directory
@@ -1094,7 +1278,10 @@ fn validate_semantic(
                         if let Ok(ack) = serde_yaml::from_str::<Acknowledgment>(&ack_content) {
                             // Check counter-voice validity
                             if let Some(gate_config) = lens_packs.gates.get(&execution.gate_id) {
-                                if !gate_config.counter_voices.contains(&ack.counter_voice_consulted.voice) {
+                                if !gate_config
+                                    .counter_voices
+                                    .contains(&ack.counter_voice_consulted.voice)
+                                {
                                     errors.push(SemanticError::CounterVoiceMismatch {
                                         ack_path: ack_path.display().to_string(),
                                         actual: ack.counter_voice_consulted.voice.clone(),
@@ -1104,11 +1291,12 @@ fn validate_semantic(
                             }
 
                             // Check ack references warnings that exist in lens_results
-                            let result_check_ids: std::collections::HashSet<_> =
-                                execution.lens_results.iter()
-                                    .filter(|r| r.severity == "WARN")
-                                    .map(|r| r.check_id.as_str())
-                                    .collect();
+                            let result_check_ids: std::collections::HashSet<_> = execution
+                                .lens_results
+                                .iter()
+                                .filter(|r| r.severity == "WARN")
+                                .map(|r| r.check_id.as_str())
+                                .collect();
 
                             for accepted in &ack.warnings_accepted {
                                 if !result_check_ids.contains(accepted.check_id.as_str()) {
@@ -1127,11 +1315,15 @@ fn validate_semantic(
 
     // VAL-03: STOP only from Class A
     if execution.decision.outcome == "STOP" {
-        let has_class_a_stop = execution.lens_results.iter()
+        let has_class_a_stop = execution
+            .lens_results
+            .iter()
             .any(|r| r.severity == "STOP" && r.class == "A");
 
         if !has_class_a_stop {
-            errors.push(SemanticError::StopNotClassA { fixture_path: path_str });
+            errors.push(SemanticError::StopNotClassA {
+                fixture_path: path_str,
+            });
         }
     }
 
@@ -1192,18 +1384,16 @@ fn validate_fixture(
 
     let schema_errors: Vec<String> = match validation_result {
         Ok(()) => vec![],
-        Err(errors) => {
-            errors
-                .map(|e| {
-                    let path = e.instance_path.to_string();
-                    if path.is_empty() {
-                        e.to_string()
-                    } else {
-                        format!("{path}: {e}")
-                    }
-                })
-                .collect()
-        }
+        Err(errors) => errors
+            .map(|e| {
+                let path = e.instance_path.to_string();
+                if path.is_empty() {
+                    e.to_string()
+                } else {
+                    format!("{path}: {e}")
+                }
+            })
+            .collect(),
     };
 
     // Run semantic validation if schema validation passed
@@ -1302,7 +1492,10 @@ fn print_result(result: &ValidationResult, base_dir: &Path, verbose: bool) {
             }
         }
         if !verbose && result.semantic_errors.len() > 3 {
-            println!("  {} more semantic errors...", result.semantic_errors.len() - 3);
+            println!(
+                "  {} more semantic errors...",
+                result.semantic_errors.len() - 3
+            );
         }
     }
 }
@@ -1326,8 +1519,11 @@ pub fn validate_semantic_str(
 
     // VAL-01: Primaries present
     if let Some(gate_config) = lens_packs.gates.get(&execution.gate_id) {
-        let voices_present: std::collections::HashSet<_> =
-            execution.lens_results.iter().map(|r| r.voice.as_str()).collect();
+        let voices_present: std::collections::HashSet<_> = execution
+            .lens_results
+            .iter()
+            .map(|r| r.voice.as_str())
+            .collect();
 
         for primary in &gate_config.primary_voices {
             if !voices_present.contains(primary.as_str()) {
@@ -1348,7 +1544,9 @@ pub fn validate_semantic_str(
 
     // VAL-03: STOP only from Class A
     if execution.decision.outcome == "STOP" {
-        let has_class_a_stop = execution.lens_results.iter()
+        let has_class_a_stop = execution
+            .lens_results
+            .iter()
             .any(|r| r.severity == "STOP" && r.class == "A");
 
         if !has_class_a_stop {

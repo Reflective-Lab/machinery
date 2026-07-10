@@ -9,11 +9,27 @@ use std::num::NonZeroU32;
 use std::sync::Mutex;
 
 /// Type alias for rate limiter with recipient keys
-pub type KeyedRateLimiter = HashMap<String, RateLimiter<governor::state::direct::NotKeyed, governor::state::InMemoryState, governor::clock::DefaultClock>>;
+pub type KeyedRateLimiter = HashMap<
+    String,
+    RateLimiter<
+        governor::state::direct::NotKeyed,
+        governor::state::InMemoryState,
+        governor::clock::DefaultClock,
+    >,
+>;
 
 /// Alert throttler with per-recipient rate limiting
 pub struct AlertThrottler {
-    limiters: Mutex<HashMap<String, RateLimiter<governor::state::direct::NotKeyed, governor::state::InMemoryState, governor::clock::DefaultClock>>>,
+    limiters: Mutex<
+        HashMap<
+            String,
+            RateLimiter<
+                governor::state::direct::NotKeyed,
+                governor::state::InMemoryState,
+                governor::clock::DefaultClock,
+            >,
+        >,
+    >,
     max_per_hour: u32,
 }
 
@@ -286,7 +302,8 @@ pub fn should_deliver(
 
     // Check quiet hours (skip for critical severity)
     if let Some(ref qh) = policy.quiet_hours {
-        if severity != Some("critical") && is_quiet_hours(current_hour, qh.start_hour, qh.end_hour) {
+        if severity != Some("critical") && is_quiet_hours(current_hour, qh.start_hour, qh.end_hour)
+        {
             return DeliveryDecision::SuppressedQuietHours;
         }
     }
@@ -358,9 +375,13 @@ mod tests {
                     slack_channel: None,
                 },
             ],
-            gate_acknowledgments: Some(HashMap::from([
-                ("G_PROMOTE_03".to_string(), vec!["security-team@example.com".to_string(), "compliance@example.com".to_string()]),
-            ])),
+            gate_acknowledgments: Some(HashMap::from([(
+                "G_PROMOTE_03".to_string(),
+                vec![
+                    "security-team@example.com".to_string(),
+                    "compliance@example.com".to_string(),
+                ],
+            )])),
         }
     }
 
@@ -444,48 +465,28 @@ mod tests {
     #[test]
     fn test_find_recipients_exact_match() {
         let policy = create_test_policy();
-        let recipients = find_recipients(
-            &policy,
-            "G_PROMOTE_01",
-            Some("critical"),
-            Some("D_AUTH"),
-        );
+        let recipients = find_recipients(&policy, "G_PROMOTE_01", Some("critical"), Some("D_AUTH"));
         assert_eq!(recipients, vec!["exact@example.com"]);
     }
 
     #[test]
     fn test_find_recipients_partial_match() {
         let policy = create_test_policy();
-        let recipients = find_recipients(
-            &policy,
-            "G_PROMOTE_01",
-            Some("high"),
-            None,
-        );
+        let recipients = find_recipients(&policy, "G_PROMOTE_01", Some("high"), None);
         assert_eq!(recipients, vec!["partial@example.com"]);
     }
 
     #[test]
     fn test_find_recipients_fallback_match() {
         let policy = create_test_policy();
-        let recipients = find_recipients(
-            &policy,
-            "G_PROMOTE_01",
-            None,
-            None,
-        );
+        let recipients = find_recipients(&policy, "G_PROMOTE_01", None, None);
         assert_eq!(recipients, vec!["fallback@example.com"]);
     }
 
     #[test]
     fn test_find_recipients_no_match() {
         let policy = create_test_policy();
-        let recipients = find_recipients(
-            &policy,
-            "G_NONEXISTENT",
-            None,
-            None,
-        );
+        let recipients = find_recipients(&policy, "G_NONEXISTENT", None, None);
         assert!(recipients.is_empty());
     }
 
@@ -507,7 +508,10 @@ mod tests {
     fn test_get_gate_acknowledgments() {
         let policy = create_test_policy();
         let acks = get_gate_acknowledgments(&policy, "G_PROMOTE_03");
-        assert_eq!(acks, vec!["security-team@example.com", "compliance@example.com"]);
+        assert_eq!(
+            acks,
+            vec!["security-team@example.com", "compliance@example.com"]
+        );
     }
 
     #[test]
@@ -663,36 +667,21 @@ mod tests {
     #[test]
     fn test_find_slack_channel_exact_match() {
         let policy = create_test_policy_with_slack();
-        let channel = find_slack_channel(
-            &policy,
-            "G_PROMOTE_01",
-            Some("critical"),
-            Some("D_AUTH"),
-        );
+        let channel = find_slack_channel(&policy, "G_PROMOTE_01", Some("critical"), Some("D_AUTH"));
         assert_eq!(channel, Some("#security-critical".to_string()));
     }
 
     #[test]
     fn test_find_slack_channel_partial_match() {
         let policy = create_test_policy_with_slack();
-        let channel = find_slack_channel(
-            &policy,
-            "G_PROMOTE_01",
-            Some("high"),
-            None,
-        );
+        let channel = find_slack_channel(&policy, "G_PROMOTE_01", Some("high"), None);
         assert_eq!(channel, Some("#security-high".to_string()));
     }
 
     #[test]
     fn test_find_slack_channel_fallback() {
         let policy = create_test_policy_with_slack();
-        let channel = find_slack_channel(
-            &policy,
-            "G_PROMOTE_01",
-            None,
-            None,
-        );
+        let channel = find_slack_channel(&policy, "G_PROMOTE_01", None, None);
         assert_eq!(channel, Some("#security-default".to_string()));
     }
 
@@ -700,24 +689,14 @@ mod tests {
     fn test_find_slack_channel_none_configured() {
         let policy = create_test_policy_with_slack();
         // G_PROMOTE_02 has no slack_channel configured
-        let channel = find_slack_channel(
-            &policy,
-            "G_PROMOTE_02",
-            None,
-            None,
-        );
+        let channel = find_slack_channel(&policy, "G_PROMOTE_02", None, None);
         assert_eq!(channel, None);
     }
 
     #[test]
     fn test_find_slack_channel_no_match() {
         let policy = create_test_policy_with_slack();
-        let channel = find_slack_channel(
-            &policy,
-            "G_NONEXISTENT",
-            None,
-            None,
-        );
+        let channel = find_slack_channel(&policy, "G_NONEXISTENT", None, None);
         assert_eq!(channel, None);
     }
 
@@ -725,12 +704,7 @@ mod tests {
     fn test_find_slack_channel_original_policy_no_slack() {
         // Test with original policy that has no Slack channels configured
         let policy = create_test_policy();
-        let channel = find_slack_channel(
-            &policy,
-            "G_PROMOTE_01",
-            Some("critical"),
-            Some("D_AUTH"),
-        );
+        let channel = find_slack_channel(&policy, "G_PROMOTE_01", Some("critical"), Some("D_AUTH"));
         assert_eq!(channel, None);
     }
 }

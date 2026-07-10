@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::fingerprint::{fingerprint_repo, ArtifactFingerprint};
+use crate::fingerprint::{ArtifactFingerprint, fingerprint_repo};
 
 /// Drift codes from DRIFT.md taxonomy (stable identifiers)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -136,7 +136,13 @@ impl DriftReport {
             md.push_str("No drift detected.\n\n");
         } else {
             for (i, finding) in self.findings.iter().enumerate() {
-                let _ = writeln!(md, "### {}. {} ({:?})\n", i + 1, finding.code, finding.severity);
+                let _ = writeln!(
+                    md,
+                    "### {}. {} ({:?})\n",
+                    i + 1,
+                    finding.code,
+                    finding.severity
+                );
                 let _ = writeln!(md, "**Artifact:** `{}`\n", finding.artifact_path.display());
                 if let Some(commit) = &finding.commit_hash {
                     let _ = writeln!(md, "**Commit:** `{commit}`");
@@ -255,10 +261,7 @@ fn build_summary(findings: &[DriftFinding]) -> DriftSummary {
 ///
 /// In v4.1, we focus on `D_SPEC` detection via schema validation.
 /// Other drift types (`D_FIX`, `D_NARR`, `D_AUTH`, `D_OPS`) can be added incrementally.
-fn detect_spec_drift(
-    _fixtures_dir: &Path,
-    _config_dir: &Path,
-) -> Vec<DriftFinding> {
+fn detect_spec_drift(_fixtures_dir: &Path, _config_dir: &Path) -> Vec<DriftFinding> {
     // In v4.1 initial implementation, we return empty findings
     // This is a placeholder for actual validation-based drift detection
     // which would reuse the validation logic from main.rs

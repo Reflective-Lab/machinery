@@ -76,11 +76,21 @@ pub struct ProfileThresholds {
     pub override_always_flags: bool,
 }
 
-fn default_warn_spike_balanced() -> usize { 3 }
-fn default_repeated_trigger() -> usize { 2 }
-fn default_repeated_ack() -> usize { 2 }
-fn default_repeated_counter_voice() -> usize { 2 }
-fn default_override_always_flags() -> bool { true }
+fn default_warn_spike_balanced() -> usize {
+    3
+}
+fn default_repeated_trigger() -> usize {
+    2
+}
+fn default_repeated_ack() -> usize {
+    2
+}
+fn default_repeated_counter_voice() -> usize {
+    2
+}
+fn default_override_always_flags() -> bool {
+    true
+}
 
 impl Default for ProfileThresholds {
     fn default() -> Self {
@@ -130,7 +140,9 @@ pub struct RedFlagConfig {
     pub sell_scale_gates: Vec<String>,
 }
 
-fn default_institutional_overrun_multiplier() -> f64 { 2.0 }
+fn default_institutional_overrun_multiplier() -> f64 {
+    2.0
+}
 
 fn default_sell_scale_gates() -> Vec<String> {
     vec![
@@ -157,22 +169,20 @@ impl Default for RedFlagConfig {
 /// * `config_path` - Optional path to TOML configuration file
 pub fn load_thresholds(config_path: Option<&Path>) -> ThresholdConfig {
     match config_path {
-        Some(path) if path.exists() => {
-            match fs::read_to_string(path) {
-                Ok(content) => match toml::from_str(&content) {
-                    Ok(config) => config,
-                    Err(e) => {
-                        eprintln!("Warning: Failed to parse threshold config ({e}), using defaults");
-                        ThresholdConfig::default()
-                    }
-                }
+        Some(path) if path.exists() => match fs::read_to_string(path) {
+            Ok(content) => match toml::from_str(&content) {
+                Ok(config) => config,
                 Err(e) => {
-                    eprintln!("Warning: Failed to read threshold config ({e}), using defaults");
+                    eprintln!("Warning: Failed to parse threshold config ({e}), using defaults");
                     ThresholdConfig::default()
                 }
+            },
+            Err(e) => {
+                eprintln!("Warning: Failed to read threshold config ({e}), using defaults");
+                ThresholdConfig::default()
             }
-        }
-        _ => ThresholdConfig::default()
+        },
+        _ => ThresholdConfig::default(),
     }
 }
 

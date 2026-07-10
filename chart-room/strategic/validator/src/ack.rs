@@ -73,10 +73,7 @@ pub fn get_user_name() -> String {
     }
 
     // Fall back to git config user.name
-    if let Ok(output) = Command::new("git")
-        .args(["config", "user.name"])
-        .output()
-    {
+    if let Ok(output) = Command::new("git").args(["config", "user.name"]).output() {
         if output.status.success() {
             let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
             if !name.is_empty() {
@@ -114,7 +111,9 @@ pub fn create_ack_file(
 ) -> Result<PathBuf, AckError> {
     // Validate finding_id (basic validation - non-empty)
     if finding_id.trim().is_empty() {
-        return Err(AckError::InvalidFindingId("finding_id cannot be empty".to_string()));
+        return Err(AckError::InvalidFindingId(
+            "finding_id cannot be empty".to_string(),
+        ));
     }
 
     // Extract gate_id from finding_id (assumes format like "gate-name-check-id")
@@ -132,10 +131,7 @@ pub fn create_ack_file(
     };
 
     // Determine output directory
-    let base_dir = output_dir.map_or_else(
-        || PathBuf::from("reports/acks"),
-        PathBuf::from,
-    );
+    let base_dir = output_dir.map_or_else(|| PathBuf::from("reports/acks"), PathBuf::from);
 
     // Create week subdirectory
     let week = get_current_week();
@@ -170,7 +166,9 @@ pub fn create_escalation_file(
 ) -> Result<PathBuf, AckError> {
     // Validate finding_id (basic validation - non-empty)
     if finding_id.trim().is_empty() {
-        return Err(AckError::InvalidFindingId("finding_id cannot be empty".to_string()));
+        return Err(AckError::InvalidFindingId(
+            "finding_id cannot be empty".to_string(),
+        ));
     }
 
     // Extract gate_id from finding_id
@@ -188,10 +186,7 @@ pub fn create_escalation_file(
     };
 
     // Determine output directory (no week subdirectory for escalations)
-    let base_dir = output_dir.map_or_else(
-        || PathBuf::from("reports/escalations"),
-        PathBuf::from,
-    );
+    let base_dir = output_dir.map_or_else(|| PathBuf::from("reports/escalations"), PathBuf::from);
     fs::create_dir_all(&base_dir)?;
 
     // Create file path (directly in escalations, not week-organized)
@@ -322,7 +317,11 @@ mod tests {
         assert!(result.is_ok());
         let file_path = result.unwrap();
         assert!(file_path.exists());
-        assert!(file_path.to_string_lossy().contains("test-gate-check-001.md"));
+        assert!(
+            file_path
+                .to_string_lossy()
+                .contains("test-gate-check-001.md")
+        );
     }
 
     #[test]
@@ -330,12 +329,7 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let output_dir = temp_dir.path().join("acks");
 
-        let result = create_ack_file(
-            "test-finding",
-            "Notes here",
-            Some(&output_dir),
-            false,
-        );
+        let result = create_ack_file("test-finding", "Notes here", Some(&output_dir), false);
 
         assert!(result.is_ok());
         let file_path = result.unwrap();
@@ -343,7 +337,10 @@ mod tests {
         // Check that parent is a week directory (YYYY-WXX format)
         let parent = file_path.parent().unwrap();
         let parent_name = parent.file_name().unwrap().to_string_lossy();
-        assert!(parent_name.contains("-W"), "Parent directory should be week format: {parent_name}");
+        assert!(
+            parent_name.contains("-W"),
+            "Parent directory should be week format: {parent_name}"
+        );
     }
 
     #[test]
@@ -375,7 +372,10 @@ mod tests {
         // Since env::set_var is unsafe in Rust 2024, we just verify get_user_name returns
         // a non-empty string (either from USER env, git config, or default "unknown")
         let user = get_user_name();
-        assert!(!user.is_empty(), "get_user_name should return a non-empty string");
+        assert!(
+            !user.is_empty(),
+            "get_user_name should return a non-empty string"
+        );
     }
 
     #[test]

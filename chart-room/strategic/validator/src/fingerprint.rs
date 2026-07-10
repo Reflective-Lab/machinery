@@ -81,10 +81,7 @@ mod tests {
             "Commit hash should be present"
         );
         let commit_hash = fingerprint.commit_hash.unwrap();
-        assert!(
-            !commit_hash.is_empty(),
-            "Commit hash should not be empty"
-        );
+        assert!(!commit_hash.is_empty(), "Commit hash should not be empty");
         assert_eq!(
             commit_hash.len(),
             40,

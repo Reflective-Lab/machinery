@@ -49,6 +49,37 @@ factory-adoption-doctor:
 scorecard:
     bun run scorecard
 
+# Print the generated RP-* table from recurring-properties.json
+rp-table:
+    @python3 scripts/rp-table.py
+
+# Regenerate the RP-* table region in QUALITY_BACKLOG.md from the JSON source
+rp-table-sync:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    python3 - <<'PY'
+    import re, subprocess
+    from pathlib import Path
+    root = Path("{{justfile_directory()}}")
+    backlog = root / "QUALITY_BACKLOG.md"
+    table = subprocess.check_output(["python3", str(root / "scripts/rp-table.py")], text=True).rstrip("\n")
+    text = backlog.read_text()
+    new, n = re.subn(
+        r"(<!-- BEGIN GENERATED RP-TABLE -->\n).*?(\n<!-- END GENERATED RP-TABLE -->)",
+        lambda m: m.group(1) + table + m.group(2),
+        text, flags=re.DOTALL)
+    if n == 0:
+        print("✗ RP-TABLE markers not found in QUALITY_BACKLOG.md"); raise SystemExit(1)
+    if new == text:
+        print("✓ rp-table-sync: already in sync")
+    else:
+        backlog.write_text(new); print("✓ rp-table-sync: QUALITY_BACKLOG.md RP-* table region updated")
+    PY
+
+# Fail if the RP-* table has drifted from the JSON source (quality-doctor check)
+rp-table-check:
+    @python3 scripts/rp-table-check.py
+
 # Alias for security-audit
 audit:
     just security-audit
