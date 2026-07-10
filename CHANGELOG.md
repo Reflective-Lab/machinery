@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed (RFL-195 — Bedrock 4.0.0 migration wave)
-- runtime-runway: converge deps repointed from `Reflective-Lab/converge` v3.4.0 to `bedrock-platform` git tag v4.0.1 (registry flip pending RFL-194); 10 dead converge declarations deleted; helm contracts switched from framework/bedrock path deps to the same git tag
+- runtime-runway: converge deps repointed from `Reflective-Lab/converge` v3.4.0 to `bedrock-platform` git tag v4.0.1 (registry flip pending the local Kellnr registry, Aug 2026); 10 dead converge declarations deleted; helm contracts switched from framework/bedrock path deps to the same git tag
 - runtime-runway: ported to converge 4.0 API (`ContextView`→`Context` trait, `ContextState`, typed `ProposedFact` construction, `select_chat_backend` via new `manifold-adapters` dep)
 - runtime-runway: CI sibling-checkout machinery removed; workflows authenticate via ssh-agent (`SHIPYARD_SSH_KEY`) so CI proves genuine git-tag resolution; `.cargo/config.toml` (git-fetch-with-cli) now checked in
 - commerce-rails: reqwest 0.12→0.13 (coordinated wave with runway and quorum-sense); runway-storage path-dep pin corrected to 3.6.0

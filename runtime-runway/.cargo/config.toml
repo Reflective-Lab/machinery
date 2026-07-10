@@ -1,5 +1,5 @@
 # Checked in (RFL-195): Bedrock crates resolve from the private
-# Reflective-Lab/bedrock-platform GitHub repo until the Shipyard registry
+# Reflective-Lab/bedrock-platform GitHub repo until the local registry (Kellnr, build server — Aug 2026)
 # cutover. libgit2 cannot use SSH-agent/gh credentials, so cargo must
 # shell out to the git CLI for fetches.
 [net]

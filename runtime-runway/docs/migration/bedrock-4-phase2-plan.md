@@ -9,10 +9,12 @@ status: executed 2026-07-10 (git-tag interim; registry flip pending RFL-194)
 
 **Interim strategy:** Bedrock 4.0.0 is released on GitHub
 (`Reflective-Lab/bedrock-platform` tag `v4.0.1`) but not yet published to the
-Shipyard registry (RFL-194). All Bedrock deps therefore use
+Shipyard was dropped (owner decision 2026-07-10); the registry endgame is a
+local Kellnr service on the build server, planned for August 2026. Until
+then, all Bedrock deps use
 `git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1"`.
-When Shipyard publishes, each line flips to
-`{ version = "4.0.0", registry = "reflective-labs" }` — nothing else changes.
+When the local registry is live, each line flips to
+`{ version = "4.0.1", registry = "..." }` — nothing else changes (registry name decided with the Kellnr setup).
 
 The same source URL must be used by every repo in the wave (runway,
 commerce-rails via transitive chain, quorum-sense): Cargo only unifies types
@@ -47,7 +49,7 @@ copy.
 
 ### CI cleanup
 - `scripts/ci/checkout-reflective-siblings.sh` deleted; all five workflows now
-  use `webfactory/ssh-agent` with `secrets.SHIPYARD_SSH_KEY` instead of
+  use `webfactory/ssh-agent` with `secrets.SHIPYARD_SSH_KEY` (legacy name; repurposed for the deploy-key at the August registry setup) instead of
   sibling clones, so CI proves genuine git-tag resolution.
 - `.cargo/config.toml` is now checked in (`net.git-fetch-with-cli = true`,
   required for the private repo). `just use-local-converge` appends a
@@ -84,12 +86,12 @@ agents, main, ui, evals, streaming, llm_backend).
 - commerce-rails workspace green at reqwest 0.13 with runway-storage
   transitive chain (29 tests). ✅ done 2026-07-10.
 
-## Registry flip (follow-up, gated on RFL-194)
+## Registry flip (follow-up: local Kellnr registry, August 2026)
 
 1. Replace every `git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1"`
    with `version = "4.0.1", registry = "reflective-labs"` (workspace +
    runway-app-host + runway-storage + commerce-rails transitive).
 2. Add registry config + credentials to `.cargo/config.toml` and CI.
-3. Keep `git-fetch-with-cli` (harmless; Shipyard is a git registry).
+3. Keep `git-fetch-with-cli` (harmless with a git-index registry).
 
 Deadline anchor: helms dual-home expiry **2026-08-15** (RFL-153).
