@@ -10,7 +10,7 @@ use converge_core::traits::{
     ChatBackend, ChatMessage, ChatRequest, ChatResponse, ChatRole, DynChatBackend, FinishReason,
     LlmError, ResponseFormat, TokenUsage,
 };
-use converge_core::{AgentEffect, ContextKey, ProposedFact, Suggestor};
+use converge_core::{AgentEffect, ContextKey, ProposedFact, Provenance, Suggestor, TextPayload};
 use std::fmt::Write;
 use std::sync::Arc;
 
@@ -20,7 +20,12 @@ fn proposed_fact(
     id: impl Into<String>,
     content: impl Into<String>,
 ) -> ProposedFact {
-    ProposedFact::new(key, id, content, provenance)
+    ProposedFact::new(
+        key,
+        id.into(),
+        TextPayload::new(content),
+        Provenance::new(provenance),
+    )
 }
 
 /// LLM-powered agent that generates strategic insights from evaluations.
@@ -77,27 +82,27 @@ Keep each insight concise (1-2 sentences).".to_string(),
 
     /// Builds the user prompt from context.
     #[allow(clippy::unused_self)]
-    fn build_prompt(&self, ctx: &dyn converge_core::ContextView) -> String {
+    fn build_prompt(&self, ctx: &dyn converge_core::Context) -> String {
         let mut prompt = String::new();
 
         prompt.push_str("## Market Signals\n");
         for fact in ctx.get(ContextKey::Signals) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Competitor Analysis\n");
         for fact in ctx.get(ContextKey::Competitors) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Proposed Strategies\n");
         for fact in ctx.get(ContextKey::Strategies) {
-            let _ = writeln!(prompt, "- {}: {}", fact.id, fact.content);
+            let _ = writeln!(prompt, "- {}: {}", fact.id(), fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Evaluations\n");
         for fact in ctx.get(ContextKey::Evaluations) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Task\nProvide 2-3 strategic insights based on this analysis.");
@@ -157,12 +162,12 @@ impl Suggestor for StrategicInsightAgent {
         &[ContextKey::Evaluations]
     }
 
-    fn accepts(&self, ctx: &dyn converge_core::ContextView) -> bool {
+    fn accepts(&self, ctx: &dyn converge_core::Context) -> bool {
         // Run once when evaluations exist but no hypotheses (insights) yet
         ctx.has(ContextKey::Evaluations) && !ctx.has(ContextKey::Hypotheses)
     }
 
-    async fn execute(&self, ctx: &dyn converge_core::ContextView) -> AgentEffect {
+    async fn execute(&self, ctx: &dyn converge_core::Context) -> AgentEffect {
         let prompt = self.build_prompt(ctx);
 
         let request = ChatRequest {
@@ -187,6 +192,7 @@ impl Suggestor for StrategicInsightAgent {
             temperature: Some(0.7),
             stop_sequences: Vec::new(),
             model: None,
+            reasoning_budget: None,
         };
 
         let result = self.provider.chat(request).await;
@@ -313,32 +319,32 @@ Keep each risk assessment concise (2-3 sentences)."
 
     /// Builds the user prompt from context.
     #[allow(clippy::unused_self)]
-    fn build_prompt(&self, ctx: &dyn converge_core::ContextView) -> String {
+    fn build_prompt(&self, ctx: &dyn converge_core::Context) -> String {
         let mut prompt = String::new();
 
         prompt.push_str("## Company Context\n");
         for fact in ctx.get(ContextKey::Seeds) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Market Signals\n");
         for fact in ctx.get(ContextKey::Signals) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Competitive Landscape\n");
         for fact in ctx.get(ContextKey::Competitors) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Proposed Strategies\n");
         for fact in ctx.get(ContextKey::Strategies) {
-            let _ = writeln!(prompt, "- {}: {}", fact.id, fact.content);
+            let _ = writeln!(prompt, "- {}: {}", fact.id(), fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Strategy Evaluations\n");
         for fact in ctx.get(ContextKey::Evaluations) {
-            let _ = writeln!(prompt, "- {}", fact.content);
+            let _ = writeln!(prompt, "- {}", fact.text().unwrap_or_default());
         }
 
         prompt.push_str("\n## Task\nIdentify 2-3 key risks or challenges for these strategies and suggest mitigations.");
@@ -400,14 +406,14 @@ impl Suggestor for RiskAssessmentAgent {
         &[ContextKey::Strategies, ContextKey::Evaluations]
     }
 
-    fn accepts(&self, ctx: &dyn converge_core::ContextView) -> bool {
+    fn accepts(&self, ctx: &dyn converge_core::Context) -> bool {
         // Run once when strategies and evaluations exist but no constraints (risks) yet
         ctx.has(ContextKey::Strategies)
             && ctx.has(ContextKey::Evaluations)
             && !ctx.has(ContextKey::Constraints)
     }
 
-    async fn execute(&self, ctx: &dyn converge_core::ContextView) -> AgentEffect {
+    async fn execute(&self, ctx: &dyn converge_core::Context) -> AgentEffect {
         let prompt = self.build_prompt(ctx);
 
         let request = ChatRequest {
@@ -432,6 +438,7 @@ impl Suggestor for RiskAssessmentAgent {
             temperature: Some(0.7),
             stop_sequences: Vec::new(),
             model: None,
+            reasoning_budget: None,
         };
 
         let result = self.provider.chat(request).await;
@@ -501,17 +508,17 @@ impl ChatBackend for MockRiskProvider {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use converge_core::{Context, Engine, ProposedFact};
+    use converge_core::{ContextState, Engine, ProposedFact};
 
-    async fn promoted_context(entries: &[(ContextKey, &str, &str)]) -> Context {
-        let mut ctx = Context::new();
+    async fn promoted_context(entries: &[(ContextKey, &str, &str)]) -> ContextState {
+        let mut ctx = ContextState::new();
         for (key, id, content) in entries {
             ctx.add_input(*key, *id, *content).unwrap();
         }
         Engine::new().run(ctx).await.unwrap().context
     }
 
-    async fn promote_proposals(mut ctx: Context, proposals: Vec<ProposedFact>) -> Context {
+    async fn promote_proposals(mut ctx: ContextState, proposals: Vec<ProposedFact>) -> ContextState {
         for proposal in proposals {
             ctx.add_proposal(proposal).unwrap();
         }
@@ -531,10 +538,10 @@ mod tests {
 
         let effect = agent.execute(&ctx).await;
 
-        assert!(!effect.proposals.is_empty());
+        assert!(!effect.proposals().is_empty());
         assert!(
             effect
-                .proposals
+                .proposals()
                 .iter()
                 .any(|f| f.id.starts_with("insight:"))
         );
@@ -571,11 +578,11 @@ mod tests {
 
         let effect = agent.execute(&ctx).await;
 
-        assert!(!effect.proposals.is_empty());
-        assert!(effect.proposals.iter().any(|f| f.id.starts_with("risk:")));
+        assert!(!effect.proposals().is_empty());
+        assert!(effect.proposals().iter().any(|f| f.id.starts_with("risk:")));
         assert!(
             effect
-                .proposals
+                .proposals()
                 .iter()
                 .all(|f| f.key == ContextKey::Constraints)
         );

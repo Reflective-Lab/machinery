@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 // Import types from converge-core using public re-exports
 use converge_core::traits::{ChatBackend, DynChatBackend};
-use converge_core::{AgentEffect, ContextKey, ProposedFact, Suggestor};
+use converge_core::{AgentEffect, ContextKey, ProposedFact, Suggestor, TextPayload};
 use std::future::Ready;
 
 // Re-export core LLM types from traits module - these are the canonical types
@@ -18,7 +18,7 @@ pub use converge_core::traits::{
 
 // Import prompt types from our local prompt_dsl module
 use crate::prompt_dsl::{
-    AgentPrompt, AgentRole, Constraint, DslOutputContract, PromptContext, PromptFormat,
+    AgentPrompt, AgentRole, Constraint, DslOutputContract, OutputKind, PromptContext, PromptFormat,
 };
 
 // =============================================================================
@@ -298,13 +298,15 @@ impl ResponseParser for SimpleParser {
 
         let id = format!("{}-{}", self.id_prefix, uuid_v4_simple());
 
-        vec![ProposedFact {
-            key: target_key,
-            id,
-            content: content.to_string(),
-            confidence: self.confidence,
-            provenance: response.model.clone().unwrap_or_default(),
-        }]
+        vec![
+            ProposedFact::new(
+                target_key,
+                id,
+                TextPayload::new(content),
+                response.model.clone().unwrap_or_default(),
+            )
+            .with_confidence(self.confidence),
+        ]
     }
 }
 
@@ -339,12 +341,14 @@ impl ResponseParser for MultiLineParser {
             .map(str::trim)
             .filter(|s| !s.is_empty())
             .enumerate()
-            .map(|(i, content)| ProposedFact {
-                key: target_key,
-                id: format!("{}-{}", self.id_prefix, i),
-                content: content.to_string(),
-                confidence: self.confidence,
-                provenance: model.clone(),
+            .map(|(i, content)| {
+                ProposedFact::new(
+                    target_key,
+                    format!("{}-{}", self.id_prefix, i),
+                    TextPayload::new(content),
+                    model.clone(),
+                )
+                .with_confidence(self.confidence)
             })
             .collect()
     }
@@ -395,12 +399,13 @@ impl ProviderAgent {
     }
 
     /// Builds the prompt from context using the configured format.
-    fn build_prompt(&self, ctx: &dyn converge_core::ContextView) -> String {
+    fn build_prompt(&self, ctx: &dyn converge_core::Context) -> String {
         use std::fmt::Write;
 
         if matches!(self.config.prompt_format, PromptFormat::Edn) {
             let prompt_ctx = PromptContext::from_context(ctx, &self.config.dependencies);
-            let output_contract = DslOutputContract::new("proposed-fact", self.config.target_key);
+            let output_contract =
+                DslOutputContract::new(OutputKind::ProposedFact, self.config.target_key);
 
             let objective = if self.config.prompt_template == "{context}" {
                 format!("analyze-{:?}", self.config.target_key).to_lowercase()
@@ -428,7 +433,12 @@ impl ProviderAgent {
             if !facts.is_empty() {
                 let _ = writeln!(context_str, "\n## {key:?}");
                 for fact in facts {
-                    let _ = writeln!(context_str, "- {}: {}", fact.id, fact.content);
+                    let _ = writeln!(
+                        context_str,
+                        "- {}: {}",
+                        fact.id(),
+                        fact.text().unwrap_or_default()
+                    );
                 }
             }
         }
@@ -449,7 +459,7 @@ impl Suggestor for ProviderAgent {
         &self.full_dependencies
     }
 
-    fn accepts(&self, ctx: &dyn converge_core::ContextView) -> bool {
+    fn accepts(&self, ctx: &dyn converge_core::Context) -> bool {
         let has_input = self.config.dependencies.iter().any(|k| ctx.has(*k));
         if !has_input {
             return false;
@@ -459,12 +469,12 @@ impl Suggestor for ProviderAgent {
         let already_contributed = ctx
             .get(self.config.target_key)
             .iter()
-            .any(|f| f.id.starts_with(&my_prefix));
+            .any(|f| f.id().starts_with(&my_prefix));
 
         !already_contributed
     }
 
-    async fn execute(&self, ctx: &dyn converge_core::ContextView) -> AgentEffect {
+    async fn execute(&self, ctx: &dyn converge_core::Context) -> AgentEffect {
         let prompt = self.build_prompt(ctx);
 
         let request = ChatRequest {
@@ -486,6 +496,7 @@ impl Suggestor for ProviderAgent {
             temperature: Some(self.config.temperature as f32),
             stop_sequences: Vec::new(),
             model: None,
+            reasoning_budget: None,
         };
 
         match self.provider.chat(request).await {
@@ -732,6 +743,7 @@ mod tests {
                 temperature: None,
                 stop_sequences: Vec::new(),
                 model: None,
+                reasoning_budget: None,
             }
         }
 
@@ -767,6 +779,7 @@ mod tests {
             temperature: None,
             stop_sequences: Vec::new(),
             model: None,
+            reasoning_budget: None,
         };
         let result = ChatBackend::chat(&provider, request).await;
 
@@ -804,6 +817,7 @@ mod tests {
             temperature: None,
             stop_sequences: Vec::new(),
             model: None,
+            reasoning_budget: None,
         };
 
         let fast_response = router

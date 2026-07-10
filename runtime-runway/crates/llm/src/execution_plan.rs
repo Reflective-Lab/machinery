@@ -20,6 +20,7 @@ use crate::kernel::{KernelIntent, KernelPolicy};
 use crate::prompt::OutputContract;
 use crate::recall::{RecallBudgets, RecallConfig, RecallPerStep, RecallPolicy, RecallTrigger};
 use crate::trace::DecisionStep;
+use converge_core::UnitInterval;
 use serde::{Deserialize, Serialize};
 
 /// The compiled execution plan.
@@ -205,7 +206,7 @@ impl ExecutionPlan {
                 enabled: true,
                 max_k_total: r.max_candidates,
                 max_tokens_injection: r.max_tokens_injection,
-                min_score_threshold: r.min_score as f64,
+                min_score_threshold: UnitInterval::clamped(f64::from(r.min_score)),
                 budgets: RecallBudgets::default(),
                 ..Default::default()
             },

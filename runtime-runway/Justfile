@@ -3,7 +3,7 @@
 # Usage:   just --list
 
 set dotenv-load := true
-converge_release := "v3.4.0"
+converge_release := "v4.0.0"
 
 # Canonical CI aggregate. GitHub Actions calls exactly this recipe so local and
 # CI verdicts stay aligned.
@@ -65,24 +65,26 @@ fix-lint:
 fmt:
     cargo fmt
 
-# ── Converge Source ────────────────────────────────────────────────────
+# ── Bedrock Source ─────────────────────────────────────────────────────
+# .cargo/config.toml is checked in (git-fetch-with-cli for the private
+# bedrock-platform repo). The local override appends a [patch] section
+# on top of it; use-released-converge restores the tracked version.
 
-# Use the local Converge checkout instead of the pinned release tag
+# Patch Bedrock deps to the local ../../framework/bedrock checkout
 use-local-converge:
-    mkdir -p .cargo
-    cp .cargo/config.toml.example .cargo/config.toml
-    @echo "Using local converge checkout from ../reflective-stack/bedrock-platform/converge"
+    cat .cargo/config.toml.example >> .cargo/config.toml
+    @echo "Patched Bedrock deps to local framework/bedrock checkout"
     @echo "Disable with: just use-released-converge"
 
 # Use the pinned release tag from Cargo.toml
 use-released-converge:
-    rm -f .cargo/config.toml
-    @echo "Using pinned converge release {{converge_release}}"
+    git checkout -- .cargo/config.toml
+    @echo "Using pinned bedrock-platform release {{converge_release}}"
 
-# Show which converge source Cargo will use
+# Show which Bedrock source Cargo will use
 converge-source:
-    @if [ -f .cargo/config.toml ]; then \
-        echo "Local override active: ../reflective-stack/bedrock-platform/converge"; \
+    @if grep -q '^\[patch' .cargo/config.toml 2>/dev/null; then \
+        echo "Local override active: ../../framework/bedrock"; \
     else \
         echo "Pinned release active: {{converge_release}}"; \
     fi
@@ -314,7 +316,7 @@ deps:
     @echo "  converge-application  →  converge/{core, experience, provider, domain, knowledge, ...}"
     @echo "  converge-llm          →  converge/{core, domain, provider, storage}"
     @echo ""
-    @echo "Pinned release: {{converge_release}} from Reflective-Lab/converge"
+    @echo "Pinned release: {{converge_release}} from Reflective-Lab/bedrock-platform"
     @echo "Local SDK override: just use-local-converge"
 
 # ── Terraform (environment-scoped) ─────────────────────────────────────

@@ -44,7 +44,7 @@ use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 
 use converge_core::traits::DynChatBackend;
-use converge_core::{Context, ContextKey, Engine, ExperienceStore};
+use converge_core::{ContextKey, ContextState, Engine, ExperienceStore};
 use converge_experience::{InMemoryExperienceStore, StoreObserver};
 use strum::IntoEnumIterator;
 
@@ -269,7 +269,7 @@ async fn main() -> Result<()> {
                 anyhow::anyhow!("Template '{template}' not found in any enabled pack")
             })?;
 
-            let mut context = Context::new();
+            let mut context = ContextState::new();
             if let Some(seeds_raw) = seeds {
                 let seeds_json = if let Some(path) = seeds_raw.strip_prefix('@') {
                     std::fs::read_to_string(path)
@@ -378,8 +378,8 @@ async fn main() -> Result<()> {
                         facts.push(FactOutput {
                             sequence,
                             key: format!("{key:?}"),
-                            id: fact.id.clone(),
-                            content: fact.content.clone(),
+                            id: fact.id().to_string(),
+                            content: fact.text().unwrap_or_default().to_string(),
                         });
                     }
                 }
@@ -421,7 +421,7 @@ async fn main() -> Result<()> {
                     if !facts.is_empty() {
                         println!("[{key:?}]");
                         for fact in facts {
-                            println!("  {} | {}", fact.id, fact.content);
+                            println!("  {} | {}", fact.id(), fact.text().unwrap_or_default());
                         }
                         println!();
                     }

@@ -5,7 +5,7 @@
 //! Demonstrates how to use the LlmAgent within a Converge context.
 //! This example shows the agent API without requiring actual model weights.
 
-use converge_core::{Context, ContextKey, Engine, Suggestor};
+use converge_core::{ContextKey, ContextState, Engine, Suggestor};
 use converge_llm::{GenerationParams, LlmAgent, LlmConfig, PromptTemplate};
 
 #[tokio::main]
@@ -36,7 +36,7 @@ async fn main() {
     println!();
 
     // Create a context with some seed facts
-    let mut staged = Context::new();
+    let mut staged = ContextState::new();
 
     // Add seed facts (simulating data from analytics pipeline)
     let _ = staged.add_input(
@@ -79,23 +79,24 @@ async fn main() {
     // Examine the effect
     println!(
         "\nSuggestor produced {} proposal(s):",
-        effect.proposals.len()
+        effect.proposals().len()
     );
-    for proposal in &effect.proposals {
+    for proposal in effect.proposals() {
+        let content = proposal.text().unwrap_or_default();
         println!(
             "  [{:?}] {}: {}",
             proposal.key,
             proposal.id,
-            if proposal.content.len() > 80 {
-                format!("{}...", &proposal.content[..80])
+            if content.len() > 80 {
+                format!("{}...", &content[..80])
             } else {
-                proposal.content.clone()
+                content.to_string()
             }
         );
     }
 
     // Demonstrate that agent won't run twice (already has output)
-    let _ = ctx.add_proposal(effect.proposals.into_iter().next().unwrap());
+    let _ = ctx.add_proposal(effect.into_proposals().into_iter().next().unwrap());
     println!("\nAfter adding output to context:");
     println!("Suggestor accepts context: {}", agent.accepts(&ctx));
 

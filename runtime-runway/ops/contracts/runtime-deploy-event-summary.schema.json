@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reflective-lab.local/runtime-runway/runtime-deploy-event-summary.schema.json",
+  "title": "Runtime Deploy Event Summary",
+  "description": "A bounded deploy/runtime summary emitted by Runtime Runway for Build-Depot graph ingestion. This contract carries durable facts only, never raw logs, traces, spans, prompts, payloads, secrets, or high-cardinality metric series.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "schema_version",
+    "source",
+    "repo",
+    "service",
+    "environment",
+    "status",
+    "occurred_at"
+  ],
+  "properties": {
+    "type": {
+      "const": "runtime.deploy.summary"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "source": {
+      "const": "runtime-runway"
+    },
+    "repo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository slug affected by the deploy/runtime event."
+    },
+    "service": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runtime-owned service, worker, app host, or deploy surface."
+    },
+    "app_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "region": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deployment_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source-stable Runtime deployment identifier. Build-Depot prefixes it into the Deployment graph id."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit_sha": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runtime deploy status, for example started, succeeded, failed, rollback_started, rolled_back, or canceled."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_ms": {
+      "type": ["number", "string"]
+    },
+    "external_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "evidence_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Pointer to bounded evidence in the source system or evidence store. Do not inline raw evidence here."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "incident": {
+      "$ref": "#/$defs/incident_summary"
+    },
+    "signals": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/$defs/factory_signal_summary"
+      }
+    }
+  },
+  "$defs": {
+    "incident_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "incident_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": ["P1", "P2", "P3"]
+        },
+        "status": {
+          "enum": ["Open", "Resolved", "Ignored"]
+        },
+        "opened_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "linked_finding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "event_count": {
+          "type": ["number", "string"]
+        },
+        "affected_users": {
+          "type": ["number", "string"]
+        },
+        "external_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "factory_signal_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "title"],
+      "properties": {
+        "signal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggregate_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "quality_gate",
+            "security_scan",
+            "dependency",
+            "test",
+            "github_lifecycle",
+            "runtime_telemetry",
+            "product_feedback",
+            "architecture_drift",
+            "agent_behavior",
+            "operational_hygiene",
+            "data_durability",
+            "cost_capacity",
+            "delivery",
+            "repository_adoption"
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "event_count": {
+          "type": ["number", "string"]
+        },
+        "affected_users": {
+          "type": ["number", "string"]
+        },
+        "finding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "external_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_value": {
+          "type": ["number", "string"]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use converge_core::traits::DynChatBackend;
-use converge_core::{Context, ContextKey, Engine};
+use converge_core::{ContextKey, ContextState, Engine};
 use strum::IntoEnumIterator;
 
 use crate::agents::{RiskAssessmentAgent, StrategicInsightAgent};
@@ -508,7 +508,7 @@ impl App {
         let pack_name = self.submit_form.pack.clone();
         let seeds_json = self.submit_form.seeds.clone();
 
-        let mut context = Context::new();
+        let mut context = ContextState::new();
         if !seeds_json.is_empty() {
             match serde_json::from_str::<Vec<crate::packs::SeedFact>>(&seeds_json) {
                 Ok(seed_facts) => {
@@ -554,8 +554,8 @@ impl App {
                             .iter()
                             .map(|fact| FactInfo {
                                 key: format!("{:?}", fact.key()),
-                                id: fact.id.clone(),
-                                content: fact.content.clone(),
+                                id: fact.id().to_string(),
+                                content: fact.text().unwrap_or_default().to_string(),
                                 confidence: 1.0,
                             })
                             .collect::<Vec<_>>()

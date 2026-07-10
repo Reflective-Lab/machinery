@@ -62,11 +62,10 @@ tracing-subscriber = { workspace = true, optional = true }
 
 # Converge platform dependencies
 converge-core.workspace = true
-converge-domain.workspace = true
-converge-provider = { workspace = true, optional = true }
+manifold-adapters = { workspace = true, optional = true }
 
 # Object storage (optional)
-converge-storage = { workspace = true, optional = true, features = ["local"] }
+converge-storage = { workspace = true, optional = true }
 
 [build-dependencies]
 tonic-build = { workspace = true, optional = true }
@@ -103,7 +102,7 @@ pretrained = ["dep:llama-burn", "llama-burn/pretrained"]
 # Object storage for remote adapter registry
 storage = ["dep:converge-storage"]
 # Remote backend providers
-anthropic = ["dep:converge-provider"]
+anthropic = ["dep:manifold-adapters"]
 # gRPC server
 server = ["dep:tonic", "dep:prost", "dep:prost-types", "dep:tokio",
           "dep:tokio-stream", "dep:futures", "dep:tonic-build",

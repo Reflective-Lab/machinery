@@ -33,7 +33,7 @@ import {
 export { recordsToNdjson } from "./graph-records";
 
 export interface NormalizedDebtEvent {
-  source: "github" | "linear" | "sentry" | "unknown";
+  source: "github" | "linear" | "sentry" | "runtime-runway" | "unknown";
   action?: string;
   records: GraphRecord[];
   skippedReason?: string;
@@ -47,8 +47,26 @@ interface DeliveryResult {
 
 const NonEmptyString = z.string().min(1);
 const NullableString = z.string().nullable().optional();
-const MaybeDateString = z.string().datetime({ offset: true }).or(z.string()).optional();
+const DateString = z.string().datetime({ offset: true }).or(z.string());
+const MaybeDateString = DateString.optional();
 const MaybeNumber = z.union([z.number(), z.string()]).optional();
+
+const FactorySignalCategorySchema = z.enum([
+  "quality_gate",
+  "security_scan",
+  "dependency",
+  "test",
+  "github_lifecycle",
+  "runtime_telemetry",
+  "product_feedback",
+  "architecture_drift",
+  "agent_behavior",
+  "operational_hygiene",
+  "data_durability",
+  "cost_capacity",
+  "delivery",
+  "repository_adoption",
+]);
 
 const GitHubRepositorySchema = z
   .object({
@@ -244,6 +262,71 @@ const SentryPayloadSchema = z
   })
   .passthrough();
 
+const RuntimeIncidentSummarySchema = z
+  .object({
+    incident_id: NonEmptyString.optional(),
+    title: NonEmptyString.optional(),
+    severity: z.enum(["P1", "P2", "P3"]).optional(),
+    status: z.enum(["Open", "Resolved", "Ignored"]).optional(),
+    opened_at: MaybeDateString,
+    linked_finding: NonEmptyString.optional(),
+    first_seen_at: MaybeDateString,
+    last_seen_at: MaybeDateString,
+    event_count: MaybeNumber,
+    affected_users: MaybeNumber,
+    external_url: z.string().url().optional(),
+    evidence_ref: NonEmptyString.optional(),
+  })
+  .strict();
+
+const RuntimeFactorySignalSummarySchema = z
+  .object({
+    signal_id: NonEmptyString.optional(),
+    aggregate_key: NonEmptyString.optional(),
+    category: FactorySignalCategorySchema.optional(),
+    kind: NonEmptyString,
+    title: NonEmptyString,
+    status: z.string().optional(),
+    severity: z.string().optional(),
+    observed_at: MaybeDateString,
+    first_seen_at: MaybeDateString,
+    last_seen_at: MaybeDateString,
+    event_count: MaybeNumber,
+    affected_users: MaybeNumber,
+    finding_id: NonEmptyString.optional(),
+    external_url: z.string().url().optional(),
+    evidence_ref: NonEmptyString.optional(),
+    metric_name: NonEmptyString.optional(),
+    metric_value: MaybeNumber,
+    unit: NonEmptyString.optional(),
+  })
+  .strict();
+
+const RuntimeDeploySummarySchema = z
+  .object({
+    type: z.literal("runtime.deploy.summary"),
+    schema_version: z.literal("1"),
+    source: z.literal("runtime-runway"),
+    repo: NonEmptyString,
+    service: NonEmptyString,
+    app_id: NonEmptyString.optional(),
+    environment: NonEmptyString,
+    region: NonEmptyString.optional(),
+    deployment_id: NonEmptyString.optional(),
+    version: NonEmptyString.optional(),
+    commit_sha: NonEmptyString.optional(),
+    image_digest: NonEmptyString.optional(),
+    status: NonEmptyString,
+    occurred_at: DateString,
+    duration_ms: MaybeNumber,
+    external_url: z.string().url().optional(),
+    evidence_ref: NonEmptyString.optional(),
+    title: NonEmptyString.optional(),
+    incident: RuntimeIncidentSummarySchema.optional(),
+    signals: z.array(RuntimeFactorySignalSummarySchema).max(50).optional(),
+  })
+  .strict();
+
 const SinkEnvSchema = z.object({
   OMNIGRAPH_INGEST_URL: z.string().url().optional(),
   OMNIGRAPH_INGEST_TOKEN: z.string().optional(),
@@ -298,6 +381,11 @@ export function normalizeDebtPayload(
   const sentry = SentryPayloadSchema.safeParse(payload);
   if (sentry.success && hasSentryIssue(sentry.data)) {
     return normalizeSentry(sentry.data, now);
+  }
+
+  const runtime = RuntimeDeploySummarySchema.safeParse(payload);
+  if (runtime.success) {
+    return normalizeRuntimeDeploySummary(runtime.data, now);
   }
 
   return normalizedEvent({
@@ -587,6 +675,57 @@ function normalizeSentry(
   });
 }
 
+function normalizeRuntimeDeploySummary(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  now: Date
+): NormalizedDebtEvent {
+  const repo = payload.repo;
+  const deployment = deploymentFromRuntimeSummary(payload, now);
+  const records: GraphRecord[] = [
+    repositoryRecord(repo),
+    {
+      type: "Deployment",
+      data: deployment,
+    },
+    {
+      type: "DeploymentInRepo",
+      from: deploymentRef(deployment.id),
+      to: repositoryRef(repo),
+    },
+  ];
+
+  appendSignal(records, runtimeDeploymentSignal(payload, deployment, now));
+
+  if (payload.incident) {
+    const incident = incidentFromRuntimeSummary(payload, deployment, now);
+    records.push(
+      {
+        type: "Incident",
+        data: incident,
+      },
+      {
+        type: "IncidentInRepo",
+        from: incidentRef(incident.id),
+        to: repositoryRef(repo),
+      }
+    );
+    appendSignal(
+      records,
+      runtimeIncidentSignal(payload, payload.incident, incident, deployment, now)
+    );
+  }
+
+  for (const [index, signal] of (payload.signals ?? []).entries()) {
+    appendSignal(records, runtimeFactorySignal(payload, signal, deployment, index, now));
+  }
+
+  return normalizedEvent({
+    source: "runtime-runway",
+    action: payload.status,
+    records,
+  });
+}
+
 function normalizedEvent(input: {
   source: NormalizedDebtEvent["source"];
   action?: string | undefined;
@@ -683,6 +822,73 @@ function deploymentFromGitHub(
   });
 }
 
+function deploymentFromRuntimeSummary(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  now: Date
+): DeploymentNodeData {
+  return compactDeployment({
+    id: runtimeDeploymentGraphId(payload, now),
+    repo: payload.repo,
+    environment: payload.environment,
+    status: payload.status,
+    version: payload.version ?? payload.commit_sha ?? payload.image_digest,
+    deployed_at: payload.occurred_at || now.toISOString(),
+  });
+}
+
+function runtimeDeploymentGraphId(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  now: Date
+): string {
+  const providerId =
+    payload.deployment_id ??
+    stableId(
+      [
+        payload.service,
+        payload.environment,
+        payload.version ?? payload.commit_sha ?? payload.image_digest,
+        payload.occurred_at,
+      ]
+        .filter(Boolean)
+        .join(":")
+    ) ??
+    now.toISOString();
+
+  return `runtime:${payload.repo}:deployment:${providerId}`;
+}
+
+function incidentFromRuntimeSummary(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  deployment: DeploymentNodeData,
+  now: Date
+): IncidentNodeData {
+  const summary = payload.incident;
+  if (!summary) {
+    throw new Error("Runtime incident summary is missing");
+  }
+
+  const incidentProviderId =
+    summary.incident_id ??
+    stableId(`${payload.service}:${payload.environment}:${payload.occurred_at}`);
+  const linkedFinding =
+    summary.linked_finding ?? extractQfId(summary.title, payload.title, payload.evidence_ref);
+
+  return compactIncident({
+    id: `runtime:${payload.repo}:incident:${incidentProviderId || deployment.id}`,
+    repo: payload.repo,
+    title: summary.title ?? `Runtime incident for ${payload.service}`,
+    severity: summary.severity ?? "P3",
+    status: summary.status ?? "Open",
+    opened_at:
+      summary.opened_at ??
+      summary.first_seen_at ??
+      payload.occurred_at ??
+      deployment.deployed_at ??
+      now.toISOString(),
+    linked_finding: linkedFinding,
+  });
+}
+
 function pullRequestFromGitHub(
   repo: string,
   pullRequest: z.infer<typeof GitHubPullRequestSchema>,
@@ -763,6 +969,102 @@ function githubDeploymentStatusSignal(
     observed_at: deployment.deployed_at ?? now.toISOString(),
     repo,
     external_url: optionalString(deploymentStatus?.target_url),
+  });
+}
+
+function runtimeDeploymentSignal(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  deployment: DeploymentNodeData,
+  now: Date
+): FactorySignalNodeData {
+  const durationMs = finiteNumberFromValue(payload.duration_ms);
+
+  return compactFactorySignal({
+    id: `${deployment.id}:summary-signal`,
+    aggregate_key: deployment.id,
+    category: "delivery",
+    source: "runtime-runway",
+    kind: "deploy_summary",
+    title:
+      payload.title ??
+      `Runtime deploy ${payload.service} ${payload.environment} ${payload.status}`,
+    status: payload.status,
+    observed_at: payload.occurred_at || now.toISOString(),
+    repo: payload.repo,
+    external_url: payload.external_url,
+    evidence_ref: payload.evidence_ref,
+    metric_name: durationMs === undefined ? undefined : "deployment.duration",
+    metric_value: durationMs,
+    unit: durationMs === undefined ? undefined : "ms",
+  });
+}
+
+function runtimeIncidentSignal(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  summary: z.infer<typeof RuntimeIncidentSummarySchema>,
+  incident: IncidentNodeData,
+  deployment: DeploymentNodeData,
+  now: Date
+): FactorySignalNodeData {
+  return compactFactorySignal({
+    id: `${incident.id}:signal`,
+    aggregate_key: deployment.id,
+    category: "runtime_telemetry",
+    source: "runtime-runway",
+    kind: "incident_summary",
+    title: incident.title ?? `Runtime incident for ${payload.service}`,
+    status: incident.status,
+    severity: incident.severity,
+    observed_at:
+      summary.last_seen_at ??
+      summary.opened_at ??
+      summary.first_seen_at ??
+      payload.occurred_at ??
+      now.toISOString(),
+    first_seen_at: summary.first_seen_at ?? summary.opened_at,
+    last_seen_at: summary.last_seen_at,
+    event_count: numberFromValue(summary.event_count),
+    affected_users: numberFromValue(summary.affected_users),
+    repo: payload.repo,
+    finding_id: incident.linked_finding,
+    external_url: summary.external_url ?? payload.external_url,
+    evidence_ref: summary.evidence_ref ?? payload.evidence_ref,
+  });
+}
+
+function runtimeFactorySignal(
+  payload: z.infer<typeof RuntimeDeploySummarySchema>,
+  signal: z.infer<typeof RuntimeFactorySignalSummarySchema>,
+  deployment: DeploymentNodeData,
+  index: number,
+  now: Date
+): FactorySignalNodeData {
+  const fallbackId = stableId(`${index}:${signal.kind}:${signal.title}`);
+  const signalId = signal.signal_id
+    ? `runtime:${payload.repo}:signal:${signal.signal_id}`
+    : `${deployment.id}:signal:${fallbackId || index}`;
+
+  return compactFactorySignal({
+    id: signalId,
+    aggregate_key: signal.aggregate_key ?? deployment.id,
+    category: signal.category ?? signalCategoryFromText(`${signal.kind} ${signal.title}`),
+    source: "runtime-runway",
+    kind: signal.kind,
+    title: signal.title,
+    status: signal.status ?? payload.status,
+    severity: signal.severity,
+    observed_at: signal.observed_at ?? payload.occurred_at ?? now.toISOString(),
+    first_seen_at: signal.first_seen_at,
+    last_seen_at: signal.last_seen_at,
+    event_count: numberFromValue(signal.event_count),
+    affected_users: numberFromValue(signal.affected_users),
+    repo: payload.repo,
+    finding_id: signal.finding_id,
+    external_url: signal.external_url ?? payload.external_url,
+    evidence_ref: signal.evidence_ref ?? payload.evidence_ref,
+    metric_name: signal.metric_name,
+    metric_value: finiteNumberFromValue(signal.metric_value),
+    unit: signal.unit,
   });
 }
 
@@ -1438,6 +1740,14 @@ function numberFromValue(value: string | number | undefined): number | undefined
   if (typeof value !== "string") return undefined;
 
   const parsed = Number.parseInt(value.replaceAll(",", ""), 10);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function finiteNumberFromValue(value: string | number | undefined): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return undefined;
+
+  const parsed = Number(value.replaceAll(",", ""));
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 

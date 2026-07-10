@@ -1,9 +1,9 @@
 // Copyright 2024-2026 Reflective Labs
 
-//! Anthropic Claude Backend — Re-exported from converge-provider.
+//! Anthropic Claude Backend — Re-exported from manifold.
 //!
-//! This module re-exports `AnthropicBackend` from `converge-provider::llm`
-//! for backward compatibility. The implementation lives in converge-provider
+//! This module re-exports `AnthropicBackend` from `manifold::llm`
+//! for backward compatibility. The implementation lives in manifold
 //! where it belongs with other remote provider implementations.
 //!
 //! # Usage
@@ -21,6 +21,6 @@
 //! # Note
 //!
 //! This is a re-export. The canonical implementation is in:
-//! `converge-provider::llm::anthropic`
+//! `manifold::llm::anthropic`
 
-pub use converge_provider::llm::AnthropicBackend;
+pub use manifold::llm::AnthropicBackend;

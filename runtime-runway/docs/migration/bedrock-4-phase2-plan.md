@@ -1,164 +1,95 @@
 ---
-title: Phase 2 Plan — Runtime-Runway to Bedrock 4.0.0
+title: Phase 2 — Runtime-Runway on Bedrock 4.0.0 (executed)
 epic: RFL-195
 date: 2026-07-10
+status: executed 2026-07-10 (git-tag interim; registry flip pending RFL-194)
 ---
 
 # Phase 2: Runtime-Runway Migration to Bedrock 4.0.0
 
-**Gate:** RFL-194 Phase 1 complete (48 crates published to reflective-labs registry v4.0.0)
+**Interim strategy:** Bedrock 4.0.0 is released on GitHub
+(`Reflective-Lab/bedrock-platform` tag `v4.0.0`) but not yet published to the
+Shipyard registry (RFL-194). All Bedrock deps therefore use
+`git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0"`.
+When Shipyard publishes, each line flips to
+`{ version = "4.0.0", registry = "reflective-labs" }` — nothing else changes.
 
-**Duration:** ~2 days post-gate
+The same source URL must be used by every repo in the wave (runway,
+commerce-rails via transitive chain, quorum-sense): Cargo only unifies types
+when deps resolve from the same source.
 
-## Overview
+## What was done
 
-Runtime-runway has 10 dead converge deps and 2 helm contracts on path deps. Phase 2 is Cargo.toml surgery + CI rewiring. Zero Rust source edits.
+### Dead dep removal (10 crates)
+Deleted from `[workspace.dependencies]`: `converge-model`, `converge-pack`,
+`converge-protocol`, `converge-kernel`, `converge-client`,
+`converge-provider-api`, `converge-domain`, `converge-analytics`,
+`converge-knowledge`, `converge-policy`. Crate-level references removed from
+`crates/llm` (domain) and `crates/application` (knowledge/analytics + their
+feature gates; `full` feature narrowed). Deleting `converge-client`/`protocol`
+retires the tonic 0.12↔0.14 trap: none of the live 4.0 crates pull tonic, so
+runway's own tonic 0.12 (app-host/llm grpc features) no longer risks a dual
+copy.
 
-## Step 1: Delete Dead Converge Declarations
+### Live deps repointed (5 + 2 + 1)
+- `converge-core`, `converge-provider`, `converge-experience`,
+  `converge-optimization`, `converge-storage` → git+tag v4.0.0.
+- `helm-module-contracts`, `helm-event-substrate` (runway-app-host,
+  runway-storage): fragile `../../../../framework/bedrock` path deps → git+tag.
+- **New:** `manifold-adapters` (lib name `manifold`) — env-driven chat backend
+  selection (`select_chat_backend`) moved there from converge-provider at 4.0.
 
-### Workspace-level (delete from `runtime-runway/Cargo.toml` `[workspace.dependencies]`)
+### Version alignment
+- `sha2` 0.10 → 0.11 (matches helm-module-contracts).
+- `reqwest` 0.12 → 0.13, coordinated with commerce-rails in the same wave.
+  reqwest 0.13 feature-gates `form`/`query` — both added where used.
+- tonic/prost stay 0.12/0.13 (runway-internal only after dead-dep removal).
 
-```toml
-# REMOVE these 5:
-converge-model = { version = "4.0.0", registry = "reflective-labs" }
-converge-pack = { version = "4.0.0", registry = "reflective-labs" }
-converge-protocol = { version = "4.0.0", registry = "reflective-labs" }  # ⚠️ tonic trap
-converge-kernel = { version = "4.0.0", registry = "reflective-labs" }
-converge-client = { version = "4.0.0", registry = "reflective-labs" }   # ⚠️ tonic trap
-```
+### CI cleanup
+- `scripts/ci/checkout-reflective-siblings.sh` deleted; all five workflows now
+  use `webfactory/ssh-agent` with `secrets.SHIPYARD_SSH_KEY` instead of
+  sibling clones, so CI proves genuine git-tag resolution.
+- `.cargo/config.toml` is now checked in (`net.git-fetch-with-cli = true`,
+  required for the private repo). `just use-local-converge` appends a
+  `[patch]` section for local framework/bedrock work;
+  `just use-released-converge` restores the tracked file.
 
-**Why:** These are never used in runway source. `converge-client` and `converge-protocol` present the tonic 0.12 → 0.14 trap (see migration guide).
+## Scout-report correction (important)
 
-### Crate-level (delete from `runtime-runway/crates/*/Cargo.toml`)
+The scout verdict "Cargo.toml surgery, not a rewrite / zero source edits"
+was **wrong for runway**. converge 3.4 → 4.0 carries real API drift:
 
-Search for and remove:
-- `converge-provider-api` (workspace decl only; see guide)
-- `converge-domain` (in crates/llm only; never imported)
-- `converge-analytics` (in crates/application, optional feature, never used)
-- `converge-knowledge` (in crates/application, optional feature, never used)
-- `converge-policy` (workspace decl only)
+- `ContextView` trait deleted → `Context` trait (pack), same shape.
+- Concrete `Context` struct → `ContextState` (implements the `Context` trait).
+- `Fact` → `ContextFact`, fields now private (accessors).
+- `ProposedFact` struct-literal construction → typed constructor
+  `ProposedFact::new(key, id: Into<ProposalId>, payload: FactPayload,
+  provenance: Into<Provenance>)` + `.with_confidence(UnitInterval)`;
+  confidence is `UnitInterval`, not `f64` (typed-contracts standard, RFL-129).
+- `ContextKey::iter()` removed.
+- `converge_storage` lost the `local` feature (core types now unconditional).
+- `select_chat_backend`/`SelectedChatBackend` moved converge-provider → manifold.
+- `SelectionCriteria` moved core::model_selection → converge-provider selection.
 
-**Gate:** `cargo check --workspace` must pass after removal.
+Affected production code: `crates/llm` (provider.rs, agent.rs,
+execution_plan.rs), `crates/runway-accounts` (reqwest unification with
+commerce-rails). Affected demo code: `crates/application` (all of it —
+agents, main, ui, evals, streaming, llm_backend).
 
-## Step 2: Switch Helm Contracts to Registry
+## Gates
 
-### `runtime-runway/Cargo.toml`
+- `cargo check --workspace --all-targets` green.
+- Full test suite green (405-test baseline; substrate implementor tests
+  EventLog/SyncableEventLog/LeaseStore/SessionOwnershipLayer must pass).
+- commerce-rails workspace green at reqwest 0.13 with runway-storage
+  transitive chain (29 tests). ✅ done 2026-07-10.
 
-Identify all helm deps (currently path deps):
+## Registry flip (follow-up, gated on RFL-194)
 
-```toml
-# BEFORE (path deps)
-helm-module-contracts = { version = "0.3.0", path = "../../../bedrock-platform/helms/contracts/crates/helm-module-contracts" }
-helm-event-substrate  = { version = "0.1.0", path = "../../../bedrock-platform/helms/contracts/crates/helm-event-substrate", features = ["sse"] }
+1. Replace every `git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0"`
+   with `version = "4.0.0", registry = "reflective-labs"` (workspace +
+   runway-app-host + runway-storage + commerce-rails transitive).
+2. Add registry config + credentials to `.cargo/config.toml` and CI.
+3. Keep `git-fetch-with-cli` (harmless; Shipyard is a git registry).
 
-# AFTER (registry deps)
-helm-module-contracts = { version = "4.0.0", registry = "reflective-labs" }
-helm-event-substrate  = { version = "4.0.0", registry = "reflective-labs", features = ["sse"] }
-```
-
-**Gate:** Implementations (RedbEventLog, FirestoreEventLog, RedbLeaseStore, FirestoreLeaseStore, SessionOwnershipLayer) compile unchanged.
-
-## Step 3: Version Bumps
-
-### Tonic + Prost (coordinated with runway workspace cleanup)
-
-After deleting dead converge declarations, bump runway's direct tonic/prost:
-
-```toml
-# runtime-runway/Cargo.toml [workspace]
-tonic = { version = "0.14" }
-prost = { version = "0.14" }
-```
-
-**Why:** Bedrock 4.0.0 converge crates use 0.14; keeping 0.12 locks out their consumers.
-
-**Gate:** `cargo tree` shows single tonic/prost copy.
-
-### SHA2
-
-```toml
-# runtime-runway/Cargo.toml [workspace]
-sha2 = { version = "0.11" }  # was 0.10
-```
-
-**Why:** helm-module-contracts declares 0.11; alignment avoids dual build.
-
-### Reqwest (COORDINATED WAVE)
-
-Bump to 0.13 in the SAME wave as quorum-server and commerce-rails:
-
-```toml
-# runtime-runway/Cargo.toml [workspace]
-reqwest = { version = "0.13" }  # was 0.12
-```
-
-**Gate:** Coordinate with commerce-rails phase (verify commerce-rails-* clients still resolve).
-
-## Step 4: CI Cleanup
-
-### Remove helms sibling checkout
-
-Delete from `.github/workflows/ci.yml` (or equivalent):
-
-```yaml
-# REMOVE this step:
-- name: Checkout reflective-siblings
-  run: checkout-reflective-siblings.sh
-```
-
-Delete the script if it exists in runway.
-
-### Add Shipyard registry credential
-
-Ensure `.cargo/config.toml` exists in runway root with:
-
-```toml
-[registries.reflective-labs]
-protocol = "git"
-```
-
-Auth handled by CI secrets (SHIPYARD_SSH_KEY or token method).
-
-**Gate:** CI proves registry resolution with NO sibling clone fallback.
-
-## Step 5: Substance Tests
-
-All 405 runway tests must pass:
-
-```bash
-cd runtime-runway
-cargo test --workspace --all-targets
-```
-
-**Acceptance:** 
-- ✓ No runtime-runway test changes needed
-- ✓ Substrate implementor tests green (EventLog, LeaseStore, SessionOwnership)
-- ✓ No WASM or FFI breakage
-
-## Files to Change
-
-```
-runtime-runway/Cargo.toml              # dead deps removal, registry switch
-runtime-runway/crates/*/Cargo.toml     # crate-level dead deps
-runtime-runway/.cargo/config.toml      # registry config (create if missing)
-runtime-runway/.github/workflows/*.yml # remove sibling checkout
-```
-
-## Rollback Trigger
-
-If any test fails:
-1. Revert Cargo.toml changes
-2. Keep CI cleanup (that's safe)
-3. Investigate source incompatibility (should not occur per scout report)
-
-## Next Phase
-
-Phase 3: commerce-rails reqwest 0.13 bump (coordinated)
-Phase 4: quorum-sense registry migration (package aliases)
-Phase 5: cutover walk with RFL-153 gap table
-
----
-
-**Dependency:** RFL-194 Phase 1 complete (publish dry-run green)
-**Blocking:** Phase 3 (commerce-rails) + Phase 4 (quorum-sense)
-**Deadline:** 2026-08-15 (helms dual-home expiry)
+Deadline anchor: helms dual-home expiry **2026-08-15** (RFL-153).
