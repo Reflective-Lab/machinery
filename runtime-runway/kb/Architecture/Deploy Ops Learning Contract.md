@@ -43,6 +43,63 @@ Build-Depot can already represent the first slice through `Deployment`,
 Build-Depot deliberately with typed fields or edges rather than pushing raw
 telemetry into graph nodes.
 
+## Runtime Deploy Event Summary
+
+The Runtime-to-Build-Depot handoff shape is
+`ops/contracts/runtime-deploy-event-summary.schema.json`.
+
+Runtime producers emit one `runtime.deploy.summary` envelope per deploy or
+deploy-adjacent runtime event:
+
+```json
+{
+  "type": "runtime.deploy.summary",
+  "schema_version": "1",
+  "source": "runtime-runway",
+  "repo": "runtime-runway",
+  "service": "api-server",
+  "app_id": "quorum-sense",
+  "environment": "prod",
+  "region": "us-central1",
+  "deployment_id": "api-server-prod-20260707-01",
+  "version": "3.6.0",
+  "commit_sha": "abc123",
+  "image_digest": "sha256:feed",
+  "status": "succeeded",
+  "occurred_at": "2026-07-07T03:00:00.000Z",
+  "duration_ms": 42000,
+  "evidence_ref": "gcs://runtime-evidence/deployments/api-server-prod-20260707-01.json",
+  "signals": [
+    {
+      "signal_id": "api-server-prod-20260707-01-p95-latency",
+      "category": "runtime_telemetry",
+      "kind": "latency_delta",
+      "title": "Cloud Run p95 latency increased 40 percent after deploy",
+      "metric_name": "http.server.duration.p95_delta",
+      "metric_value": 40,
+      "unit": "percent",
+      "observed_at": "2026-07-07T03:05:00.000Z"
+    }
+  ]
+}
+```
+
+Build-Depot maps this envelope into current graph facts:
+
+| Summary field | Build-Depot fact |
+| --- | --- |
+| `repo` | `Repository.name` and repo edges |
+| `deployment_id`, `environment`, `status`, `version`, `commit_sha`, `image_digest`, `occurred_at` | `Deployment` |
+| top-level deploy result | `FactorySignal(category=delivery, kind=deploy_summary)` |
+| `incident` | `Incident` plus `FactorySignal(category=runtime_telemetry, kind=incident_summary)` |
+| `signals[]` | bounded `FactorySignal` records |
+| `event_count`, `affected_users`, `first_seen_at`, `last_seen_at` | aggregate shape without raw event storage |
+| `external_url`, `evidence_ref` | pointers to source evidence, not inline raw telemetry |
+
+The schema rejects extra fields. Runtime must not add raw logs, traces, spans,
+prompts, request payloads, Slack or email bodies, secrets, tokens, or unbounded
+metric series to this envelope.
+
 ## What Stays Out
 
 Do not store these in OmniGraph:

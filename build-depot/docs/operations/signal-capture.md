@@ -16,6 +16,12 @@ metadata, not thousands of individual graph nodes. Raw payloads remain in the
 source system or a bounded evidence store; Omnigraph stores the durable issue,
 finding, incident, or scorecard signal.
 
+Runtime Runway deploy and runtime events use
+`runtime-runway/ops/contracts/runtime-deploy-event-summary.schema.json`. The
+summary envelope maps into existing `Deployment`, `Incident`, and
+`FactorySignal` facts; the schema is closed so raw telemetry fields do not
+silently enter the factory graph.
+
 ## Runtime Decision
 
 Omnigraph runtime is intentionally deferred for one week while the expected
@@ -60,6 +66,7 @@ and graph fields over prose when a value will be queried later.
 | GitHub Actions | CI/check suite result, release tag, repo activity | `Repository.ci_status`, `Repository.last_release` |
 | GitHub PRs | PR review finding, gate verdict, changed files, repo context | PR-gate output now; future `Finding` and repo health facts |
 | Sentry | issue/group id, project, severity, status, event count, affected users, first/last seen, linked `QF-*` if present | `Incident`, `FactorySignal`, `Repository` |
+| Runtime Runway deploy summary | deploy id, service, app id, environment, version, status, summarized incidents, aggregate runtime deltas, evidence pointers | `Deployment`, `Incident`, `FactorySignal`, `Repository` |
 | Repository adoption scan | cohort, tier, adoption state, missing required signals, exceptions | `Repository` adoption fields |
 | Just recipes | local gate surface and pass/fail evidence | repo adoption facts and future check records |
 
