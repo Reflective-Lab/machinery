@@ -58,7 +58,7 @@ GitHub webhooks      Linear webhooks      Sentry webhooks      Scheduled scans
   secrets, and webhooks.
 - **Omnigraph** stores the normalized graph defined in `build-depot.pg`.
 - **Private Rust distribution** is a factory operation when Reflective crates
-  are published to Shipyard.rs. Rust repos keep Cargo registry attribution in
+  are published to the private Kellnr registry (build server). Rust repos keep Cargo registry attribution in
   manifests and may carry non-secret registry index configuration required for
   local Cargo metadata. The target state is for Build-Depot to own credentials,
   release-tag reaction, and publish orchestration; until the depot publish
@@ -78,7 +78,7 @@ disabled.
 | GitHub | pull request, push, release, check run, check suite | `pr-gate`, `debt-tracker` | Repository, Finding, delivery status |
 | Linear | issue create/update/state changes | `debt-tracker` | Finding, Repository, ownership, status |
 | Sentry | issue create/update/resolve/ignore | `debt-tracker` | Incident, Repository, aggregate runtime telemetry signal, linked finding |
-| Shipyard.rs | release tags, publish dry runs, private crate publish results | scheduled or webhook-triggered delivery tasks | Deployment, FactorySignal, Repository release metadata |
+| Kellnr registry (build server) | release tags, publish dry runs, private crate publish results | scheduled or webhook-triggered delivery tasks | Deployment, FactorySignal, Repository release metadata |
 | Scheduled scans | fleet CI, releases, dependency/security status, repository adoption | scheduled Trigger tasks | Repository health, adoption state, scorecard inputs |
 
 ## Graph Model

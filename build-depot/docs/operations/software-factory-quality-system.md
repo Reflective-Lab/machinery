@@ -58,7 +58,7 @@ Build-Depot is the control plane:
 - It normalizes GitHub, Linear, Sentry, scheduled scans, and repo-local Just
   signals into Omnigraph records.
 - It is the target owner for private distribution operations, including
-  Shipyard.rs publish orchestration and credentials for Rust workspaces that
+  private-registry (Kellnr) publish orchestration and credentials for Rust workspaces that
   expose only structural Cargo registry facts. Until the depot publisher is
   live, in-repo publish workflows are tracked transition debt.
 - It owns graph facts for repositories, findings, incidents, recurring

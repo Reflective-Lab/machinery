@@ -37,10 +37,10 @@ Target mechanism:
 - Build-Depot emits PR/check feedback and scheduled drift reports without
   requiring app developers to understand factory internals.
 
-For Bedrock Shipyard publishing, the current mechanism is still transition
+For Bedrock crate publishing, the current mechanism is still transition
 bound: the in-repo publish path remains the ship path until the depot-side
 publisher, secret values, and smoke test exist. The target mechanism is
-Build-Depot-owned Shipyard orchestration. Linear carries that transition work.
+Build-Depot-owned registry orchestration (Kellnr, August 2026). Linear carries that transition work.
 
 ## Degraded Mode
 
@@ -81,7 +81,7 @@ Bedrock developers also preserve structural Cargo facts, including
 `.cargo/config.toml` registry index configuration Cargo needs for workspace
 metadata.
 
-Developers do not own fleet scorecards, cross-repo adoption verdicts, Shipyard
+Developers do not own fleet scorecards, cross-repo adoption verdicts, registry
 credential storage, Sentry aggregation semantics, security scan policy, or
 release orchestration mechanics once the depot-side workers exist.
 
@@ -186,7 +186,7 @@ surface classification, or explicit operator command:
 - dependency audit and deny-style gates
 - end-to-end app stacks
 - production deploy preflight
-- Shipyard publish dry-runs
+- Registry publish dry-runs
 - cross-repo adoption scans
 - live external-provider tests
 - Sentry, backlog, and scorecard harvests

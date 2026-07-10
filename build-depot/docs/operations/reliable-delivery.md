@@ -42,7 +42,7 @@ The target state is that Build-Depot owns distribution operations for
 Reflective private crates. For `bedrock-consolidated`, Cargo manifest
 `registry = "reflective-labs"` entries and non-secret registry index
 configuration remain structural repo facts because Cargo needs the registry name
-while loading workspace metadata. Shipyard credentials, tag reaction, checkout,
+while loading workspace metadata. Registry credentials, tag reaction, checkout,
 topological publish orchestration, and rollback notes belong in Build-Depot.
 
 The target Bedrock flow is:
@@ -52,17 +52,17 @@ The target Bedrock flow is:
 - Build-Depot receives or scans the tag, checks out the tagged revision, and
   performs the topological publish with Build-Depot-held credentials.
 - The Bedrock public workspace should remain clone/build/test capable without
-  Shipyard credentials.
+  registry credentials.
 
 Current transition sequence:
 
 - If `v4.0.0` must ship before the depot publish worker exists, the in-repo
   Bedrock publish workflow remains the ship path for that release.
 - Depot-first shipping blocks the tag until the Trigger.dev publish task exists,
-  the Shipyard secret values are loaded into Build-Depot's secret store, and a
+  the registry secret values are loaded into Build-Depot's secret store, and a
   dry-run smoke test has passed against a tagged checkout.
 - Only after the depot worker is live should Bedrock strip publish workflows,
-  private registry guides, and Shipyard credential wiring. Until then,
+  private registry guides, and registry credential wiring. Until then,
   `depot-distribution` should remain a missing adoption signal rather than an
   accepted green.
 

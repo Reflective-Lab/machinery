@@ -179,10 +179,10 @@ just delivery-preflight
 
 This runs the setup doctors and local CI before deploy.
 
-For Shipyard-published Rust workspaces such as `bedrock-consolidated`, local
+For registry-published Rust workspaces such as `bedrock-consolidated`, local
 quality gates must remain independent of private registry credentials. Cargo
 manifest registry attribution and non-secret registry index configuration are
-structural Cargo facts. Shipyard credentials and topological publish execution
+structural Cargo facts. Registry credentials and topological publish execution
 are target-state delivery operations for Build-Depot; until the depot publisher
 exists, any in-repo publish workflow should be treated as explicit transition
 debt rather than proof of completed adoption.

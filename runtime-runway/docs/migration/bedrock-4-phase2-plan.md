@@ -49,7 +49,7 @@ copy.
 
 ### CI cleanup
 - `scripts/ci/checkout-reflective-siblings.sh` deleted; all five workflows now
-  use `webfactory/ssh-agent` with `secrets.SHIPYARD_SSH_KEY` (legacy name; repurposed for the deploy-key at the August registry setup) instead of
+  use `webfactory/ssh-agent` with `secrets.BEDROCK_SSH_KEY` instead of
   sibling clones, so CI proves genuine git-tag resolution.
 - `.cargo/config.toml` is now checked in (`net.git-fetch-with-cli = true`,
   required for the private repo). `just use-local-converge` appends a

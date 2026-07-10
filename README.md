@@ -102,18 +102,20 @@ Each project maintains strong boundaries:
 
 ## Configuration
 
-### Registry Configuration (Rust Projects)
+### Bedrock Dependencies (Rust Projects)
 
-Both Rust projects require the `reflective-labs` Shipyard registry:
+Both Rust projects consume Bedrock via git-tag dependencies on the private
+`Reflective-Lab/bedrock-platform` repo (SSH access required). The checked-in
+`.cargo/config.toml` in each project enables the git CLI for those fetches:
 
 ```toml
 # In commerce-rails/.cargo/config.toml and runtime-runway/.cargo/config.toml
-[registries.reflective-labs]
-index = "ssh://git@ssh.shipyard.rs/reflective-labs/crate-index.git"
-
 [net]
 git-fetch-with-cli = true
 ```
+
+A private Cargo registry (Kellnr on the build server, planned August 2026)
+will replace the git-tag pins; the flip is a version-line-only change.
 
 See `build-depot/docs/operations/machinery-project-standards.md` for details.
 

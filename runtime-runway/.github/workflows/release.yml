@@ -55,10 +55,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up SSH for Bedrock git dependencies (RFL-195)
+      - name: Set up SSH for Bedrock git dependencies
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SHIPYARD_SSH_KEY }}
+          ssh-private-key: ${{ secrets.BEDROCK_SSH_KEY }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

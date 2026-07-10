@@ -65,9 +65,9 @@ schema in `build-depot.pg`.
 
 - This project uses Trigger.dev for worker execution and Anthropic for PR gate
   analysis.
-- Reflective Rust artifacts are hosted through Shipyard.rs in the wider
-  workspace; do not assume crates.io is the only Rust artifact path when editing
-  related docs or infra.
+- Reflective Rust artifacts are hosted on a private Cargo registry (Kellnr on
+  the build server, per docs/operations/build-machine-stack.md); do not assume
+  crates.io is the only Rust artifact path when editing related docs or infra.
 
 ## Repo Skills
 

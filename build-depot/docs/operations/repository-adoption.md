@@ -29,7 +29,7 @@ An adopted repo has these signals:
 | Security | Exposes `just security-audit`, a repo-specific security gate, or an explicit accepted-risk entry. |
 | Delivery | Production-affecting repos expose a preflight or release gate through Just. |
 | Checkout currency | Active repo scans are run on a checkout that is not behind its upstream branch; stale scans do not produce trusted adoption verdicts. |
-| Private Rust registry | Shipyard-published Rust workspaces keep Cargo `registry = "reflective-labs"` attribution and any non-secret registry index configuration needed for local Cargo metadata. The target state keeps Shipyard credentials and publish orchestration in Build-Depot; in-repo publish workflows remain adoption debt until the depot publisher is live and the repo is stripped. |
+| Private Rust registry | Registry-published Rust workspaces keep Cargo `registry = "reflective-labs"` attribution and any non-secret registry index configuration needed for local Cargo metadata. The target state keeps registry credentials and publish orchestration in Build-Depot (Kellnr on the build server); in-repo publish workflows remain adoption debt until the depot publisher is live and the repo is stripped. |
 | Linear | Uses a stable repo/module label so issues and findings can be linked to repository facts. |
 | Incidents | Production repos document their Sentry project or state that they do not emit runtime incidents. |
 | Factory docs | Local docs refer to Build-Depot for quality gates, scorecard schema, recurring properties, and factory graph semantics. |
@@ -119,8 +119,8 @@ Required checks:
   applicable.
 - The scanned checkout is not behind its configured upstream branch when Git
   upstream metadata is available.
-- Shipyard-published Rust workspaces retain Cargo registry attribution and
-  non-secret Cargo registry configuration while private Shipyard credentials and
+- Registry-published Rust workspaces retain Cargo registry attribution and
+  non-secret Cargo registry configuration while private registry credentials and
   publish orchestration are in Build-Depot target state. A transition issue can
   explain remaining in-repo publish machinery, but it does not make the signal
   present.

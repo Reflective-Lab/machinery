@@ -40,11 +40,11 @@ Rust crates on behalf of a repo such as `bedrock-consolidated`. Terraform may
 declare the secret slots before the publish worker is enabled, but the values are
 only required once the depot-side publisher is the active ship path:
 
-- `SHIPYARD_SSH_KEY`
-- `SHIPYARD_TOKEN`
+- `BEDROCK_SSH_KEY` (git-tag dependency fetches from the private bedrock-platform repo)
+- Kellnr registry token (name decided at the August build-server setup)
 
 Those names may be documented, but values stay in the configured secret manager
-or CI/Trigger secret store. Public source repos should not carry Shipyard
+or CI/Trigger secret store. Public source repos should not carry registry
 credential wiring.
 
 ## Boundary Validation
