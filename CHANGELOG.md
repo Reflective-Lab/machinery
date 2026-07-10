@@ -5,6 +5,13 @@ All notable changes to Machinery are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+- Removed absolute user paths (`/Users/kpernyer/...`) from tracked docs across all 4 sub-projects, replacing with `(reflective-root)` placeholder
+- Verified no secrets, API keys, or credentials are committed anywhere in the repo
+- Confirmed build reproduces cleanly from a fresh clone (Rust check + Bun typecheck + all 459 tests)
+
 ## [1.0.0] - 2026-07-10
 
 ### Added
