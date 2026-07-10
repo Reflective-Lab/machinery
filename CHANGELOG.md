@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - runtime-runway: CI sibling-checkout machinery removed; workflows authenticate via ssh-agent (`SHIPYARD_SSH_KEY`) so CI proves genuine git-tag resolution; `.cargo/config.toml` (git-fetch-with-cli) now checked in
 - commerce-rails: reqwest 0.12→0.13 (coordinated wave with runway and quorum-sense); runway-storage path-dep pin corrected to 3.6.0
 - Version alignment with bedrock 4.0.0: sha2 0.11, strum 0.28, reqwest 0.13 (`form`/`query` features now explicit)
+- Bumped Bedrock pin v4.0.0 → v4.0.1 (typed `ReasoningBudget` provider contract); no source changes needed
+
+### Security
+- Cleared all 19 open Dependabot alerts, all in `chart-room/strategic/validator/Cargo.lock` (openssl, quinn-proto, rustls-webpki, bytes, time, keccak, rand, git2)
+- Fixed `strategy-validator`'s `fingerprint_repo` to use `Repository::discover` instead of `Repository::open`, repairing the one pre-existing test failure caused by chart-room no longer being a repo root post-consolidation (98→106 tests passing)
 
 ## [1.1.0] - 2026-07-10
 
