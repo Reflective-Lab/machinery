@@ -3,7 +3,7 @@
 # Usage:   just --list
 
 set dotenv-load := true
-converge_release := "v4.0.0"
+converge_release := "v4.0.1"
 
 # Canonical CI aggregate. GitHub Actions calls exactly this recipe so local and
 # CI verdicts stay aligned.

@@ -28,14 +28,14 @@ repository = "https://github.com/Reflective-Lab/runway"
 # Shipyard registry publish lands (RFL-194); then these flip to
 # `registry = "reflective-labs"` with the same versions.
 # For local Bedrock work, run `just use-local-converge`.
-converge-core = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
-converge-provider = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
-converge-experience = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
-converge-optimization = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0" }
-converge-storage = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0", default-features = false }
+converge-core = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1" }
+converge-provider = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1" }
+converge-experience = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1" }
+converge-optimization = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1" }
+converge-storage = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1", default-features = false }
 # Provider adapters — env-driven chat backend selection moved from
 # converge-provider to manifold at 4.0.0 (lib name: `manifold`).
-manifold-adapters = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.0", default-features = false, features = ["anthropic", "gemini", "openai", "openrouter", "mistral"] }
+manifold-adapters = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1", default-features = false, features = ["anthropic", "gemini", "openai", "openrouter", "mistral"] }
 
 # Internal
 converge-llm = { path = "crates/llm" }
