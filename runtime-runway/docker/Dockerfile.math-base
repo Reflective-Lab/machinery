@@ -1,0 +1,116 @@
+# kenneth-backend-math-base
+# Math-capable Rust builder base for marquee-apps.
+#
+# Bundles pre-built OR-Tools (Google) and HIGHS (ERGO-Code) so that crates
+# depending on `ferrox-ortools-sys` / `ferrox-highs-sys` (with their `link`
+# feature enabled — which is what `converge-ferrox-solver`'s `ortools` and
+# `highs` features enable transitively) can compile against pre-built C++
+# libraries instead of re-compiling them on every Cloud Build.
+#
+# Versions pinned to match `mosaic-extensions/ferrox-solvers/Makefile`. When
+# the ferrox-solvers Makefile bumps an ARG below, the semantic registry tag
+# changes with it (that is the point) — rebuild + repush via the script.
+#
+# Build + push (SEMANTIC tag, never :latest — RP-NO-MATH-BASE-LATEST):
+#   ops/scripts/build-math-base.sh
+# which derives the tag from the ARGs below:
+#   v<RUST_VERSION>-ortools-<ORTOOLS_TAG>-highs-<HIGHS_TAG>
+#   e.g. v1.96-ortools-9.14-highs-1.14.0
+# Downstream Dockerfiles MUST pull this semantic tag, not :latest or @sha256.
+#
+# Consumers (set both env vars before `cargo build`):
+#   ENV FERROX_ORTOOLS_ROOT=/opt/ortools-src/build
+#   ENV FERROX_HIGHS_ROOT=/opt/highs-src/build
+#
+# Runtime image must also carry the OR-Tools / HIGHS shared libraries — see
+# the runtime stage of consuming apps (e.g., quorum-sense's
+# `deploy/backend/Dockerfile.cloudrun`).
+
+ARG RUST_VERSION=1.96
+ARG ORTOOLS_TAG=v9.14
+ARG HIGHS_TAG=v1.14.0
+
+FROM rust:${RUST_VERSION}-bookworm
+
+# C++ toolchain + modern CMake. protobuf-compiler matches wolfgang's
+# kenneth-backend-base so this image is a drop-in replacement for that base
+# wherever wolfgang's protobuf usage applies.
+#
+# CMake is installed from PyPI rather than apt because OR-Tools v9.15
+# requires CMake ≥ 3.27 (uses the SYSTEM keyword in FetchContent which
+# Bookworm's cmake 3.25 doesn't recognize, causing the zlib subbuild patch
+# step to fail with `can't open patch 'SYSTEM'`).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential \
+      git \
+      protobuf-compiler \
+      libssl-dev \
+      pkg-config \
+      ca-certificates \
+      python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+ && pip3 install --no-cache-dir --break-system-packages "cmake>=3.27"
+
+# ─── OR-Tools (mirrors `make ortools` in ferrox-solvers/Makefile) ─────────────
+# CMAKE_INSTALL_PREFIX=/usr/local — needed because ferrox-ortools-sys's
+# build.rs only does explicit dylib-dependency discovery on macOS via `otool
+# -L` (link_ortools_dylib_dependencies is #[cfg(target_os = "macos")]). On
+# Linux the linker has to find libabsl_* + libprotobuf via default search
+# paths; `cmake --install` puts them under /usr/local/lib which ld auto-scans.
+ARG ORTOOLS_TAG
+RUN git clone --depth 1 --branch ${ORTOOLS_TAG} \
+      https://github.com/google/or-tools /opt/ortools-src \
+ && cmake -S /opt/ortools-src -B /opt/ortools-src/build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
+      -DCMAKE_C_FLAGS="-march=x86-64-v2" \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DBUILD_DEPS=ON \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_EXAMPLES=OFF \
+      -DBUILD_TESTS=OFF \
+      -DUSE_GLOP=ON \
+      -DUSE_CP_SAT=ON \
+      -DUSE_SCIP=OFF \
+      -DUSE_COINOR=OFF \
+ && cmake --build /opt/ortools-src/build -j"$(nproc)" \
+ && cmake --install /opt/ortools-src/build \
+ && ldconfig
+
+# ─── HIGHS (mirrors `make highs`) ─────────────────────────────────────────────
+ARG HIGHS_TAG
+RUN git clone --depth 1 --branch ${HIGHS_TAG} \
+      https://github.com/ERGO-Code/HiGHS /opt/highs-src \
+ && cmake -S /opt/highs-src -B /opt/highs-src/build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS="-march=x86-64-v2" \
+      -DCMAKE_C_FLAGS="-march=x86-64-v2" \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DBUILD_SHARED_LIBS=ON \
+      -DFAST_BUILD=ON \
+ && cmake --build /opt/highs-src/build -j"$(nproc)" \
+ && cmake --install /opt/highs-src/build \
+ && ldconfig
+
+# Env vars consumed by `ferrox-ortools-sys/build.rs` and
+# `ferrox-highs-sys/build.rs` (both look for `FERROX_<LIB>_ROOT` first,
+# falling back to vendor/ relative paths).
+ENV FERROX_ORTOOLS_ROOT=/opt/ortools-src/build
+ENV FERROX_HIGHS_ROOT=/opt/highs-src/build
+
+# RUSTFLAGS — switch from rust-lld to GNU ld so we can use
+# `--copy-dt-needed-entries`. rust-lld (the default for x86_64-linux on
+# recent rustc) doesn't support that flag; GNU ld does. The flag tells the
+# linker to follow DT_NEEDED chains from libortools.so → libabsl_*.so +
+# libprotobuf.so, so the absl/protobuf symbols ferrox-ortools-sys's
+# wrapper.cc references resolve without us enumerating each transitive lib.
+#
+# This is needed because ferrox's `link_ortools_dylib_dependencies` is
+# #[cfg(target_os = "macos")] only — Linux has no equivalent emit. Tracked
+# as platform tech debt; once ferrox grows a Linux arm (readelf/ldd-based)
+# this RUSTFLAGS gymnastics goes away.
+# Set after the ferrox-solvers patch (Reflective-Lab/ferrox-solvers PR
+# adding Linux DT_NEEDED discovery via readelf): build.rs now emits explicit
+# `cargo:rustc-link-lib=dylib=<name>` for every transitive shared library
+# libortools.so / libhighs.so depend on, so rustc passes them to the linker
+# directly. No platform-specific RUSTFLAGS gymnastics needed.

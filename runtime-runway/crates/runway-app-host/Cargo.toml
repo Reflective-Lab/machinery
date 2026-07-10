@@ -1,0 +1,47 @@
+[package]
+name = "runway-app-host"
+description = "Runtime Runway app execution container packet and host bootstrap"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+# Publishable host surface (RP-LAYERING, project-doctor check 2): the jobs
+# substrate plugs in through the `JobsRuntime` seam, so this crate has no
+# dependency of any kind on the internal runway-ambient crate. The ambient
+# integration test lives in runway-ambient, which is the unpublishable side
+# of the boundary and may path-dep freely.
+
+[dependencies]
+# RP-LAYERING (RFL-128): HelmModule / ModuleState now live in this neutral
+# contract crate; runway-app-host consumes and re-exports them so callers
+# importing from runway-app-host see no breakage.
+helm-module-contracts = { version = "0.3.0", path = "../../../bedrock-platform/helms/contracts/crates/helm-module-contracts" }
+# RP-LAYERING (RFL-171): EventHub / realtime types and SSE transport now live
+# in this neutral substrate crate; runway-app-host re-exports them so callers
+# see no breakage.
+helm-event-substrate = { version = "0.1.0", path = "../../../bedrock-platform/helms/contracts/crates/helm-event-substrate", features = ["sse"] }
+runway-auth = { workspace = true }
+runway-middleware = { workspace = true }
+runway-storage = { workspace = true }
+runway-telemetry = { workspace = true }
+
+anyhow = { workspace = true }
+async-stream = { workspace = true }
+async-trait = { workspace = true }
+axum = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+tonic = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true, features = ["fs"] }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+
+[dev-dependencies]
+reqwest = { workspace = true }
+tempfile = "3"
+tokio = { workspace = true, features = ["test-util"] }

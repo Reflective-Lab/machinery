@@ -1,0 +1,21 @@
+[package]
+name = "runway-app-shell"
+description = "Shared marquee app shell — entitlement projection, auth bootstrap, and widget contract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+runway-auth = { workspace = true }
+
+anyhow = { workspace = true }
+axum = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

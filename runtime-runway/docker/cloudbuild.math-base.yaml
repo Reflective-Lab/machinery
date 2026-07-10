@@ -1,0 +1,46 @@
+# Cloud Build config for kenneth-backend-math-base.
+#
+# Do NOT invoke this directly with a moving tag. The blessed path is:
+#   ops/scripts/build-math-base.sh
+# which derives a SEMANTIC _TAG from the Dockerfile ARGs
+# (v<rust>-ortools-<ortools>-highs-<highs>) and passes it here. `:latest` is
+# banned for this image — see kb/05-engineering/standards/RP-NO-MATH-BASE-LATEST.md.
+#
+# Manual override (semantic tag required):
+#   gcloud builds submit \
+#     --project=reflective-labs \
+#     --config=docker/cloudbuild.math-base.yaml \
+#     --substitutions=_TAG=v1.96-ortools-9.14-highs-1.14.0 \
+#     docker/
+
+substitutions:
+  # Sentinel default: a real build must pass a semantic _TAG (the build script
+  # does). The sentinel is intentionally not a valid moving tag so an
+  # unparameterized run is obviously wrong rather than silently shipping latest.
+  _TAG: "UNSET-use-build-math-base.sh"
+  _REPO: "europe-west1-docker.pkg.dev/reflective-labs/apps"
+
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    env:
+      - "DOCKER_BUILDKIT=1"
+    args:
+      - "build"
+      - "-t"
+      - "${_REPO}/kenneth-backend-math-base:${_TAG}"
+      - "-f"
+      - "Dockerfile.math-base"
+      - "."
+
+images:
+  - "${_REPO}/kenneth-backend-math-base:${_TAG}"
+
+options:
+  # OR-Tools is a heavy C++ compile; use a large machine to keep the
+  # total wall-clock under the timeout.
+  machineType: "E2_HIGHCPU_32"
+  logging: CLOUD_LOGGING_ONLY
+
+# 90 min ceiling. Empirically OR-Tools alone is ~30-45 min single-threaded;
+# parallelized on 32 vCPUs we expect ~10-15 min for OR-Tools + ~3 min for HIGHS.
+timeout: "5400s"

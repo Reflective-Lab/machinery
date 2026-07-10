@@ -1,0 +1,176 @@
+use std::sync::Arc;
+
+use anyhow::Result;
+use axum::{Extension, Json, Router, extract::State, http::StatusCode, routing::get};
+use chrono::Utc;
+use runway_accounts::AccountsState;
+use runway_auth::{AuthContext, AuthLayer, FirebaseAuth};
+use runway_middleware::{MiddlewareConfig, serve, stack};
+use runway_storage::{
+    StorageKit, StoredEvent,
+    remote::{RemoteConfig, RemoteStorageKit},
+    traits::event::EventQuery,
+};
+use runway_telemetry::{TelemetryConfig, init as init_telemetry};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use tracing::info;
+use uuid::Uuid;
+
+mod config;
+use config::RunwayConfig;
+
+#[derive(Clone)]
+struct AppState {
+    storage: Arc<StorageKit>,
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let _telemetry = init_telemetry(TelemetryConfig::from_env("api-server"))?;
+
+    let cfg = RunwayConfig::from_env()?;
+
+    let storage = if cfg.local_dev {
+        StorageKit::local(&cfg.storage_path).await?
+    } else {
+        RemoteStorageKit::build(RemoteConfig::from_env()?).await?
+    };
+
+    let storage = Arc::new(storage);
+
+    let auth = FirebaseAuth::new(cfg.firebase_project_id.clone());
+    let auth_layer = AuthLayer::new(auth, cfg.local_dev);
+
+    let accounts = AccountsState::new(Arc::clone(&storage), cfg.accounts_config());
+
+    // Public routes: no auth required.
+    let public = Router::new()
+        .route("/status", get(status))
+        .merge(runway_accounts::public_routes(accounts.clone()));
+
+    // Protected API routes — served with AppState.
+    let api_protected: Router<()> = Router::new()
+        .route("/api/me", get(me))
+        .route("/api/events", get(list_events).post(append_event))
+        .with_state(AppState {
+            storage: Arc::clone(&storage),
+        });
+
+    // Protected accounts routes — served with AccountsState (already called with_state).
+    let accounts_protected: Router<()> = runway_accounts::protected_routes(accounts);
+
+    // Merge all protected routes then apply the auth layer once.
+    let protected = api_protected.merge(accounts_protected).layer(auth_layer);
+
+    let routed = match cfg.route_prefix.as_deref() {
+        Some(prefix) => Router::new().nest(prefix, public.merge(protected)),
+        None => public.merge(protected),
+    };
+
+    let mw_config = MiddlewareConfig {
+        allowed_origins: cfg.allowed_origins.clone(),
+    };
+    let app = stack(routed, &mw_config);
+
+    info!("api-server starting");
+    serve(app, cfg.port).await;
+    Ok(())
+}
+
+async fn status() -> Json<Value> {
+    Json(json!({
+        "status": "ok",
+        "service": "api-server",
+        "version": env!("CARGO_PKG_VERSION"),
+    }))
+}
+
+async fn me(Extension(ctx): Extension<AuthContext>) -> Json<Value> {
+    Json(json!({
+        "uid": ctx.uid(),
+        "org_id": ctx.org_id(),
+    }))
+}
+
+#[derive(Deserialize)]
+struct EventQueryParams {
+    org_id: Option<String>,
+    app_id: Option<String>,
+    event_type: Option<String>,
+    limit: Option<usize>,
+}
+
+async fn list_events(
+    Extension(ctx): Extension<AuthContext>,
+    State(state): State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<EventQueryParams>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let org_id = params.org_id.or_else(|| ctx.org_id().map(str::to_owned));
+
+    let query = EventQuery {
+        org_id,
+        app_id: params.app_id,
+        event_type: params.event_type,
+        limit: params.limit,
+        ..Default::default()
+    };
+
+    state
+        .storage
+        .events
+        .query(query)
+        .await
+        .map(|events| Json(json!({ "events": events })))
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": e.to_string() })),
+            )
+        })
+}
+
+#[derive(Deserialize, Serialize)]
+struct AppendRequest {
+    org_id: Option<String>,
+    app_id: String,
+    event_type: String,
+    payload: Value,
+}
+
+async fn append_event(
+    Extension(ctx): Extension<AuthContext>,
+    State(state): State<AppState>,
+    Json(req): Json<AppendRequest>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let org_id = req
+        .org_id
+        .or_else(|| ctx.org_id().map(str::to_owned))
+        .unwrap_or_default();
+
+    let event = StoredEvent {
+        event_id: Uuid::new_v4().to_string(),
+        org_id,
+        app_id: req.app_id,
+        event_type: req.event_type,
+        context_id: None,
+        fact_id: None,
+        payload: req.payload,
+        occurred_at: Utc::now(),
+        synced_at: None,
+    };
+
+    let id = event.event_id.clone();
+    state
+        .storage
+        .events
+        .append(event)
+        .await
+        .map(|()| Json(json!({ "id": id })))
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": e.to_string() })),
+            )
+        })
+}

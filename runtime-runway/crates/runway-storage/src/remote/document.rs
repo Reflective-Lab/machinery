@@ -1,0 +1,346 @@
+use std::collections::HashMap;
+
+use async_trait::async_trait;
+use chrono::{DateTime, Utc};
+use serde_json::Value;
+
+use crate::{
+    remote::{BearerAuthExt, GcpToken},
+    traits::{
+        Error, Result,
+        document::{Document, DocumentStore, Filter, Query},
+    },
+};
+
+/// Firestore document store using the REST v1 API.
+/// Collection maps to a Firestore collection; document id maps to a document name.
+/// Collection path: `projects/{project}/databases/(default)/documents/{collection}/{id}`
+pub struct FirestoreDocumentStore {
+    project_id: String,
+    token: GcpToken,
+    client: reqwest::Client,
+}
+
+impl FirestoreDocumentStore {
+    pub fn new(project_id: String, token: GcpToken) -> Self {
+        Self {
+            project_id,
+            token,
+            // RP-HERMETIC-UNIT (Reflective QUALITY_BACKLOG.md →
+            // QF-2026-06-02-05): production constructor for Firestore
+            // document store; tests use emulators at the test harness
+            // level, not DI through this struct.
+            #[allow(clippy::disallowed_methods)]
+            client: crate::http::client(),
+        }
+    }
+
+    fn base_url(&self) -> String {
+        crate::endpoints::firestore_documents(&self.project_id)
+    }
+
+    async fn bearer(&self) -> Result<String> {
+        self.token
+            .get()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))
+    }
+
+    /// Convert a Firestore fields map to our flat HashMap<String, Value>.
+    fn from_firestore_fields(fields: &Value) -> HashMap<String, Value> {
+        let Some(obj) = fields.as_object() else {
+            return HashMap::new();
+        };
+        obj.iter()
+            .filter(|(k, _)| k.as_str() != UPDATED_AT_FIELD)
+            .map(|(k, v)| (k.clone(), extract_firestore_value(v)))
+            .collect()
+    }
+
+    fn to_firestore_fields(data: &HashMap<String, Value>) -> Value {
+        let fields: serde_json::Map<String, Value> = data
+            .iter()
+            .map(|(k, v)| (k.clone(), to_firestore_value(v)))
+            .collect();
+        serde_json::json!({ "fields": fields })
+    }
+}
+
+#[async_trait]
+impl DocumentStore for FirestoreDocumentStore {
+    async fn put(&self, collection: &str, doc: Document) -> Result<()> {
+        // Read-before-write: preserve created_at from the existing document if
+        // one is present.  For the Firestore backend this contract is also
+        // satisfied natively (createTime never changes), but we make the intent
+        // explicit here and stamp updated_at ourselves so callers never need to
+        // do timestamp math.
+        let mut doc = doc;
+        if let Some(existing) = self.get(collection, &doc.id).await? {
+            doc.created_at = existing.created_at;
+        }
+        doc.updated_at = Utc::now();
+
+        let url = format!("{}/{}/{}", self.base_url(), collection, doc.id);
+        // `_updated_at` is written as a real field: Firestore's updateTime
+        // metadata is NOT addressable from structuredQuery filters, so
+        // `Query::updated_after` needs a queryable stamp. Stripped back out
+        // of `data` on read (see from_firestore_fields).
+        let mut body = Self::to_firestore_fields(&doc.data);
+        body["fields"][UPDATED_AT_FIELD] =
+            serde_json::json!({ "timestampValue": doc.updated_at.to_rfc3339() });
+        self.client
+            .patch(&url)
+            .bearer_auth_if_set(&self.bearer().await?)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?
+            .error_for_status()
+            .map_err(|e| Error::Network(e.to_string()))?;
+        Ok(())
+    }
+
+    async fn get(&self, collection: &str, id: &str) -> Result<Option<Document>> {
+        let url = format!("{}/{}/{}", self.base_url(), collection, id);
+        let resp = self
+            .client
+            .get(&url)
+            .bearer_auth_if_set(&self.bearer().await?)
+            .send()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?;
+
+        if resp.status() == reqwest::StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        let body: Value = resp
+            .error_for_status()
+            .map_err(|e| Error::Network(e.to_string()))?
+            .json()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?;
+
+        let data = Self::from_firestore_fields(&body["fields"]);
+        let created_at = parse_firestore_ts(&body["createTime"]);
+        let updated_at = parse_firestore_ts(&body["updateTime"]);
+
+        Ok(Some(Document {
+            id: id.to_string(),
+            data,
+            created_at,
+            updated_at,
+        }))
+    }
+
+    async fn delete(&self, collection: &str, id: &str) -> Result<()> {
+        let url = format!("{}/{}/{}", self.base_url(), collection, id);
+        self.client
+            .delete(&url)
+            .bearer_auth_if_set(&self.bearer().await?)
+            .send()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?
+            .error_for_status()
+            .map_err(|e| Error::Network(e.to_string()))?;
+        Ok(())
+    }
+
+    async fn query(&self, collection: &str, q: Query) -> Result<Vec<Document>> {
+        // Firestore rejects `collectionId` values that contain `/`. When the
+        // caller passes a multi-segment collection path (e.g.
+        // "_contract/abc/docs"), the query must be scoped to the parent
+        // document path ("_contract/abc") and the from clause must use only
+        // the leaf collection name ("docs").
+        let (parent, leaf) = match collection.rsplit_once('/') {
+            Some((parent, leaf)) => (Some(parent), leaf),
+            None => (None, collection),
+        };
+        let url = match parent {
+            Some(p) => format!("{}/{}:runQuery", self.base_url(), p),
+            None => format!("{}:runQuery", self.base_url()),
+        };
+
+        let mut filters: Vec<Value> = Vec::new();
+
+        if let Some(ts) = q.updated_after {
+            filters.push(serde_json::json!({
+                "fieldFilter": {
+                    "field": { "fieldPath": UPDATED_AT_FIELD },
+                    "op": "GREATER_THAN",
+                    "value": { "timestampValue": ts.to_rfc3339() }
+                }
+            }));
+        }
+
+        if let Some(filter) = &q.filter {
+            filters.push(filter_to_firestore(filter));
+        }
+
+        let mut structured = serde_json::json!({
+            "from": [{ "collectionId": leaf }],
+        });
+
+        match filters.len() {
+            0 => {}
+            1 => structured["where"] = filters.remove(0),
+            _ => {
+                structured["where"] = serde_json::json!({
+                    "compositeFilter": { "op": "AND", "filters": filters }
+                });
+            }
+        }
+
+        if let Some(limit) = q.limit {
+            structured["limit"] = serde_json::json!(limit);
+        }
+
+        let body = serde_json::json!({ "structuredQuery": structured });
+
+        let resp: Value = self
+            .client
+            .post(&url)
+            .bearer_auth_if_set(&self.bearer().await?)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?
+            .error_for_status()
+            .map_err(|e| Error::Network(e.to_string()))?
+            .json()
+            .await
+            .map_err(|e| Error::Network(e.to_string()))?;
+
+        let mut docs = Vec::new();
+        if let Some(results) = resp.as_array() {
+            for result in results {
+                if let Some(doc) = result.get("document") {
+                    let name = doc["name"].as_str().unwrap_or("");
+                    let id = name.rsplit('/').next().unwrap_or("").to_string();
+                    let data = Self::from_firestore_fields(&doc["fields"]);
+                    let created_at = parse_firestore_ts(&doc["createTime"]);
+                    let updated_at = parse_firestore_ts(&doc["updateTime"]);
+                    docs.push(Document {
+                        id,
+                        data,
+                        created_at,
+                        updated_at,
+                    });
+                }
+            }
+        }
+        Ok(docs)
+    }
+}
+
+/// Reserved document field carrying the client-side update stamp; written on
+/// every put and hidden from callers' data maps on read.
+const UPDATED_AT_FIELD: &str = "_updated_at";
+
+/// Translate a `Filter` tree into a Firestore structuredQuery filter.
+///
+/// Every variant MUST be covered: the previous implementation translated
+/// only `Eq` and silently dropped the rest, so remote range/AND/OR queries
+/// returned unfiltered supersets (caught by the contract-emulator suite,
+/// QF-2026-07-02-08 follow-up).
+fn filter_to_firestore(f: &Filter) -> Value {
+    fn field_filter(field: &str, op: &str, value: &Value) -> serde_json::Value {
+        serde_json::json!({
+            "fieldFilter": {
+                "field": { "fieldPath": field },
+                "op": op,
+                "value": to_firestore_value(value)
+            }
+        })
+    }
+    match f {
+        Filter::Eq(field, v) => field_filter(field, "EQUAL", v),
+        Filter::Gt(field, v) => field_filter(field, "GREATER_THAN", v),
+        Filter::Lt(field, v) => field_filter(field, "LESS_THAN", v),
+        Filter::Gte(field, v) => field_filter(field, "GREATER_THAN_OR_EQUAL", v),
+        Filter::Lte(field, v) => field_filter(field, "LESS_THAN_OR_EQUAL", v),
+        Filter::And(fs) => serde_json::json!({
+            "compositeFilter": {
+                "op": "AND",
+                "filters": fs.iter().map(filter_to_firestore).collect::<Vec<_>>()
+            }
+        }),
+        Filter::Or(fs) => serde_json::json!({
+            "compositeFilter": {
+                "op": "OR",
+                "filters": fs.iter().map(filter_to_firestore).collect::<Vec<_>>()
+            }
+        }),
+    }
+}
+
+fn to_firestore_value(v: &Value) -> Value {
+    match v {
+        Value::String(s) => serde_json::json!({ "stringValue": s }),
+        Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                serde_json::json!({ "integerValue": i.to_string() })
+            } else {
+                serde_json::json!({ "doubleValue": n.as_f64().unwrap_or(0.0) })
+            }
+        }
+        Value::Bool(b) => serde_json::json!({ "booleanValue": b }),
+        Value::Null => serde_json::json!({ "nullValue": null }),
+        Value::Array(arr) => serde_json::json!({
+            "arrayValue": { "values": arr.iter().map(to_firestore_value).collect::<Vec<_>>() }
+        }),
+        Value::Object(map) => serde_json::json!({
+            "mapValue": {
+                "fields": map.iter().map(|(k, v)| (k.clone(), to_firestore_value(v))).collect::<serde_json::Map<_,_>>()
+            }
+        }),
+    }
+}
+
+fn extract_firestore_value(v: &Value) -> Value {
+    if let Some(s) = v.get("stringValue") {
+        return s.clone();
+    }
+    if let Some(n) = v.get("integerValue") {
+        return Value::Number(
+            n.as_str()
+                .and_then(|s| s.parse::<i64>().ok())
+                .map(|i| i.into())
+                .unwrap_or(0.into()),
+        );
+    }
+    if let Some(n) = v.get("doubleValue") {
+        return n.clone();
+    }
+    if let Some(b) = v.get("booleanValue") {
+        return b.clone();
+    }
+    if v.get("nullValue").is_some() {
+        return Value::Null;
+    }
+    if let Some(a) = v.get("arrayValue") {
+        let vals = a["values"]
+            .as_array()
+            .map(|arr| arr.iter().map(extract_firestore_value).collect())
+            .unwrap_or_default();
+        return Value::Array(vals);
+    }
+    if let Some(m) = v.get("mapValue") {
+        let fields: serde_json::Map<String, Value> = m["fields"]
+            .as_object()
+            .map(|obj| {
+                obj.iter()
+                    .map(|(k, v)| (k.clone(), extract_firestore_value(v)))
+                    .collect()
+            })
+            .unwrap_or_default();
+        return Value::Object(fields);
+    }
+    Value::Null
+}
+
+fn parse_firestore_ts(v: &Value) -> DateTime<Utc> {
+    v.as_str()
+        .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
+        .map(|dt| dt.with_timezone(&Utc))
+        .unwrap_or_else(Utc::now)
+}

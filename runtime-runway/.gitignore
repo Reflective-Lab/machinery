@@ -1,0 +1,48 @@
+target/
+.env
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Editor
+.idea/
+.vscode/
+*.iml
+
+# Claude Code local settings (not shared)
+.claude/settings.local.json
+
+# OS
+Thumbs.db
+
+# Rust
+**/*.rs.bk
+Cargo.lock
+.cargo/config.toml
+
+# Terraform
+ops/infra/terraform/.terraform/
+ops/infra/terraform/.terraform.lock.hcl
+ops/infra/terraform/*.tfstate
+ops/infra/terraform/*.tfstate.backup
+ops/infra/terraform/*.tfvars
+ops/infra/terraform/crash.log
+ops/infra/terraform/override.tf
+
+# Firebase
+ops/infra/firebase/.firebaserc
+
+# Model weights and artifacts
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.onnx
+
+# fastembed runtime cache — created when tests/dev runs download
+# ONNX model weights (~80 MB). Must NEVER be packaged into a crate;
+# QF-2026-06-02-09 in the workspace quality backlog was caused by
+# this exact dir leaking into `cargo package`.
+.fastembed_cache/
+**/.fastembed_cache/
