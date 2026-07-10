@@ -14,6 +14,9 @@ This project adheres to the Reflective Labs [Code of Conduct](https://github.com
 - **Bun:** 1.3.14+ (for build-depot)
 - **Git:** Latest version
 - **Just:** 1.x (command runner)
+- **bedrock-platform:** v4.0.0+ (required for all Rust projects)
+
+The bedrock platform is a shared dependency. Machinery v1.0 requires bedrock 4.0 to be released and available for all runtime and commerce operations.
 
 ### Setup
 
@@ -117,7 +120,7 @@ Scopes: `runtime-runway`, `commerce-rails`, `build-depot`, `chart-room`, `machin
 
 4. **Merge:**
    - Authority approves
-   - All CI checks pass (local via `just ci`)
+   - All checks pass (tests, linting, security)
    - PR is merged to main
 
 ### Release Process
