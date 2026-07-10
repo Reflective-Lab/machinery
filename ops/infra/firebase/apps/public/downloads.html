@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloads — Reflective</title>
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --ink: #1f2430;
+      --ink-muted: #4d5768;
+      --ink-soft: #6f7b8f;
+      --line: rgba(31, 36, 48, 0.1);
+      --accent: #115e59;
+      --accent-soft: rgba(17, 94, 89, 0.1);
+      --panel: rgba(255, 250, 240, 0.85);
+      --shadow: 0 24px 80px rgba(31, 36, 48, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(17, 94, 89, 0.18), transparent 34%),
+        radial-gradient(circle at top right, rgba(154, 52, 18, 0.12), transparent 28%),
+        linear-gradient(180deg, #fffaf0 0%, #f3efe6 100%);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      gap: 32px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px 32px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: "Iowan Old Style", "Palatino Linotype", serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 700;
+      line-height: 0.95;
+      color: var(--ink);
+    }
+
+    .tagline {
+      max-width: 44ch;
+      color: var(--ink-muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .platform-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(17, 94, 89, 0.2);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .version-chip {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--ink-soft);
+      background: rgba(31, 36, 48, 0.05);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 2px 7px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 11px 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    .btn-primary[disabled] {
+      background: rgba(31, 36, 48, 0.1);
+      color: var(--ink-soft);
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    .other-platforms summary {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0;
+      list-style: none;
+    }
+
+    .other-platforms summary::-webkit-details-marker { display: none; }
+
+    .other-platforms summary::before {
+      content: "▸ ";
+      font-size: 0.65rem;
+    }
+
+    .other-platforms[open] summary::before { content: "▾ "; }
+
+    .platform-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .platform-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 0.82rem;
+      transition: background 0.12s;
+    }
+
+    .platform-link:hover { background: var(--accent-soft); }
+
+    .sha-chip {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    .card-unreleased {
+      border-style: dashed;
+      opacity: 0.6;
+    }
+
+    .card-unreleased p {
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+    }
+
+    .empty {
+      padding: 48px 32px;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      text-align: center;
+      color: var(--ink-soft);
+    }
+
+    @media (max-width: 640px) {
+      header { display: grid; }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div>
+        <p class="eyebrow">Reflective</p>
+        <h1>Downloads</h1>
+      </div>
+      <div>
+        <p class="tagline">Native apps for macOS, Windows, and Linux. The right build for your machine is highlighted automatically.</p>
+        <p style="margin-top:10px;" id="detected-platform-line"></p>
+      </div>
+    </header>
+
+    <div id="grid" class="grid">
+      <div class="empty">Loading releases&hellip;</div>
+    </div>
+  </main>
+
+  <script>
+    const CDN = 'https://cdn.reflective.run/reflective-prod-releases';
+
+    const APPS = [
+      { id: 'folio',    label: 'Folio' },
+      { id: 'quorum',   label: 'Quorum' },
+      { id: 'scout',    label: 'Scout' },
+      { id: 'vouch',    label: 'Vouch' },
+      { id: 'wolfgang', label: 'Wolfgang' },
+      { id: 'inkling',  label: 'Inkling' },
+    ];
+
+    const PLATFORM_LABELS = {
+      'darwin-aarch64': 'macOS (Apple Silicon)',
+      'darwin-x86_64':  'macOS (Intel)',
+      'windows-x64':    'Windows (x64)',
+      'linux-x64':      'Linux (x64)',
+      'linux-aarch64':  'Linux (ARM64)',
+    };
+
+    function detectPlatform() {
+      const ua = navigator.userAgent;
+      const plat = (navigator.platform || '').toLowerCase();
+
+      const isMac = /Mac/.test(navigator.platform);
+      const isWin = /Win/.test(navigator.platform);
+      const isLinux = /Linux/.test(navigator.platform);
+
+      if (isMac) {
+        // Apple Silicon: reported via UA on macOS 11+ when running natively
+        // navigator.platform is still "MacIntel" in some browsers even on ARM;
+        // we use the more reliable canvas/CPU heuristic if available,
+        // but for a broad check we look at the UA string.
+        const isARM = /arm64|aarch64/i.test(ua) ||
+          // Chrome on Apple Silicon reports x86_64 in UA but we can detect via
+          // navigator.userAgentData on supported browsers
+          (typeof navigator.userAgentData !== 'undefined' &&
+            navigator.userAgentData.platform === 'macOS' &&
+            /arm/i.test(JSON.stringify(navigator.userAgentData)));
+        return isARM ? 'darwin-aarch64' : 'darwin-x86_64';
+      }
+      if (isWin) return 'windows-x64';
+      if (isLinux) {
+        return /arm|aarch64/i.test(ua) ? 'linux-aarch64' : 'linux-x64';
+      }
+      // Fallback
+      return 'darwin-aarch64';
+    }
+
+    function truncateSha(sha) {
+      if (!sha || sha === 'unknown') return '';
+      return sha.slice(0, 12);
+    }
+
+    function renderCard(appId, appLabel, manifest, detectedPlatform) {
+      if (!manifest) {
+        return `
+          <div class="card card-unreleased">
+            <div class="card-top">
+              <h2>${appLabel}</h2>
+            </div>
+            <p>Not yet released.</p>
+          </div>`;
+      }
+
+      const { version, files } = manifest;
+      const allPlatforms = Object.keys(PLATFORM_LABELS).filter(p => files && files[p]);
+      const primaryEntry = files && files[detectedPlatform] ? files[detectedPlatform] : null;
+      const otherPlatforms = allPlatforms.filter(p => p !== detectedPlatform);
+
+      const primaryLabel = PLATFORM_LABELS[detectedPlatform] || detectedPlatform;
+
+      const primaryBtn = primaryEntry
+        ? `<a class="btn-primary" href="${primaryEntry.url}" download>Download for ${primaryLabel}</a>`
+        : `<span class="btn-primary" disabled>Not available for ${primaryLabel}</span>`;
+
+      const otherLinks = otherPlatforms.map(p => {
+        const entry = files[p];
+        const sha = truncateSha(entry.sha256);
+        return `
+          <a class="platform-link" href="${entry.url}" download>
+            <span>${PLATFORM_LABELS[p] || p}</span>
+            ${sha ? `<span class="sha-chip">${sha}</span>` : ''}
+          </a>`;
+      }).join('');
+
+      const primarySha = primaryEntry ? truncateSha(primaryEntry.sha256) : '';
+      const shaDisplay = primarySha ? `<span class="sha-chip" title="${primaryEntry.sha256}">sha256: ${primarySha}…</span>` : '';
+
+      const othersSection = otherPlatforms.length > 0 ? `
+        <details class="other-platforms">
+          <summary>Other platforms</summary>
+          <div class="platform-list">${otherLinks}</div>
+        </details>` : '';
+
+      return `
+        <div class="card">
+          <div class="card-top">
+            <h2>${appLabel}</h2>
+            <span class="version-chip">v${version}</span>
+          </div>
+          ${primaryBtn}
+          ${shaDisplay}
+          ${othersSection}
+        </div>`;
+    }
+
+    async function fetchManifest(appId) {
+      try {
+        const res = await fetch(`${CDN}/${appId}/latest.json`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    }
+
+    async function load() {
+      const grid = document.getElementById('grid');
+      const platformLine = document.getElementById('detected-platform-line');
+
+      const detectedPlatform = detectPlatform();
+      platformLine.innerHTML = `<span class="platform-badge">${PLATFORM_LABELS[detectedPlatform] || detectedPlatform}</span> <span style="font-size:0.8rem;color:var(--ink-soft);margin-left:6px;">detected</span>`;
+
+      // Fetch all manifests in parallel
+      const results = await Promise.all(
+        APPS.map(async ({ id, label }) => {
+          const manifest = await fetchManifest(id);
+          return { id, label, manifest };
+        })
+      );
+
+      const cards = results.map(({ id, label, manifest }) =>
+        renderCard(id, label, manifest, detectedPlatform)
+      );
+
+      if (cards.length === 0) {
+        grid.innerHTML = '<div class="empty">No apps available yet.</div>';
+      } else {
+        grid.innerHTML = cards.join('');
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

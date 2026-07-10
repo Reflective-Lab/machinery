@@ -1,0 +1,48 @@
+{
+  "hosting": {
+    "site": "apps-reflective-se",
+    "public": "public",
+    "cleanUrls": true,
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/catalyst/api/**",
+        "run": {
+          "serviceId": "catalyst-backend",
+          "region": "europe-west1",
+          "projectId": "wolfgang-kb-prod"
+        }
+      },
+      {
+        "source": "/catalyst/status",
+        "run": {
+          "serviceId": "catalyst-backend",
+          "region": "europe-west1",
+          "projectId": "wolfgang-kb-prod"
+        }
+      },
+      {
+        "source": "/catalyst/**",
+        "destination": "/catalyst/index.html"
+      },
+      {
+        "source": "/api-server/**",
+        "run": {
+          "serviceId": "api-server",
+          "region": "europe-west1",
+          "projectId": "wolfgang-kb-prod"
+        }
+      }
+    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}

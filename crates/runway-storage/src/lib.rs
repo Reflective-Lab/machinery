@@ -1,0 +1,50 @@
+pub mod embedding;
+pub mod endpoints;
+mod http;
+pub mod local;
+pub mod remote;
+pub mod traits;
+
+pub use traits::{
+    document::{Document, DocumentStore, Filter, Order, Query},
+    embedding::{EMBEDDING_DIMS, Embedding, EmbeddingProvider},
+    event::{EventLog, EventQuery, StoredEvent, SyncableEventLog},
+    lease::{AcquireOutcome, LeaseRecord, LeaseScope, LeaseStore, RenewOutcome},
+    object::ObjectStore,
+    vector::{Match, VectorListEntry, VectorStore},
+};
+
+pub use local::sync::SyncEngine;
+
+use std::{path::Path, sync::Arc};
+
+use anyhow::Result;
+
+/// Composed storage kit — one instance per app, injected at startup.
+///
+/// Tauri apps call `StorageKit::local()`; Cloud Run apps call `StorageKit::remote()`.
+/// All Converge loops, Suggestors, and domain logic receive this and never care which backend is live.
+#[derive(Clone)]
+pub struct StorageKit {
+    pub documents: Arc<dyn DocumentStore>,
+    pub vectors: Arc<dyn VectorStore>,
+    pub objects: Arc<dyn ObjectStore>,
+    pub events: Arc<dyn EventLog>,
+    pub leases: Arc<dyn LeaseStore>,
+    pub embeddings: Arc<dyn EmbeddingProvider>,
+    /// Local-only: present when running against the redb backend. None for remote.
+    pub syncable_events: Option<Arc<dyn SyncableEventLog>>,
+}
+
+impl StorageKit {
+    /// Local storage for Tauri desktop apps. Uses redb (documents, vectors, events) + local FS (objects) + fastembed (embeddings).
+    /// `base` is the root directory (e.g. `~/.inkling` or `~/.wolfgang`).
+    pub async fn local(base: impl AsRef<Path>) -> Result<Self> {
+        local::LocalStorageKit::build(base.as_ref()).await
+    }
+
+    /// Remote storage for Cloud Run backends. Uses Firestore + GCS + Vertex AI.
+    pub async fn remote(config: remote::RemoteConfig) -> Result<Self> {
+        remote::RemoteStorageKit::build(config).await
+    }
+}

@@ -1,0 +1,61 @@
+name: contract (local + emulator)
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_VERSION: "1.96.0"
+  REFLECTIVE_SIBLING_REF: ${{ github.head_ref || 'main' }}
+
+jobs:
+  contract:
+    name: Contract Suite
+    runs-on: ubuntu-latest
+    # The suite has never completed inside a cap: 15/15 runs killed at
+    # 15m, then a 30m run killed at 30m26s (2026-07-02) — true duration
+    # unknown, cold-cache compile dominates. 60 exists to finally get ONE
+    # measured wall time; once known, tighten to observed + ~30% and file
+    # a perf finding if the suite itself (not compile) is the cost.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout Reflective sibling dependencies
+        run: bash scripts/ci/checkout-reflective-siblings.sh
+      - name: Install protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - uses: Swatinem/rust-cache@v2
+      - name: Install just
+        uses: extractions/setup-just@v2
+      - name: Run local contract suite
+        run: just contract-local
+      - name: Bring up emulator stack
+        run: docker compose -f crates/runway-storage/tests/docker-compose.contract.yml up -d --wait
+      - name: Seed runway-contract bucket in fake-gcs-server
+        run: |
+          curl -fsS -X POST 'http://localhost:4443/storage/v1/b?project=runway-contract' \
+            -H 'Content-Type: application/json' -d '{"name":"runway-contract"}' >/dev/null \
+            || curl -fsS 'http://localhost:4443/storage/v1/b/runway-contract' >/dev/null
+      - name: Run emulator contract suite
+        env:
+          FIRESTORE_EMULATOR_HOST: localhost:8080
+          PUBSUB_EMULATOR_HOST: localhost:8085
+          STORAGE_EMULATOR_HOST: http://localhost:4443
+        run: cargo test -p runway-storage --test contract_emulator -- --ignored --nocapture
+      - name: Run D5 Tier-2 ownership test (Firestore emulator Variant-2)
+        env:
+          FIRESTORE_EMULATOR_HOST: localhost:8080
+          PUBSUB_EMULATOR_HOST: localhost:8085
+          STORAGE_EMULATOR_HOST: http://localhost:4443
+        run: cargo test -p runway-app-host --test ownership_test variant2_concurrent_contention_against_firestore_emulator -- --nocapture
+      - name: Tear down emulator stack
+        if: always()
+        run: docker compose -f crates/runway-storage/tests/docker-compose.contract.yml down
