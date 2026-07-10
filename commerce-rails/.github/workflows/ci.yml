@@ -1,0 +1,40 @@
+name: CI
+
+# Canonical RP-CI-PARITY shape (KB/05-engineering/standards/ci-parity.md
+# in the root reflective repo). This workflow is a thin runner around
+# `just ci`. Local `just ci` exit code matches CI exit code on the
+# same commit.
+#
+# To add or modify a check, edit the Justfile `ci` recipe — never add
+# checks here. Drift between local and CI is what RP-CI-PARITY exists
+# to prevent.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_VERSION: "1.96.0"
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: just ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Checkout Reflective sibling dependencies
+        run: bash scripts/ci/checkout-reflective-siblings.sh
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - uses: extractions/setup-just@v4
+      - run: just ci

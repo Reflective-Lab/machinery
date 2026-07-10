@@ -1,0 +1,23 @@
+# Workspace-level clippy configuration for Commerce Rails.
+#
+# RP-HERMETIC-UNIT enforcement (Reflective QUALITY_BACKLOG.md →
+# QF-2026-06-02-05): the methods listed below construct HTTP clients with
+# implicit defaults, making it impossible for a test to substitute a stub
+# without the test author noticing.
+#
+# `CommerceRails::new(client, config)` is the public DI entry point;
+# tests that exercise the HTTP path should pass a stub client (e.g.
+# `wiremock`-backed). Tests that exercise only signature-verification
+# or webhook-parsing paths can annotate a default-client construction
+# inline with `#[allow(clippy::disallowed_methods)]` + a justification
+# comment (sentinel client; HTTP not exercised).
+#
+# Pattern reference:
+# Reflective KB/05-engineering/standards/hermetic-unit-tests.md
+
+disallowed-methods = [
+    { path = "reqwest::Client::new", allow-invalid = true, reason = "use DI per RP-HERMETIC-UNIT / QF-2026-06-02-05" },
+    { path = "reqwest::blocking::Client::new", allow-invalid = true, reason = "use DI per RP-HERMETIC-UNIT / QF-2026-06-02-05" },
+    { path = "reqwest::Client::builder", allow-invalid = true, reason = "use DI per RP-HERMETIC-UNIT / QF-2026-06-02-05" },
+    { path = "reqwest::blocking::Client::builder", allow-invalid = true, reason = "use DI per RP-HERMETIC-UNIT / QF-2026-06-02-05" },
+]
