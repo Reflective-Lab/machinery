@@ -21,17 +21,19 @@ pub struct ArtifactFingerprint {
     pub tree_hash: Option<String>,
 }
 
-/// Fingerprint a git repository at the given path
+/// Fingerprint the git repository containing the given path
 ///
 /// Returns fingerprint containing HEAD commit hash, dirty flag, and tree hash if dirty.
+/// The path may be anywhere inside a working tree; discovery walks upward to the
+/// enclosing repository (chart-room lives inside the machinery monorepo).
 ///
 /// Dirty detection includes only tracked file changes (excludes untracked files and submodules).
 ///
 /// # Errors
 ///
-/// Returns `git2::Error` if repository cannot be opened or git operations fail.
+/// Returns `git2::Error` if no repository contains the path or git operations fail.
 pub fn fingerprint_repo(repo_path: &Path) -> Result<ArtifactFingerprint, git2::Error> {
-    let repo = Repository::open(repo_path)?;
+    let repo = Repository::discover(repo_path)?;
 
     // Get HEAD commit hash
     let head = repo.head()?;
@@ -68,10 +70,10 @@ mod tests {
 
     #[test]
     fn test_fingerprint_current_repo() {
-        // Test on the current repository (converge-personas)
+        // Discovers the enclosing repository (machinery) from inside chart-room
         let repo_path = Path::new("../..");
         let fingerprint = fingerprint_repo(repo_path)
-            .expect("Should successfully fingerprint converge-personas repo");
+            .expect("Should successfully fingerprint the enclosing repo");
 
         // Verify commit hash is present and non-empty
         assert!(
