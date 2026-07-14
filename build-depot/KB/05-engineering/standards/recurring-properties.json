@@ -133,6 +133,13 @@
       "enforcement": "Catalog at `build-depot/docs/operations/approved-libraries.md` names the blessed library per concern (answers sprawl). Per-workspace `cargo-deny` `[bans]` enforces locally; `commerce-rails/deny.toml` present (`multiple-versions = warn`), `runtime-runway/deny.toml` landed 2026-07-10 mirroring that shape (tracked by QF-2026-07-10-01). Cross-project drift detector in Build-Depot — parse each repo's `[workspace.dependencies]` + `package.json` against the catalog and flag off-catalog libraries or version divergence (e.g. `sha2` 0.11 vs 0.10) — is future work.",
       "status": "Aspired (catalog authored + runtime-runway deny.toml landed; multiple-versions hardening to deny + cross-project detector pending)",
       "tracked_by": "QF-2026-07-10-01"
+    },
+    {
+      "id": "RP-DOC-CANON-FRESH",
+      "property": "Curated canon docs carry a freshness stamp (owner + verified-against SHA + last-reviewed) and go stale-gated; generated canon docs (quality/security/performance/gate views) regenerate byte-identically from evidence. A repo's canon references Build-Depot for factory doctrine and never restates it.",
+      "enforcement": "Doctrine and ownership split live here (`docs/operations/repository-adoption.md`, Factory-docs / generated-canon rule): repos own product/platform canon plus local-evidence views and reference Build-Depot for gate, scorecard, and RP semantics. Executable enforcement is repo-local and thin-runner-shaped: `bedrock-consolidated` ships `just canon-check` (arena `dim-doc-freshness`) that fails on a stale curated stamp or a non-idempotent generated doc, and emits the verdict as a `documentation_trust` FactorySignal into the Build-Depot graph. Bedrock canon generation (`just canon`) tracked by RFL-224; the gate + this RP's live enforcement tracked by RFL-225.",
+      "status": "Aspired (RP + ownership doctrine defined; bedrock generators (RFL-224) and canon-check gate (RFL-225) pending)",
+      "tracked_by": "—"
     }
   ]
 }

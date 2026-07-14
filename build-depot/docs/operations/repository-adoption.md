@@ -43,6 +43,31 @@ factory doctrine. A repo-local doc can use this wording:
 > tests, CI, incidents, and findings; Build-Depot normalizes that evidence into
 > the workspace factory graph.
 
+## Generated Canon Docs
+
+The "Factory docs" contract signal extends to a repo's *generated canon* — any
+doc that renders quality, security, performance, or gate status. These are
+factory-owned concerns, so they follow one rule continuously:
+
+- **Repo-owned:** product/platform canon (architecture, safety, business,
+  values) and *local-evidence views* — a repo's own numbers (arena scores,
+  `cargo audit`, benchmark baselines) rendered thinly, with a header pointing to
+  the Build-Depot scorecard / recurring property. A local-evidence view states
+  facts about *this repo*; it does not define the gate.
+- **Build-Depot-owned:** the gate surface (`quality-gates.md`), scorecard schema
+  (`factory-scorecard.md`), security operations doctrine (`security.md`), and the
+  recurring-property definitions (`recurring-properties.json`). A repo's
+  gate-status doc is a **pointer** to these, never a second definition.
+- **Freshness is a recurring property.** `RP-DOC-CANON-FRESH` governs it:
+  curated canon carries a freshness stamp and is stale-gated; generated canon
+  regenerates byte-identically from evidence. The executable check is repo-local
+  and thin-runner-shaped (e.g. `bedrock-consolidated`'s `just canon-check`), and
+  emits its verdict as a `documentation_trust` FactorySignal into the graph.
+
+The test: could a repo's canon doc drift from the factory truth and mislead a
+reader? If yes, it is restating doctrine and must become a pointer or a stamped
+local-evidence view.
+
 ## Adoption Tiers
 
 Adoption should roll out by operational risk, not alphabetically.
