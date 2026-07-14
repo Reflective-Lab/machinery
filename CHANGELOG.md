@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-14
+
+### Added (RFL-226 — software-factory consolidation)
+- build-depot: consolidated the software factory into `build-depot/` — engineering standards, the `recurring-properties.json` registry, the `rp-table.py`/`rp-table-check.py` tooling, `factory-overview.md`, and `approved-libraries.md` now live under Build-Depot; strategy-validator onboarded as a factory cohort member
+- build-depot: new recurring property `RP-DOC-CANON-FRESH` — documentation-trust freshness (curated canon stamped + stale-gated; generated canon regenerates byte-identically). Enforcement is repo-local and thin-runner-shaped and emits a `documentation_trust` FactorySignal
+- build-depot: generated-canon ownership rule in `repository-adoption.md` — repos own product canon + local-evidence views and reference Build-Depot for gate/scorecard/RP semantics; gate-status docs are pointers, never second definitions
+
 ### Changed (RFL-195 — Bedrock 4.0.0 migration wave)
 - runtime-runway: converge deps repointed from `Reflective-Lab/converge` v3.4.0 to `bedrock-platform` git tag v4.0.1 (registry flip pending the local Kellnr registry, Aug 2026); 10 dead converge declarations deleted; helm contracts switched from framework/bedrock path deps to the same git tag
 - runtime-runway: ported to converge 4.0 API (`ContextView`→`Context` trait, `ContextState`, typed `ProposedFact` construction, `select_chat_backend` via new `manifold-adapters` dep)
