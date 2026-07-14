@@ -98,9 +98,9 @@ fn build_envelope(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use helm_event_substrate::EventHub;
     use axum::body::Body;
     use axum::http::Request;
+    use helm_event_substrate::EventHub;
     use tower::ServiceExt;
 
     fn test_state() -> ApprovalsState {
