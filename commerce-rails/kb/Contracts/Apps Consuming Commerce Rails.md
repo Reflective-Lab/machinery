@@ -6,6 +6,8 @@ source: REVIEW_quorum-sense_2026-06-15
 
 **Audience:** You are reading this if you are building a marquee app that needs subscription, entitlement, or commercial gating. This document is the **consumer contract** — the only Commerce-Rails surface you should depend on.
 
+**Bootstrap checklist (App #2):** [Marquee App Seam](Marquee%20App%20Seam.md) — copy Quorum wiring without rereading the full contract.
+
 > **For implementors:** the action surface lives in the active handoff at [`(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md`](../../../HANDOFF_quorum-sense_2026-06-15.md) (ACTIVE; signed by all three architects 2026-06-15). This contract defines *what* to consume; the handoff tells you *when* each piece ships and *what you do* at each call-site. Read this contract to understand the shape; read the handoff to plan your work.
 
 **Workspace anchor:** [`(reflective-root)/BOUNDARY_REGISTRY.md`](../../../BOUNDARY_REGISTRY.md)
