@@ -1,0 +1,66 @@
+name: factory-doctor
+
+# Reusable factory workflow — offered by Build-Depot (machinery) to every repo.
+# Generic core (runs in any repo): RP-RELEASE-TRAIN-INTEGRITY — release-train.yaml
+# is parseable and every declared member directory exists. Authority extra (runs
+# only where build-depot is present, i.e. machinery): quality-doctor policy +
+# snapshot + RP-table drift. Machinery runs this on push/PR; consumers adopt it as
+# a caller (see docs/operations/adopting-the-factory.md).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  doctor:
+    name: factory-doctor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: RP-RELEASE-TRAIN-INTEGRITY — release-train.yaml
+        run: |
+          train="release-train.yaml"
+          if [ ! -f "$train" ]; then
+            echo "note: no release-train.yaml in this repo; skipping release-train integrity"
+            exit 0
+          fi
+          missing=0
+          while IFS=$'\t' read -r name dir; do
+            [ -z "$name" ] && continue
+            if [ -d "$dir" ]; then echo "  ✓ $name → $dir"; else echo "  ✗ $name → $dir (missing)"; missing=1; fi
+          done < <(awk '
+            /^projects:/ { p=1; next }
+            p && /^[^[:space:]]/ { p=0 }
+            p && /^  - name:/ { n=$3 }
+            p && /^    dir:/  { printf "%s\t%s\n", n, $2; n="" }
+          ' "$train")
+          [ "$missing" -eq 0 ] && echo "✓ release-train.yaml: all members present" || { echo "✗ release-train members missing"; exit 1; }
+
+      - name: Detect build-depot (authority repo only)
+        id: bd
+        run: |
+          if [ -f build-depot/package.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.bd.outputs.present == 'true'
+        with:
+          bun-version: "1.3.14"
+      - name: Install just
+        if: steps.bd.outputs.present == 'true'
+        uses: extractions/setup-just@v2
+      - name: build-depot quality-doctor + rp-table-check
+        if: steps.bd.outputs.present == 'true'
+        working-directory: build-depot
+        run: |
+          bun install --frozen-lockfile
+          just quality-doctor
+          just rp-table-check | grep -q OK && echo "✓ rp-table-check: OK" || { echo "✗ rp-table drift"; exit 1; }

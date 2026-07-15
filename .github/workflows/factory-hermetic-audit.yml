@@ -1,0 +1,75 @@
+name: factory-hermetic-audit
+
+# Reusable factory workflow — offered by Build-Depot (machinery) to every repo.
+# RP-HERMETIC-UNIT runtime defence-in-depth: run each Rust workspace's tests inside
+# an `unshare -rn` network namespace; if a test opens a socket the kernel denies it
+# and the test fails, catching dynamic bypass of the construction-layer clippy lint.
+# Generic: the workspace list is read from the CALLER's release-train.yaml
+# (`fresh_workspaces`). Deps are pre-fetched WITH network; tests run `--offline`
+# INSIDE the namespace. fail-fast:false so a leaky workspace doesn't hide the rest.
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        description: Rust toolchain to install
+        type: string
+        default: "1.96.0"
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: read release-train.yaml
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gen
+        name: Build workspace matrix from fresh_workspaces
+        run: |
+          matrix=$(awk '
+            /^fresh_workspaces:/ { f=1; next }
+            f && /^[^ ]/ { exit }
+            f && /- dir:/ { print $3 }
+          ' release-train.yaml \
+            | jq -R '{dir: .}' | jq -cs '{include: .}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "$matrix" | jq .
+
+  hermetic:
+    name: hermetic ${{ matrix.dir }}
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain
+        env:
+          TOOLCHAIN: ${{ inputs.toolchain || '1.96.0' }}
+        run: |
+          rustup toolchain install "$TOOLCHAIN" --profile minimal
+          rustup component add clippy rustfmt --toolchain "$TOOLCHAIN"
+      - name: Allow unprivileged user namespaces (Ubuntu 24.04 AppArmor)
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Verify user + network namespaces work
+        run: unshare -rn bash -c 'ip link show'
+      - name: Pre-fetch dependencies (network required)
+        env:
+          DIR: ${{ matrix.dir }}
+        run: ( cd "$DIR" && cargo fetch )
+      - name: Test under unshare -rn (offline)
+        env:
+          DIR: ${{ matrix.dir }}
+        run: |
+          cd "$DIR"
+          cargo test --all-targets --no-run
+          unshare -rn bash -c 'ip link set lo up && cargo test --all-targets --offline'

@@ -1,0 +1,33 @@
+# Machinery release train — single source of truth for machinery's publishable
+# workspaces. Machinery-scoped: this repo governs itself, no root required
+# (factory consolidation Phase 1, QF-2026-07-10-02).
+#
+# RP-RELEASE-TRAIN-INTEGRITY: a planned release ships its declared set atomically.
+# build-depot's project-doctor (check 1) and `just release-train-check` validate
+# parseability + directory existence against this file.
+#
+# build-depot/ observes the release train for quality/security/delivery/scorecard
+# signals; it is not itself a release-train member and holds no release authority.
+#
+# Fresh-clone CI uses `fresh_workspaces` (Cargo workspace roots) with conservative
+# first-run time budgets; exceeding a budget fails the fresh-clone gate so build/
+# test slowdowns are visible instead of silently compounding.
+
+version: 1
+
+projects:
+  - name: runway
+    dir: runtime-runway
+  - name: commerce
+    dir: commerce-rails
+
+fresh_workspaces:
+  - dir: runtime-runway
+    fresh_check_budget_seconds: 1200
+    fresh_test_budget_seconds: 1800
+  - dir: commerce-rails
+    fresh_check_budget_seconds: 900
+    fresh_test_budget_seconds: 1200
+  - dir: chart-room/strategic/validator
+    fresh_check_budget_seconds: 600
+    fresh_test_budget_seconds: 900

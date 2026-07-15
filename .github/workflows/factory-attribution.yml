@@ -1,0 +1,40 @@
+name: factory-attribution
+
+# Reusable factory workflow — offered by Build-Depot (machinery) to every repo.
+# RP-TEST-CODE-ATTRIBUTION: when a PR changes production source AND its
+# directly-corresponding test, the PR body or a commit message must classify the
+# change (Contract update / Fixture refresh / Real bug fix), bypassable with
+# [skip-attribution]. The canonical detector is fetched from build-depot so every
+# repo runs the same script. PR body is passed via env (never interpolated into a
+# shell command) to avoid workflow injection.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the PR (full history for base...head diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch the canonical detector from build-depot
+        uses: actions/checkout@v4
+        with:
+          repository: Reflective-Lab/machinery
+          sparse-checkout: build-depot/scripts/check-test-code-attribution.sh
+          sparse-checkout-cone-mode: false
+          path: .factory-kit
+      - name: Run test/code attribution check
+        env:
+          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
+          HEAD_REF: HEAD
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: bash .factory-kit/build-depot/scripts/check-test-code-attribution.sh
