@@ -61,6 +61,20 @@ jobs:
         run: |
           rustup toolchain install "$TOOLCHAIN" --profile minimal
           rustup component add clippy rustfmt --toolchain "$TOOLCHAIN"
+      - name: Install just + protoc
+        uses: extractions/setup-just@v2
+      - name: Install protoc
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: Native prep — run `just deps` if the workspace defines it
+        env:
+          DIR: ${{ matrix.dir }}
+        run: |
+          cd "$DIR"
+          if just --summary 2>/dev/null | tr ' ' '\n' | grep -qx deps; then
+            echo "→ just deps (repo-defined native prep)"; just deps
+          else
+            echo "no deps recipe; skipping native prep"
+          fi
       - name: clean + check + test within budget
         env:
           DIR: ${{ matrix.dir }}

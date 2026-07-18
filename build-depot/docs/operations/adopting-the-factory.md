@@ -52,6 +52,12 @@ Four small, repo-local things — nothing else:
    `release-train.yaml`. No workspace is hardcoded — Bedrock gets bedrock's
    workspaces, Applications gets its own.
 
+   **Native dependencies:** `factory-hermetic-audit` and `factory-fresh-clone`
+   install `protoc` and, if the workspace defines a `just deps` recipe, run it
+   before building — so repos with native prep (Bedrock's OR-Tools/HiGHS solver
+   builds via `just deps`) work without a bespoke workflow. Put native setup in a
+   `deps` recipe.
+
 3. **A canonical `Justfile`** with the fleet gate surface (`ci` = `fmt-check →
    check → lint → test`, `security-audit`, `delivery-preflight`) and a **`deny.toml`**.
    Copy the reference from `chart-room/strategic/validator/` — it is the smallest
