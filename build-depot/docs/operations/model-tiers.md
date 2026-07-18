@@ -94,6 +94,43 @@ can opt in per request with
 `chat_template_kwargs: {"enable_thinking": true}`; that traffic should almost
 always be routed to Tier 2 instead.
 
+### Client-side defaults for Tier 1 callers
+
+The server exposes generic OpenAI-compatible endpoints; taste is set by the
+caller. For Tier 1 workloads, two defaults are worth hard-coding into the
+client wrappers.
+
+**1. `max_tokens` by use-case class** — Gemma 4 E2B is verbose by nature
+(headers, multiple approaches, docstrings). Under-set `max_tokens` and it
+truncates mid-sentence; over-set and it wastes wall-clock time producing
+material the caller will throw away.
+
+| Use case                                     | Recommended `max_tokens` |
+| -------------------------------------------- | ------------------------ |
+| Structured JSON classification (Tier 1 core) | 128–256                  |
+| Short natural-language reply / triage note   | 256                      |
+| Single-function code answer                  | 300–500                  |
+| Anything longer                              | escalate to Tier 2       |
+
+Gemma 3 1B needs roughly half of these ceilings for the same task; it is
+terser out of the box.
+
+**2. Terse system prompt for code/answer tasks.** Without a system prompt,
+Gemma 4 E2B on a "write me X" query emits section headers, multiple
+implementations, and a tutorial. Adding a one-line system prompt like:
+
+> Provide exactly one solution. No alternatives, no section headers, no
+> preamble. Return only the code inside a single fenced block, plus at most
+> one sentence of explanation after it. Stop.
+
+collapses the same fibonacci-script request from 500 tokens / 88 s (still
+truncated) to **139 tokens / 22.6 s with `finish_reason: stop`** — a clean,
+self-terminating, single-function answer. ~4× wall-clock improvement per
+useful response, and the output is easier to consume downstream.
+
+Both defaults belong in a thin Tier 1 client wrapper so individual callers
+inherit them rather than repeatedly rediscovering the tuning.
+
 ## Escalation Contract
 
 Every tier speaks the same JSON schema in and out. Swapping which tier owns
