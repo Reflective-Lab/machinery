@@ -17,6 +17,11 @@ ci: fmt-check check lint test
 check:
     cargo check --workspace --all-targets
 
+# Release build of the whole workspace. Mirrors runtime-runway's `build`
+# so the root Justfile can iterate uniformly across sub-projects.
+build:
+    cargo build --workspace --release
+
 # Run the full test suite, also covering tests/benches/examples.
 test:
     cargo test --workspace --all-targets
