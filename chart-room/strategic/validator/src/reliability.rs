@@ -14,10 +14,10 @@ use std::time::Duration;
 
 use backoff::ExponentialBackoff;
 use backoff::ExponentialBackoffBuilder;
-use failsafe::backoff as cb_backoff;
-use failsafe::failure_policy;
 use failsafe::Config;
 use failsafe::StateMachine;
+use failsafe::backoff as cb_backoff;
+use failsafe::failure_policy;
 
 /// Configuration for exponential backoff retry logic
 #[derive(Debug, Clone)]
@@ -105,7 +105,8 @@ pub fn create_circuit_breaker(
     config: &CircuitBreakerConfig,
 ) -> StateMachine<failure_policy::ConsecutiveFailures<cb_backoff::Exponential>, ()> {
     let backoff_strategy = cb_backoff::exponential(config.initial_backoff, config.max_backoff);
-    let policy = failure_policy::consecutive_failures(config.consecutive_failures, backoff_strategy);
+    let policy =
+        failure_policy::consecutive_failures(config.consecutive_failures, backoff_strategy);
 
     Config::new().failure_policy(policy).build()
 }

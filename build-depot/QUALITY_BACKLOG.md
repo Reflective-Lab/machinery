@@ -208,6 +208,7 @@ and run `just rp-table-sync` (QF-2026-06-02-18, closed 2026-06-08).
 | RP-CI-PARITY | Every train repo's CI workflow is a thin runner around a single `just ci` recipe. Running `just ci` locally gives the same verdict as GitHub Actions on the same commit. | Standard `KB/05-engineering/standards/ci-parity.md` (2026-06-08) defines the canonical Justfile shape (`just ci` orchestrates `fmt-check → check → lint → test → security-audit`) and the canonical workflow shape (single `ci` job, one `run: just ci` step, standardised action versions). Pilot landed in `commerce-rails` 2026-06-08 (PR Reflective-Lab/commerce-rails#2). Cross-train migration tracked by `QF-2026-06-08-11`; per-repo CI-bootstrap gaps tracked by `QF-2026-06-08-07/-08/-09`. Mechanical drift check (project-doctor parser that asserts each train repo's `ci.yml` is a thin runner) is future work, deferred until the canonical shape stabilises through ≥3 workspace migrations. | Aspired (standard documented + first pilot landed; cross-train migration pending) | QF-2026-06-08-11 |
 | RP-POLICY-FRESH | The quality factory (`AGENTS.md`, `QUALITY_BACKLOG.md`, and their cross-references) stays internally consistent: policy files tracked; Snapshot fresh; cited `QF-*` IDs exist; `RP-*` `Tracked-by` references current open findings or `—`; cross-reference paths exist or are annotated `Created on first use`; root agent-pointer files present and tracked. | `just quality-doctor` recipe in root `Justfile`; wired into `.github/workflows/doctor.yml` unconditional `quality-doctor` job. | Enforced (via `.github/workflows/doctor.yml`) | — |
 | RP-SHIM-FIRST-CLASS | No workaround lands silently: every shim (linker/compiler leniency, #[ignore]d or commented-out test, CI-only gate divergence) carries an inline SHIM(QF-..., expires: ...) marker backed by a live ledger finding; expiries are promises; releases wait for unexpired shims on shipped cargo. | Policy in `AGENTS.md > Shims, disabled tests, and conditional escapes are first-class debt` (2026-07-03); standard `KB/05-engineering/standards/first-class-shims.md`; mechanical check `just shim-doctor` (scripts/factory/shim-doctor.sh) wired into `just doctor` and `.github/workflows/doctor.yml`. Scope v1: root-repo tracked files; fleet rollout residual. | Enforced (via .github/workflows/doctor.yml; root-repo scope) | QF-2026-07-03-01 |
+| RP-DEP-CATALOG | Each concern (HTTP, time, errors, async runtime, hashing, ...) resolves to exactly one blessed library at one version line across every project. No sprawl, no cross-project version drift. | Catalog at `build-depot/docs/operations/approved-libraries.md` names the blessed library per concern (answers sprawl). Per-workspace `cargo-deny` `[bans]` enforces locally; `commerce-rails/deny.toml` present (`multiple-versions = warn`), `runtime-runway/deny.toml` landed 2026-07-10 mirroring that shape (tracked by QF-2026-07-10-01). Cross-project drift detector in Build-Depot — parse each repo's `[workspace.dependencies]` + `package.json` against the catalog and flag off-catalog libraries or version divergence (e.g. `sha2` 0.11 vs 0.10) — is future work. | Aspired (catalog authored + runtime-runway deny.toml landed; multiple-versions hardening to deny + cross-project detector pending) | QF-2026-07-10-01 |
 <!-- END GENERATED RP-TABLE -->
 
 ## Open Findings
@@ -670,6 +671,96 @@ and run `just rp-table-sync` (QF-2026-06-02-18, closed 2026-06-08).
 
 
 ### Bucket C — Strategic improvement
+
+#### QF-2026-07-10-02
+
+- Date: 2026-07-10
+- Bucket: C. Strategic improvement
+- Area: AI-factory discipline / maintainability / supply-chain hygiene
+- Discovered during: paired session (software-factory consolidation)
+- Evidence: Factory governance was split across two git repos. machinery/build-depot
+  owned the doctrine, RP JSON, scorecard, and doctor script implementations, but the
+  RP-table generator/checker (`scripts/rp-table.py`, `rp-table-check.py`), the 14
+  standards `.md` files, and the factory CI workflows lived ONLY in the outer
+  `reflective` repo — machinery could not regenerate or verify its own RP table
+  without it. Separately, `chart-room/strategic/validator` (Rust binary,
+  `strategy-validator`) had no Justfile, no `deny.toml`, no CI, and was absent from
+  root orchestration and `factory-cohorts.json` — the one software project not
+  governed by the factory (and the one that carried 19 Dependabot alerts 2026-07-10).
+- Impact: Two-source-of-truth risk (diverged QUALITY_BACKLOG.md / recurring-properties.json);
+  machinery not self-contained; an ungoverned Rust project accumulating fmt + clippy +
+  supply-chain debt invisibly.
+- Risk if ignored: RP table silently drifts; consolidation reverses; ungoverned
+  projects ship unformatted, unlinted, un-audited code.
+- Effort: M
+- Owner: <unassigned>
+- Status: In progress
+- Next action: Consolidation landed 2026-07-10 (all additive, inside machinery):
+  (1) ported `rp-table.py` + `rp-table-check.py` into `build-depot/scripts/`; added
+  `rp-table` / `rp-table-sync` / `rp-table-check` recipes to `build-depot/Justfile`
+  (verified: rp-table-check OK, rp-table-sync in-sync). (2) Copied the 14 standards
+  `.md` into `build-depot/KB/05-engineering/standards/`. (3) Onboarded strategy-validator:
+  canonical Justfile (RP-CI-PARITY), `deny.toml`, fleet-aligned clippy lint config,
+  wired into root `Justfile` ci/check/test/security-audit and `factory-cohorts.json`;
+  `just ci` + `just security-audit` now GREEN. Remaining: migrate `backoff` (unmaintained,
+  RUSTSEC-2025-0012, tracked ignore in validator deny.toml); retire the now-duplicate
+  copies in the outer `reflective` repo (human decision — separate repo/remote).
+- Verifies via: `cd build-depot && just rp-table-check` → OK; `cd chart-room/strategic/validator && just ci && just security-audit` → green; `just factory-adoption-doctor` lists strategy-validator.
+- Supersedes / Superseded by: —
+- Codex-safe now: Yes — additive tooling/config + mechanical lint fixes.
+- Properties: RP-CI-PARITY, RP-DEP-CATALOG, RP-POLICY-FRESH
+- Confidence: H
+- Business leverage: One self-contained factory control plane; every Rust + TS
+  project plugs into the same gates; advisories caught before Dependabot.
+- Last reviewed: 2026-07-10 (Cycle 3)
+- Cycles open: 0
+- History:
+  - 2026-07-10: Opened (paired session; Cycle 3)
+- Standard promoted: build-depot/docs/operations/factory-overview.md
+
+#### QF-2026-07-10-01
+
+- Date: 2026-07-10
+- Bucket: C. Strategic improvement
+- Area: supply-chain hygiene / maintainability
+- Discovered during: paired session (dependency governance review)
+- Evidence: No catalog of blessed libraries; each Rust workspace declares deps
+  independently via `[workspace.dependencies]`, so nothing prevents two libraries
+  for one job or divergent versions across projects. Concrete drift: `sha2` is
+  `0.11` in `runtime-runway/Cargo.toml` vs `0.10` in `commerce-rails/Cargo.toml`.
+  `runtime-runway` had no `deny.toml` (only `clippy.toml`); `commerce-rails/deny.toml`
+  present. Dependabot surfaced 19 alerts on machinery (2026-07-10, all in
+  `chart-room/strategic/validator/Cargo.lock`) — a reactive signal that arrives
+  only after a version is public and flagged.
+- Impact: Library sprawl and cross-project version drift raise audit, patch, and
+  cognitive cost with no functional gain, and drift is invisible until someone
+  reads two manifests side by side. A local advisories gate catches vulnerable
+  versions before Dependabot rather than after.
+- Risk if ignored: Duplicate/near-duplicate crates accrete; shared versions
+  silently diverge; supply-chain surface grows unbounded; CVEs land as reactive
+  Dependabot noise instead of a pre-merge gate.
+- Effort: M
+- Owner: <unassigned>
+- Status: In progress
+- Next action: (1) `runtime-runway/deny.toml` landed 2026-07-10 (advisories +
+  bans, mirroring commerce-rails); wire `cargo deny check` into each repo's
+  `just security-audit`; (2) converge `sha2` to one version; (3) spec the
+  `RP-DEP-CATALOG` cross-project detector in Build-Depot.
+- Verifies via: `cargo deny check` (advisories + bans) green in every Rust
+  workspace and run in CI; Build-Depot detector reports zero off-catalog /
+  drifted deps.
+- Supersedes / Superseded by: —
+- Codex-safe now: Yes — additive policy + config, no runtime behavior change.
+- Properties: RP-DEP-CATALOG
+- Confidence: H
+- Business leverage: Bounds supply-chain audit surface; one blessed library per
+  job cuts patch/review fan-out; advisories gate shifts CVE detection left of
+  Dependabot.
+- Last reviewed: 2026-07-10 (Cycle 3)
+- Cycles open: 0
+- History:
+  - 2026-07-10: Opened (paired session; Cycle 3)
+- Standard promoted: build-depot/docs/operations/approved-libraries.md
 
 #### QF-2026-06-26-01
 

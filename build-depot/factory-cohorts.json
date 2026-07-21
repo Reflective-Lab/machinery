@@ -33,6 +33,11 @@
           "repo": "lattice-mesh",
           "tier": "Tier2",
           "role": "active subsystem proof"
+        },
+        {
+          "repo": "chart-room/strategic/validator",
+          "tier": "Tier2",
+          "role": "strategic decision validator (onboarded 2026-07-10, QF-2026-07-10-02)"
         }
       ]
     },

@@ -84,41 +84,44 @@ pub fn validate_policy(policy: &DeliveryPolicy) -> Result<(), ConfigError> {
     // Validate quiet hours if present
     if let Some(ref qh) = policy.quiet_hours {
         if qh.start_hour >= 24 {
-            return Err(ConfigError::ValidationError(
-                format!("start_hour must be < 24, got {}", qh.start_hour)
-            ));
+            return Err(ConfigError::ValidationError(format!(
+                "start_hour must be < 24, got {}",
+                qh.start_hour
+            )));
         }
         if qh.end_hour >= 24 {
-            return Err(ConfigError::ValidationError(
-                format!("end_hour must be < 24, got {}", qh.end_hour)
-            ));
+            return Err(ConfigError::ValidationError(format!(
+                "end_hour must be < 24, got {}",
+                qh.end_hour
+            )));
         }
     }
 
     // Validate rate limiting
     if policy.rate_limiting.max_alerts_per_hour == 0 {
         return Err(ConfigError::ValidationError(
-            "max_alerts_per_hour must be > 0".to_string()
+            "max_alerts_per_hour must be > 0".to_string(),
         ));
     }
     if policy.rate_limiting.window_minutes == 0 {
         return Err(ConfigError::ValidationError(
-            "window_minutes must be > 0".to_string()
+            "window_minutes must be > 0".to_string(),
         ));
     }
 
     // Validate routing rules
     if policy.routing_rules.is_empty() {
         return Err(ConfigError::ValidationError(
-            "At least one routing rule is required".to_string()
+            "At least one routing rule is required".to_string(),
         ));
     }
 
     for rule in &policy.routing_rules {
         if rule.recipients.is_empty() {
-            return Err(ConfigError::ValidationError(
-                format!("Routing rule for gate_id '{}' has no recipients", rule.gate_id)
-            ));
+            return Err(ConfigError::ValidationError(format!(
+                "Routing rule for gate_id '{}' has no recipients",
+                rule.gate_id
+            )));
         }
     }
 
@@ -254,7 +257,12 @@ recipients = ["team@example.com"]
 
         let result = validate_policy(&policy);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("max_alerts_per_hour"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("max_alerts_per_hour")
+        );
     }
 
     #[test]
@@ -272,7 +280,12 @@ recipients = ["team@example.com"]
 
         let result = validate_policy(&policy);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("At least one routing rule"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("At least one routing rule")
+        );
     }
 
     #[test]

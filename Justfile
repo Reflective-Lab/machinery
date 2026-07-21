@@ -33,6 +33,10 @@ check:
     echo "=== Checking runtime-runway ==="
     cd ../runtime-runway && just check
     echo "✅ runtime-runway check passed"
+    echo ""
+    echo "=== Checking chart-room/strategic/validator ==="
+    cd ../chart-room/strategic/validator && just check
+    echo "✅ strategy-validator check passed"
 
 # Run all tests
 test:
@@ -46,6 +50,9 @@ test:
     echo ""
     echo "=== Testing runtime-runway ==="
     cd ../runtime-runway && just test
+    echo ""
+    echo "=== Testing chart-room/strategic/validator ==="
+    cd ../chart-room/strategic/validator && just test
 
 # Full CI pipeline (all checks, lints, tests)
 ci:
@@ -59,6 +66,9 @@ ci:
     echo ""
     echo "=== Runtime-Runway CI ==="
     cd ../runtime-runway && just check && just test
+    echo ""
+    echo "=== Strategy-Validator CI ==="
+    cd ../chart-room/strategic/validator && just ci
     echo ""
     echo "✅ All machinery CI passed"
 
@@ -74,6 +84,9 @@ security-audit:
     echo ""
     echo "=== runtime-runway security audit ==="
     cd ../runtime-runway && just security-audit || echo "⚠️ runtime-runway audit reported issues"
+    echo ""
+    echo "=== strategy-validator security audit ==="
+    cd ../chart-room/strategic/validator && just security-audit || echo "⚠️ strategy-validator audit reported issues"
 
 # ── Machinery Monorepo Info ─────────────────────────────────────────────
 
@@ -86,6 +99,7 @@ status:
     echo "  • runtime-runway    (Rust, 405+ tests)"
     echo "  • commerce-rails    (Rust, 14+ tests)"
     echo "  • chart-room        (Documentation/Governance)"
+    echo "  • strategy-validator (Rust, chart-room/strategic/validator, 106 tests)"
     echo ""
     echo "Git status:"
     git status --short

@@ -96,14 +96,16 @@ pub fn parse_ack_file(path: &Path) -> Result<AckRecord, AuditError> {
         .unwrap_or_else(|| extract_gate_from_finding(&finding_id));
 
     // Extract severity
-    let severity = extract_field(&content, r"\*\*Severity:\*\* (.+)")
-        .unwrap_or_else(|| "WARN".to_string());
+    let severity =
+        extract_field(&content, r"\*\*Severity:\*\* (.+)").unwrap_or_else(|| "WARN".to_string());
 
     // Extract acknowledged_by
-    let acknowledged_by = extract_field(&content, r"\*\*Acknowledged by:\*\* (.+)")
-        .ok_or_else(|| AuditError::ParseError {
-            path: path.to_path_buf(),
-            reason: "Could not extract acknowledged_by".to_string(),
+    let acknowledged_by =
+        extract_field(&content, r"\*\*Acknowledged by:\*\* (.+)").ok_or_else(|| {
+            AuditError::ParseError {
+                path: path.to_path_buf(),
+                reason: "Could not extract acknowledged_by".to_string(),
+            }
         })?;
 
     // Extract acknowledged_at timestamp
@@ -113,8 +115,8 @@ pub fn parse_ack_file(path: &Path) -> Result<AckRecord, AuditError> {
             reason: "Could not extract acknowledged_at".to_string(),
         })?;
 
-    let acknowledged_at = DateTime::parse_from_rfc3339(&acknowledged_at_str)
-        .map_err(|e| AuditError::ParseError {
+    let acknowledged_at =
+        DateTime::parse_from_rfc3339(&acknowledged_at_str).map_err(|e| AuditError::ParseError {
             path: path.to_path_buf(),
             reason: format!("Invalid timestamp '{acknowledged_at_str}': {e}"),
         })?;
@@ -123,8 +125,8 @@ pub fn parse_ack_file(path: &Path) -> Result<AckRecord, AuditError> {
     let notes = extract_notes_section(&content).unwrap_or_default();
 
     // Check for late acknowledgment marker
-    let late_ack = content.contains("**LATE ACKNOWLEDGMENT**")
-        || content.contains("Late acknowledgment: Yes");
+    let late_ack =
+        content.contains("**LATE ACKNOWLEDGMENT**") || content.contains("Late acknowledgment: Yes");
 
     Ok(AckRecord {
         finding_id,
@@ -187,7 +189,7 @@ pub fn query_acks(acks_dir: &Path, filter: &AuditFilter) -> Vec<AckRecord> {
     }
 
     // Sort by acknowledged_at descending (most recent first)
-    records.sort_by(|a, b| b.acknowledged_at.cmp(&a.acknowledged_at));
+    records.sort_by_key(|r| std::cmp::Reverse(r.acknowledged_at));
 
     records
 }
@@ -220,7 +222,10 @@ pub fn format_audit_table(records: &[AckRecord]) -> String {
         };
 
         // Format timestamp
-        let when = record.acknowledged_at.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+        let when = record
+            .acknowledged_at
+            .format("%Y-%m-%dT%H:%M:%SZ")
+            .to_string();
 
         // Late indicator
         let late = if record.late_ack { "Yes " } else { "No  " };
@@ -228,7 +233,10 @@ pub fn format_audit_table(records: &[AckRecord]) -> String {
         // Truncate notes
         let notes = truncate_notes(&record.notes, 40);
 
-        let _ = writeln!(output, "{finding_id} | {ack_by} | {when} | {late} | {notes}");
+        let _ = writeln!(
+            output,
+            "{finding_id} | {ack_by} | {when} | {late} | {notes}"
+        );
     }
 
     output
@@ -302,7 +310,7 @@ mod tests {
         };
 
         let content = format!(
-            r#"# Acknowledgment: {finding_id}
+            r"# Acknowledgment: {finding_id}
 
 **Finding ID:** {finding_id}
 **Gate:** test-gate
@@ -317,7 +325,7 @@ Test acknowledgment notes for {finding_id}
 ## Status
 
 - [x] Finding reviewed
-"#
+"
         );
 
         fs::write(&file_path, content).unwrap();
@@ -327,7 +335,8 @@ Test acknowledgment notes for {finding_id}
     #[test]
     fn test_parse_ack_file() {
         let temp_dir = TempDir::new().unwrap();
-        let file_path = create_test_ack_file(temp_dir.path(), "2026-W05", "test-finding-001", false);
+        let file_path =
+            create_test_ack_file(temp_dir.path(), "2026-W05", "test-finding-001", false);
 
         let record = parse_ack_file(&file_path).unwrap();
 
@@ -393,18 +402,16 @@ Test acknowledgment notes for {finding_id}
 
     #[test]
     fn test_format_audit_table() {
-        let records = vec![
-            AckRecord {
-                finding_id: "content-publish-001".to_string(),
-                gate_id: "content-publish".to_string(),
-                severity: "WARN".to_string(),
-                acknowledged_by: "alice".to_string(),
-                acknowledged_at: DateTime::parse_from_rfc3339("2026-01-28T10:00:00+00:00").unwrap(),
-                notes: "Accepted risk for this release".to_string(),
-                late_ack: false,
-                file_path: PathBuf::from("test.md"),
-            },
-        ];
+        let records = vec![AckRecord {
+            finding_id: "content-publish-001".to_string(),
+            gate_id: "content-publish".to_string(),
+            severity: "WARN".to_string(),
+            acknowledged_by: "alice".to_string(),
+            acknowledged_at: DateTime::parse_from_rfc3339("2026-01-28T10:00:00+00:00").unwrap(),
+            notes: "Accepted risk for this release".to_string(),
+            late_ack: false,
+            file_path: PathBuf::from("test.md"),
+        }];
 
         let table = format_audit_table(&records);
 

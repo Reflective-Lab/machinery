@@ -53,11 +53,7 @@ decision:
 ";
 
     let lens_packs = test_lens_packs();
-    let errors = validator::validate_semantic_str(
-        yaml,
-        &lens_packs,
-        "test-gate",
-    );
+    let errors = validator::validate_semantic_str(yaml, &lens_packs, "test-gate");
 
     assert!(errors.is_empty(), "Expected no errors, got: {errors:?}");
 }
@@ -83,16 +79,18 @@ decision:
 ";
 
     let lens_packs = test_lens_packs();
-    let errors = validator::validate_semantic_str(
-        yaml,
-        &lens_packs,
-        "test-gate",
-    );
+    let errors = validator::validate_semantic_str(yaml, &lens_packs, "test-gate");
 
     assert_eq!(errors.len(), 1);
     let error_str = errors[0].to_string();
-    assert!(error_str.contains("E_VAL01_MISSING_PRIMARY"), "Expected VAL01 error, got: {error_str}");
-    assert!(error_str.contains("voice_b"), "Expected missing voice_b, got: {error_str}");
+    assert!(
+        error_str.contains("E_VAL01_MISSING_PRIMARY"),
+        "Expected VAL01 error, got: {error_str}"
+    );
+    assert!(
+        error_str.contains("voice_b"),
+        "Expected missing voice_b, got: {error_str}"
+    );
 }
 
 #[test]
@@ -121,15 +119,14 @@ decision:
 ";
 
     let lens_packs = test_lens_packs();
-    let errors = validator::validate_semantic_str(
-        yaml,
-        &lens_packs,
-        "test-gate",
-    );
+    let errors = validator::validate_semantic_str(yaml, &lens_packs, "test-gate");
 
     assert!(!errors.is_empty());
     let error_str = errors[0].to_string();
-    assert!(error_str.contains("E_VAL02_ACK_MISSING"), "Expected VAL02 ack missing error, got: {error_str}");
+    assert!(
+        error_str.contains("E_VAL02_ACK_MISSING"),
+        "Expected VAL02 ack missing error, got: {error_str}"
+    );
 }
 
 #[test]
@@ -158,15 +155,14 @@ decision:
 ";
 
     let lens_packs = test_lens_packs();
-    let errors = validator::validate_semantic_str(
-        yaml,
-        &lens_packs,
-        "test-gate",
-    );
+    let errors = validator::validate_semantic_str(yaml, &lens_packs, "test-gate");
 
     assert!(!errors.is_empty());
     let error_str = errors[0].to_string();
-    assert!(error_str.contains("E_VAL03_STOP_NOT_CLASS_A"), "Expected VAL03 error, got: {error_str}");
+    assert!(
+        error_str.contains("E_VAL03_STOP_NOT_CLASS_A"),
+        "Expected VAL03 error, got: {error_str}"
+    );
 }
 
 #[test]
@@ -195,15 +191,15 @@ decision:
 ";
 
     let lens_packs = test_lens_packs();
-    let errors = validator::validate_semantic_str(
-        yaml,
-        &lens_packs,
-        "test-gate",
-    );
+    let errors = validator::validate_semantic_str(yaml, &lens_packs, "test-gate");
 
     // Should have no VAL-03 errors (may still have VAL-01 if primaries logic applies)
-    let val03_errors: Vec<_> = errors.iter()
+    let val03_errors: Vec<_> = errors
+        .iter()
         .filter(|e| e.to_string().contains("E_VAL03"))
         .collect();
-    assert!(val03_errors.is_empty(), "Expected no VAL03 errors, got: {val03_errors:?}");
+    assert!(
+        val03_errors.is_empty(),
+        "Expected no VAL03 errors, got: {val03_errors:?}"
+    );
 }

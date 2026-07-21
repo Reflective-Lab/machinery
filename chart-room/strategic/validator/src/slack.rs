@@ -10,18 +10,20 @@
 //! - `ReliableSlackSender` with retry, circuit breaker, metrics, and DLQ support
 
 use std::env;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use backoff::Error as BackoffError;
 use failsafe::CircuitBreaker;
 use reqwest::{Client, StatusCode};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::delivery::{DeliveryError, DeliveryLogger};
 use crate::metrics;
-use crate::reliability::{create_backoff, create_circuit_breaker, CircuitBreakerConfig, RetryConfig};
+use crate::reliability::{
+    CircuitBreakerConfig, RetryConfig, create_backoff, create_circuit_breaker,
+};
 
 /// Configuration errors for Slack
 #[derive(Debug)]
@@ -640,7 +642,7 @@ mod tests {
             SlackConfigError::MissingEnvVar(var) => {
                 assert_eq!(var, "SLACK_WEBHOOK_URL");
             }
-            _ => panic!("Expected MissingEnvVar error"),
+            SlackConfigError::InvalidWebhookUrl(_) => panic!("Expected MissingEnvVar error"),
         }
     }
 
@@ -652,7 +654,8 @@ mod tests {
         assert!(msg.contains("SLACK_WEBHOOK_URL"));
         assert!(msg.contains("https://api.slack.com/apps"));
 
-        let invalid_err = SlackConfigError::InvalidWebhookUrl("https://example.com/bad".to_string());
+        let invalid_err =
+            SlackConfigError::InvalidWebhookUrl("https://example.com/bad".to_string());
         let msg = invalid_err.to_string();
         assert!(msg.contains("https://example.com/bad"));
         assert!(msg.contains("hooks.slack.com/services"));
@@ -693,10 +696,12 @@ mod tests {
 
         // Check header block
         assert_eq!(blocks[0]["type"], "header");
-        assert!(blocks[0]["text"]["text"]
-            .as_str()
-            .unwrap()
-            .contains("CRITICAL"));
+        assert!(
+            blocks[0]["text"]["text"]
+                .as_str()
+                .unwrap()
+                .contains("CRITICAL")
+        );
 
         // Check fields section has gate, check, severity, finding_id
         assert_eq!(blocks[1]["type"], "section");
@@ -837,16 +842,20 @@ mod tests {
             db_path.to_str().unwrap(),
             RetryConfig::default(),
             CircuitBreakerConfig::default(),
-        ).unwrap();
+        )
+        .unwrap();
 
         // Manually log a success with idempotency key
-        sender.logger().log_success(
-            "slack:#test-channel",
-            "WARN Alert: G_TEST/CHECK_01",
-            "slack-ok",
-            "2026-W05",
-            Some("slack-idem-key-123"),
-        ).unwrap();
+        sender
+            .logger()
+            .log_success(
+                "slack:#test-channel",
+                "WARN Alert: G_TEST/CHECK_01",
+                "slack-ok",
+                "2026-W05",
+                Some("slack-idem-key-123"),
+            )
+            .unwrap();
 
         // Create a runtime for the async test
         let rt = tokio::runtime::Runtime::new().unwrap();
@@ -918,7 +927,9 @@ mod tests {
         assert!(display.contains("transient"));
         assert!(display.contains("[retryable]"));
 
-        let config_error = SlackError::Config(SlackConfigError::MissingEnvVar("SLACK_WEBHOOK_URL".to_string()));
+        let config_error = SlackError::Config(SlackConfigError::MissingEnvVar(
+            "SLACK_WEBHOOK_URL".to_string(),
+        ));
         let display = config_error.to_string();
         assert!(display.contains("Configuration"));
         assert!(display.contains("SLACK_WEBHOOK_URL"));

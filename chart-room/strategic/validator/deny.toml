@@ -1,0 +1,50 @@
+# cargo-deny configuration (0.19.x)
+# https://embarkstudios.github.io/cargo-deny/
+#
+# Run: cargo deny check  (or via `just security-audit`)
+#
+# Mirrors commerce-rails/deny.toml and runtime-runway/deny.toml. Landed 2026-07-10
+# when strategy-validator was onboarded into the Build-Depot factory
+# (QF-2026-07-10-02, RP-DEP-CATALOG / RP-CI-PARITY).
+#
+# `cargo deny check advisories` reads the RustSec DB and fails on a known
+# vulnerability the moment it is published — a pre-merge / local gate that
+# catches vulnerable versions BEFORE Dependabot files a PR. This is the project
+# that carried 19 Dependabot alerts on 2026-07-10; this gate makes the next one
+# surface at `just ci` time instead.
+
+[advisories]
+unmaintained = "workspace"
+yanked = "warn"
+# Each entry must be justified inline. Tracked for paydown in the Build-Depot ledger.
+ignore = [
+    # backoff v0.4.0 (direct dep, retry logic) is unmaintained. No CVE — advisory
+    # only. Successor is `backon`/`exponential-backoff`; migration is a real code
+    # change tracked by QF-2026-07-10-02. Accepted until then.
+    "RUSTSEC-2025-0012",
+]
+
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "BSL-1.0",
+    "CC0-1.0",
+    "MPL-2.0",
+    "NCSA",
+    "Unlicense",
+    "CDLA-Permissive-2.0",
+]
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"

@@ -9,10 +9,8 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     // Read TEAM.md and GATES.md
-    let team_md = fs::read_to_string("../../TEAM.md")
-        .expect("Failed to read TEAM.md");
-    let gates_md = fs::read_to_string("../../GATES.md")
-        .expect("Failed to read GATES.md");
+    let team_md = fs::read_to_string("../../TEAM.md").expect("Failed to read TEAM.md");
+    let gates_md = fs::read_to_string("../../GATES.md").expect("Failed to read GATES.md");
 
     // Parse personas from TEAM.md
     let personas = parse_team_md(&team_md);
@@ -38,9 +36,9 @@ fn main() {
     // Add User entities with parent Team references
     for persona in personas {
         entities.push(json!({
-            "uid": {"type": "ConvergePersonas::User", "id": persona.persona_id},
+            "uid": {"type": "ConvergePersonas::User", "id": persona.id},
             "attrs": {
-                "persona_id": persona.persona_id,
+                "persona_id": persona.id,
                 "authority_tier": persona.authority_tier,
             },
             "parents": [
@@ -52,15 +50,16 @@ fn main() {
     // Add Gate entities
     for gate in gates {
         // Convert persona IDs to User entity UIDs for elevated_approvers
-        let elevated_approvers: Vec<serde_json::Value> = gate.elevated_blocking_evals
+        let elevated_approvers: Vec<serde_json::Value> = gate
+            .elevated_blocking_evals
             .iter()
             .map(|persona_id| json!({"type": "ConvergePersonas::User", "id": persona_id}))
             .collect();
 
         entities.push(json!({
-            "uid": {"type": "ConvergePersonas::Gate", "id": gate.gate_id},
+            "uid": {"type": "ConvergePersonas::Gate", "id": gate.id},
             "attrs": {
-                "gate_id": gate.gate_id,
+                "gate_id": gate.id,
                 "risk_class": gate.risk_class,
                 "elevated_approvers": elevated_approvers,
             },
@@ -69,30 +68,28 @@ fn main() {
     }
 
     // Write entities.json
-    let entities_json = serde_json::to_string_pretty(&entities)
-        .expect("Failed to serialize entities");
+    let entities_json =
+        serde_json::to_string_pretty(&entities).expect("Failed to serialize entities");
 
     let output_path = Path::new("cedar/entities.json");
-    fs::create_dir_all(output_path.parent().unwrap())
-        .expect("Failed to create cedar directory");
-    fs::write(output_path, entities_json)
-        .expect("Failed to write entities.json");
+    fs::create_dir_all(output_path.parent().unwrap()).expect("Failed to create cedar directory");
+    fs::write(output_path, entities_json).expect("Failed to write entities.json");
 
     println!("Generated {} Cedar entities", entities.len());
 }
 
 #[derive(Debug)]
 struct Persona {
-    persona_id: String,
+    id: String,
     team: String,
     authority_tier: String,
 }
 
 #[derive(Debug)]
 struct Gate {
-    gate_id: String,
+    id: String,
     risk_class: String,
-    elevated_blocking_evals: Vec<String>,  // Persona IDs with -eval suffix stripped
+    elevated_blocking_evals: Vec<String>, // Persona IDs with -eval suffix stripped
 }
 
 fn parse_team_md(content: &str) -> Vec<Persona> {
@@ -115,15 +112,12 @@ fn parse_team_md(content: &str) -> Vec<Persona> {
 
         // Parse table rows
         if in_roster_table && trimmed.starts_with('|') {
-            let parts: Vec<&str> = trimmed
-                .split('|')
-                .map(|s| s.trim())
-                .collect();
+            let parts: Vec<&str> = trimmed.split('|').map(str::trim).collect();
 
             // Valid row has at least 6 columns (empty, persona_id, persona_name, team, authority_tier, tier_rationale, empty)
             if parts.len() >= 6 && !parts[1].is_empty() && parts[1] != "persona_id" {
                 personas.push(Persona {
-                    persona_id: parts[1].to_string(),
+                    id: parts[1].to_string(),
                     team: parts[3].to_string(),
                     authority_tier: parts[4].to_string(),
                 });
@@ -136,9 +130,7 @@ fn parse_team_md(content: &str) -> Vec<Persona> {
         }
     }
 
-    if personas.is_empty() {
-        panic!("No personas found in TEAM.md");
-    }
+    assert!(!personas.is_empty(), "No personas found in TEAM.md");
 
     personas
 }
@@ -164,10 +156,7 @@ fn parse_gates_md(content: &str) -> Vec<Gate> {
 
         // Parse table rows
         if in_policy_table && trimmed.starts_with('|') {
-            let parts: Vec<&str> = trimmed
-                .split('|')
-                .map(|s| s.trim())
-                .collect();
+            let parts: Vec<&str> = trimmed.split('|').map(str::trim).collect();
 
             // Valid row has 13 parts (empty at start/end + 11 data columns)
             // Columns: gate_id, gate_name, type, promotion_target, risk_class,
@@ -176,22 +165,23 @@ fn parse_gates_md(content: &str) -> Vec<Gate> {
             if parts.len() >= 13 && !parts[1].is_empty() && parts[1] != "gate_id" {
                 // Column 8 (index 8 in parts) is elevated_blocking_evals
                 let elevated_raw = parts[8];
-                let elevated_blocking_evals: Vec<String> = if elevated_raw == "—" || elevated_raw.is_empty() {
-                    Vec::new()
-                } else {
-                    elevated_raw
-                        .split(',')
-                        .map(|s| s.trim())
-                        .filter(|s| !s.is_empty())
-                        .map(|s| {
-                            // Strip -eval suffix: "sre-operations-eval" -> "sre-operations"
-                            s.strip_suffix("-eval").unwrap_or(s).to_string()
-                        })
-                        .collect()
-                };
+                let elevated_blocking_evals: Vec<String> =
+                    if elevated_raw == "—" || elevated_raw.is_empty() {
+                        Vec::new()
+                    } else {
+                        elevated_raw
+                            .split(',')
+                            .map(str::trim)
+                            .filter(|s| !s.is_empty())
+                            .map(|s| {
+                                // Strip -eval suffix: "sre-operations-eval" -> "sre-operations"
+                                s.strip_suffix("-eval").unwrap_or(s).to_string()
+                            })
+                            .collect()
+                    };
 
                 gates.push(Gate {
-                    gate_id: parts[1].to_string(),
+                    id: parts[1].to_string(),
                     risk_class: parts[5].to_string(),
                     elevated_blocking_evals,
                 });
@@ -204,9 +194,7 @@ fn parse_gates_md(content: &str) -> Vec<Gate> {
         }
     }
 
-    if gates.is_empty() {
-        panic!("No gates found in GATES.md Policy Table");
-    }
+    assert!(!gates.is_empty(), "No gates found in GATES.md Policy Table");
 
     gates
 }

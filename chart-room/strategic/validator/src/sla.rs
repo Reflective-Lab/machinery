@@ -11,7 +11,7 @@ use std::path::Path;
 use chrono::{DateTime, FixedOffset, Utc};
 use walkdir::WalkDir;
 
-use crate::audit::{parse_ack_file, AckRecord};
+use crate::audit::{AckRecord, parse_ack_file};
 
 /// SLA threshold: WARN findings must be acknowledged within 72 hours
 pub const SLA_HOURS: i64 = 72;
@@ -54,7 +54,11 @@ fn scan_warn_findings(fixtures_dir: &Path) -> Vec<WarnFinding> {
     for entry in WalkDir::new(fixtures_dir)
         .into_iter()
         .filter_map(Result::ok)
-        .filter(|e| e.path().extension().is_some_and(|ext| ext == "yaml" || ext == "yml"))
+        .filter(|e| {
+            e.path()
+                .extension()
+                .is_some_and(|ext| ext == "yaml" || ext == "yml")
+        })
     {
         let path = entry.path();
 
@@ -104,12 +108,10 @@ fn scan_warn_findings(fixtures_dir: &Path) -> Vec<WarnFinding> {
             });
 
         // Generate a finding_id from the file path/name
-        let finding_id = path
-            .file_stem()
-            .map_or_else(
-                || format!("{gate_id}-unknown"),
-                |s| s.to_string_lossy().to_string(),
-            );
+        let finding_id = path.file_stem().map_or_else(
+            || format!("{gate_id}-unknown"),
+            |s| s.to_string_lossy().to_string(),
+        );
 
         findings.push(WarnFinding {
             finding_id,
@@ -200,7 +202,7 @@ pub fn detect_sla_breaches(fixtures_dir: &Path, acks_dir: &Path) -> Vec<SlaBreac
     }
 
     // Sort by hours_overdue descending (most overdue first)
-    breaches.sort_by(|a, b| b.hours_overdue.cmp(&a.hours_overdue));
+    breaches.sort_by_key(|b| std::cmp::Reverse(b.hours_overdue));
 
     breaches
 }
@@ -283,7 +285,7 @@ decision:
             .with_timezone(&FixedOffset::east_opt(0).unwrap());
 
         let content = format!(
-            r#"# Acknowledgment: {finding_id}
+            r"# Acknowledgment: {finding_id}
 
 **Finding ID:** {finding_id}
 **Gate:** test-gate
@@ -294,7 +296,7 @@ decision:
 ## Notes
 
 Test notes
-"#,
+",
             timestamp = timestamp.to_rfc3339()
         );
 
@@ -372,8 +374,7 @@ Test notes
             finding_id: "test-finding-001".to_string(),
             gate_id: "test-gate".to_string(),
             severity: "WARN".to_string(),
-            finding_timestamp: Utc::now()
-                .with_timezone(&FixedOffset::east_opt(0).unwrap()),
+            finding_timestamp: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
             hours_overdue: 28, // 28 hours past the 72h SLA
             late_acked: false,
             acked_at: None,
@@ -394,8 +395,7 @@ Test notes
             finding_id: "test-finding-002".to_string(),
             gate_id: "test-gate".to_string(),
             severity: "WARN".to_string(),
-            finding_timestamp: Utc::now()
-                .with_timezone(&FixedOffset::east_opt(0).unwrap()),
+            finding_timestamp: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
             hours_overdue: 8, // 8 hours past the 72h SLA
             late_acked: true,
             acked_at: Some(acked_at),

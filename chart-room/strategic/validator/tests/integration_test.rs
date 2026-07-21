@@ -26,7 +26,10 @@ fn all_fixtures_pass_validation() {
         eprintln!("STDERR:\n{stderr}");
     }
 
-    assert!(output.status.success(), "Validator exited with non-zero status");
+    assert!(
+        output.status.success(),
+        "Validator exited with non-zero status"
+    );
 
     // Verify expected counts in output
     assert!(
@@ -39,12 +42,23 @@ fn all_fixtures_pass_validation() {
 fn validator_loads_lens_packs_config() {
     // Verify the config file exists and is loadable
     let config_path = env!("CARGO_MANIFEST_DIR").to_owned() + "/../config/lens_packs.yaml";
-    let content = std::fs::read_to_string(&config_path)
-        .expect("lens_packs.yaml should exist");
+    let content = std::fs::read_to_string(&config_path).expect("lens_packs.yaml should exist");
 
     // Basic structure check
-    assert!(content.contains("primary_voices"), "Config should define primary_voices");
-    assert!(content.contains("counter_voices"), "Config should define counter_voices");
-    assert!(content.contains("content-publish"), "Config should define content-publish gate");
-    assert!(content.contains("funding-narrative"), "Config should define funding-narrative gate");
+    assert!(
+        content.contains("primary_voices"),
+        "Config should define primary_voices"
+    );
+    assert!(
+        content.contains("counter_voices"),
+        "Config should define counter_voices"
+    );
+    assert!(
+        content.contains("content-publish"),
+        "Config should define content-publish gate"
+    );
+    assert!(
+        content.contains("funding-narrative"),
+        "Config should define funding-narrative gate"
+    );
 }

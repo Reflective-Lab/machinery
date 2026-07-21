@@ -8,13 +8,32 @@ description = "Validate strategy gate fixtures against JSON schemas"
 [lints.rust]
 unsafe_code = "forbid"
 
+# Lint policy aligned to the Build-Depot fleet baseline (mirrors
+# runtime-runway [workspace.lints.clippy]). Build-Depot decides the rule;
+# this project adopts it so `just lint` (-D warnings) gives the same verdict
+# across every Rust project in machinery. Onboarded 2026-07-10 (QF-2026-07-10-02).
 [lints.clippy]
 all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
+similar_names = "allow"
+too_many_lines = "allow"
+items_after_statements = "allow"
+ignore_without_reason = "allow"
+unnecessary_wraps = "allow"
+single_match_else = "allow"
+semicolon_if_nothing_returned = "allow"
 module_name_repetitions = "allow"
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_sign_loss = "allow"
+cast_lossless = "allow"
+cast_precision_loss = "allow"
 must_use_candidate = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
+doc_markdown = "allow"
+uninlined_format_args = "allow"
+needless_pass_by_value = "allow"
 
 [dependencies]
 backoff = { version = "0.4", features = ["tokio"] }
@@ -23,7 +42,7 @@ chrono = "0.4"
 clap = { version = "4.5", features = ["derive"] }
 colored = "2.1"
 failsafe = "1.3"
-git2 = "0.20"
+git2 = "0.21"
 governor = "0.7"
 jsonschema = "0.18"
 lettre = { version = "0.11.19", features = ["smtp-transport", "tokio1-native-tls", "builder", "pool"] }
