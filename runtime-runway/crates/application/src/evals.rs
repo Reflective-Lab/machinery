@@ -146,7 +146,9 @@ pub async fn run_eval(fixture: &EvalFixture) -> EvalResult {
 
     let mut context = ContextState::new();
     for seed in &fixture.seeds {
-        if let Err(e) = context.add_input(ContextKey::Seeds, seed.id.as_str(), seed.content.as_str()) {
+        if let Err(e) =
+            context.add_input(ContextKey::Seeds, seed.id.as_str(), seed.content.as_str())
+        {
             return EvalResult::error(
                 &fixture.eval_id,
                 run_id,

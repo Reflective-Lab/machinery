@@ -1,0 +1,87 @@
+name: factory-fresh-clone
+
+# Reusable factory workflow — offered by Build-Depot (machinery) to every repo.
+# RP-FRESH-CLONE-GREEN: a fresh checkout with a clean cargo cache must build and
+# test green within a per-workspace time budget. Generic: the workspace list and
+# budgets are read from the CALLER's release-train.yaml (`fresh_workspaces`), so no
+# repo is hardcoded. Machinery runs it on a schedule; Bedrock/Applications adopt it
+# with a 3-line caller (see docs/operations/adopting-the-factory.md).
+
+on:
+  workflow_call:
+    inputs:
+      toolchain:
+        description: Rust toolchain to install
+        type: string
+        default: "1.96.0"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: read release-train.yaml
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gen
+        name: Build workspace matrix from fresh_workspaces
+        run: |
+          matrix=$(awk '
+            /^fresh_workspaces:/ { f=1; next }
+            f && /^[^ ]/ { exit }
+            f && /- dir:/ { if (d) print d, cb, tb; d=$3; cb=0; tb=0 }
+            f && /fresh_check_budget_seconds:/ { cb=$2 }
+            f && /fresh_test_budget_seconds:/  { tb=$2 }
+            END { if (d) print d, cb, tb }
+          ' release-train.yaml \
+            | jq -R 'split(" ") | {dir: .[0], check: (.[1]|tonumber), test: (.[2]|tonumber)}' \
+            | jq -cs '{include: .}')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "$matrix" | jq .
+
+  fresh:
+    name: fresh ${{ matrix.dir }}
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Rust toolchain
+        env:
+          TOOLCHAIN: ${{ inputs.toolchain || '1.96.0' }}
+        run: |
+          rustup toolchain install "$TOOLCHAIN" --profile minimal
+          rustup component add clippy rustfmt --toolchain "$TOOLCHAIN"
+      - name: Install just + protoc
+        uses: extractions/setup-just@v2
+      - name: Install protoc
+        run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: Native prep — run `just deps` if the workspace defines it
+        env:
+          DIR: ${{ matrix.dir }}
+        run: |
+          cd "$DIR"
+          if just --summary 2>/dev/null | tr ' ' '\n' | grep -qx deps; then
+            echo "→ just deps (repo-defined native prep)"; just deps
+          else
+            echo "no deps recipe; skipping native prep"
+          fi
+      - name: clean + check + test within budget
+        env:
+          DIR: ${{ matrix.dir }}
+          CHECK_BUDGET: ${{ matrix.check }}
+          TEST_BUDGET: ${{ matrix.test }}
+        run: |
+          cd "$DIR"
+          cargo clean
+          timeout "$CHECK_BUDGET" cargo check --workspace --all-targets
+          timeout "$TEST_BUDGET" cargo test --workspace --all-targets

@@ -47,7 +47,7 @@
       "wrapper": "virtual",
       "big_repo_decision": "keep-separate",
       "decision_reason": "These repos should share the same app adoption contract while retaining separate product ownership.",
-      "adoption_target": "app contract: AGENTS pointer, Justfile, just ci, CI calling Just, security evidence or accepted risk, Linear label",
+      "adoption_target": "app contract: AGENTS pointer, Justfile, just ci, CI calling Just, security evidence or accepted risk, Linear label; marquee seam: boundary-manifest.toml, boundary-doctor in ci, UPSTREAM_REQUIREMENTS.md, {app}-platform crate — see build-depot/docs/operations/marquee-app-seam-contract.md",
       "members": [
         {
           "repo": "alias-apps",

@@ -97,7 +97,12 @@ Keep each insight concise (1-2 sentences).".to_string(),
 
         prompt.push_str("\n## Proposed Strategies\n");
         for fact in ctx.get(ContextKey::Strategies) {
-            let _ = writeln!(prompt, "- {}: {}", fact.id(), fact.text().unwrap_or_default());
+            let _ = writeln!(
+                prompt,
+                "- {}: {}",
+                fact.id(),
+                fact.text().unwrap_or_default()
+            );
         }
 
         prompt.push_str("\n## Evaluations\n");
@@ -339,7 +344,12 @@ Keep each risk assessment concise (2-3 sentences)."
 
         prompt.push_str("\n## Proposed Strategies\n");
         for fact in ctx.get(ContextKey::Strategies) {
-            let _ = writeln!(prompt, "- {}: {}", fact.id(), fact.text().unwrap_or_default());
+            let _ = writeln!(
+                prompt,
+                "- {}: {}",
+                fact.id(),
+                fact.text().unwrap_or_default()
+            );
         }
 
         prompt.push_str("\n## Strategy Evaluations\n");
@@ -518,7 +528,10 @@ mod tests {
         Engine::new().run(ctx).await.unwrap().context
     }
 
-    async fn promote_proposals(mut ctx: ContextState, proposals: Vec<ProposedFact>) -> ContextState {
+    async fn promote_proposals(
+        mut ctx: ContextState,
+        proposals: Vec<ProposedFact>,
+    ) -> ContextState {
         for proposal in proposals {
             ctx.add_proposal(proposal).unwrap();
         }

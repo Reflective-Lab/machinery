@@ -16,6 +16,37 @@ factory-adoption:
 scorecard:
     cd build-depot && just scorecard
 
+# Validate machinery/release-train.yaml (RP-RELEASE-TRAIN-INTEGRITY): parseable,
+# one name+dir per project, every member directory exists.
+release-train-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    train="release-train.yaml"
+    [[ -f "$train" ]] || { echo "✗ $train missing"; exit 1; }
+    missing=0
+    while IFS=$'\t' read -r name dir; do
+        [[ -z "$name" ]] && continue
+        if [[ -d "$dir" ]]; then echo "  ✓ $name → $dir"; else echo "  ✗ $name → $dir (missing)"; missing=1; fi
+    done < <(awk '
+        /^projects:/ { p=1; next }
+        p && /^[^[:space:]]/ { p=0 }
+        p && /^  - name:/ { n=$3 }
+        p && /^    dir:/  { printf "%s\t%s\n", n, $2; n="" }
+    ' "$train")
+    [[ "$missing" -eq 0 ]] && echo "✓ release-train.yaml: all members present" || { echo "✗ release-train members missing"; exit 1; }
+
+# Machinery factory drift gate (root-independent): quality-doctor + RP-table sync
+# + release-train integrity. Mirrors what CI runs in .github/workflows/doctor.yml.
+factory-doctor:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    cd build-depot && just quality-doctor; qd=$?
+    cd "{{justfile_directory()}}/build-depot" && just rp-table-check | grep -q OK && echo "✓ rp-table-check: OK" || { echo "✗ rp-table-check: DRIFT"; qd=1; }
+    cd "{{justfile_directory()}}" && just release-train-check; rt=$?
+    total=$((qd + rt))
+    [[ "$total" -eq 0 ]] && echo "── ✓ factory-doctor: machinery clean ──" || echo "── ✗ factory-doctor: $total check group(s) failed ──"
+    exit "$total"
+
 # ── Full Machinery CI ───────────────────────────────────────────────────
 
 # Check all sub-projects (type-check + compile)

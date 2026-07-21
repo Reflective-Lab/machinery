@@ -18,14 +18,16 @@ pub mod sse {
 
 pub use builder::{BuiltHost, JobsRuntime, MountedJobs, RunwayAppHostBuilder, SpaConfig};
 pub use context::HostContext;
+/// Realtime event-hub types — moved to `helm-event-substrate` (RFL-171 T5).
+/// Re-exported here so callers importing from `runway_app_host` see no breakage.
+pub use helm_event_substrate::{
+    EventCursor, EventEnvelope, EventHub, EventHubHandle, EventSubscription,
+};
 pub use job_key::{InvalidJobKey, JobKey};
 pub use module::{HelmModule, ModuleState, TonicService};
 pub use ownership::{
     DEFAULT_RENEW_INTERVAL, DEFAULT_TTL, SessionOwnershipLayer, process_holder_id,
 };
-/// Realtime event-hub types — moved to `helm-event-substrate` (RFL-171 T5).
-/// Re-exported here so callers importing from `runway_app_host` see no breakage.
-pub use helm_event_substrate::{EventCursor, EventEnvelope, EventHub, EventHubHandle, EventSubscription};
 
 use std::sync::Arc;
 

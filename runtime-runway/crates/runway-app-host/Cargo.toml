@@ -15,11 +15,11 @@ license.workspace = true
 # RP-LAYERING (RFL-128): HelmModule / ModuleState now live in this neutral
 # contract crate; runway-app-host consumes and re-exports them so callers
 # importing from runway-app-host see no breakage.
-helm-module-contracts = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1" }
+helm-module-contracts = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.1.0" }
 # RP-LAYERING (RFL-171): EventHub / realtime types and SSE transport now live
 # in this neutral substrate crate; runway-app-host re-exports them so callers
 # see no breakage.
-helm-event-substrate = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.0.1", features = ["sse"] }
+helm-event-substrate = { git = "ssh://git@github.com/Reflective-Lab/bedrock-platform", tag = "v4.1.0", features = ["sse"] }
 runway-auth = { workspace = true }
 runway-middleware = { workspace = true }
 runway-storage = { workspace = true }

@@ -1,5 +1,7 @@
 # App Execution Container
 
+**Bootstrap checklist (App #2):** [Marquee App Seam](../Contracts/Marquee%20App%20Seam.md) — copy Quorum `runway.app.json` + host wiring.
+
 > **Boundary cross-links** (per panel review 2026-06-15):
 > - Workspace anchor (read first): `(reflective-root)/BOUNDARY_REGISTRY.md`
 > - Active implementor handoff: `(reflective-root)/HANDOFF_quorum-sense_2026-06-15.md` (signed by all three architects 2026-06-15)

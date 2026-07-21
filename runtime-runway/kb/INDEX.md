@@ -50,6 +50,7 @@ Entity catalog for the Runtime Runway knowledge base. Update when projects, crat
 | [[Architecture/App Execution Container]] | Canonical app backend host and Runtime Runway/Helm/app split |
 | [[Architecture/Crate Map]] | Crate layout and deps |
 | [[Architecture/Commerce Rails Boundary]] | Runtime Runway vs. Commerce Rails authority split, Stripe ownership, org model |
+| [[Architecture/Data and Sync Boundaries]] | Forward-looking (deferred, RFL E15): agent-temp / app-data / shared-context / long-term tiers; redb + Turso + Spanner; sync=promotion boundary; injected via Runway |
 | [[Architecture/Security]] | Auth, JWT, CORS, webhook, open issues |
 | [[Building/Deployment]] | Deploy guide |
 | [[Operations/Secrets]] | Secret rotation, GCP projects, migration intent |
