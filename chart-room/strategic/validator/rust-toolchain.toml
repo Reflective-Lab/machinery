@@ -1,0 +1,6 @@
+# Pin rustc to an exact channel (RP-RUSTC-DRIFT-CONTAINED). Matches the fleet
+# baseline (runtime-runway / commerce-rails). Bump via a dedicated PR with
+# classified snapshot diffs (RP-AUTO-BLESS-AUDITED).
+[toolchain]
+channel = "1.96.0"
+components = ["rustfmt", "clippy"]

@@ -45,6 +45,7 @@ reqwest = { version = "0.13", features = ["json", "form", "query"] }
 # Path dep on sibling repo (see workspace layout — same pattern marquee-apps use
 # for bedrock-platform/converge). Pulls the full StorageKit (local redb +
 # remote Firestore backends); CR uses only the DocumentStore surface.
+# RP-HELMS-SUBSTRATE-SEAM: intentional, documented dep into runtime-runway (QF-CR-03).
 runway-storage = { path = "../runtime-runway/crates/runway-storage", version = "3.6.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
