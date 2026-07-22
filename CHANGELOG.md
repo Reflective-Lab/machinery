@@ -5,7 +5,15 @@ All notable changes to Machinery are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] — toward v1.3.0
+
+### Added (Build — reusable factory)
+- build-depot: **reusable factory kit** — Machinery offers its CI gates (hermetic-audit, fresh-clone) to any repo via a native-prep hook (PR #5)
+- build-depot: `project-doctor` made release-train-driven + reusable (branch `factory-project-doctor`, pending merge)
+- build-depot / runway / commerce: marquee app seam factory contract + Cohort B wiring; Runway + Commerce bootstrap checklists
+
+### Docs
+- runway: E15 deferred-data & sync-boundaries design (PR #8); App Execution Container ↔ marquee seam link; ADR-011 storage-decision back-link (PR #9)
 
 ## [1.2.0] - 2026-07-14
 
