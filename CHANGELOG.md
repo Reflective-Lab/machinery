@@ -5,12 +5,17 @@ All notable changes to Machinery are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — toward v1.3.0
+## [Unreleased]
+
+## [1.3.0] - 2026-07-23
 
 ### Added (Build — reusable factory)
 - build-depot: **reusable factory kit** — Machinery offers its CI gates (hermetic-audit, fresh-clone) to any repo via a native-prep hook (PR #5)
-- build-depot: `project-doctor` made release-train-driven + reusable (branch `factory-project-doctor`, pending merge)
+- build-depot: `project-doctor` made **release-train-driven + reusable** — the check bundle (RP-LAYERING, crate-size, snapshot-portability, rustc-pinning, helms-substrate-seam, branch-hygiene) derived from the caller's `release-train.yaml`; offered to any repo via `factory-project-doctor.yml` (PR #7)
 - build-depot / runway / commerce: marquee app seam factory contract + Cohort B wiring; Runway + Commerce bootstrap checklists
+
+### Added (Runtime — local LLM ops)
+- machinery: **Tier-1 local-LLM operations** — `just llm-status/health/test/start/stop/restart/logs` + recursive `build`; `build-depot/docs/operations/model-tiers.md` documents client defaults (max_tokens table + terse-prompt guidance) (PR #6)
 
 ### Docs
 - runway: E15 deferred-data & sync-boundaries design (PR #8); App Execution Container ↔ marquee seam link; ADR-011 storage-decision back-link (PR #9)
