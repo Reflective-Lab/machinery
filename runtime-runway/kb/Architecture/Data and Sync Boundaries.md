@@ -15,6 +15,43 @@ captured: 2026-07-15
 > start from scratch each run — we build against a considered model instead of
 > improvising per app. Tracked as Linear **E15**.
 
+## Decision (summary)
+
+Settled direction — **redb is engine implementation; Turso is app / distributed
+data; managed cloud is the long-term authority.** Engine per tier:
+
+- **Agent working memory** → **redb**, one file per agent (RAM for pure scratch).
+  Engine/kernel-internal, **never synced**. Per-agent files sidestep redb's
+  single-writer limit and give write-parallelism.
+- **Individual app data** (session / multi-session; mobile · Tauri · CLI) →
+  **Turso** (embedded relational, local-first push/pull). Owned by the Runtime
+  Runway storage kit, injected into the app.
+- **Shared converging context** → **Turso or the long-term tier** (per
+  formation); sync mode still open.
+- **Long-term / cross-user** → **managed cloud (Spanner / AlloyDB)**,
+  server-shared consistency.
+
+Core calls:
+
+1. **Keep redb — do not replace it.** It is the engine primitive (typed keys,
+   deterministic, crash-safe). Turso is a *separate persistence boundary*, not a
+   redb replacement.
+2. **Turso for local-first sync**, treated as a **rebuildable projection** so its
+   0.x maturity is not a durability risk; `libsql` is the battle-tested fallback,
+   and managed cloud can later swap in as a new projector without touching the
+   kernel.
+3. **Sync boundary = promotion boundary** — only promoted ("important enough")
+   data leaves the device; promotion is a typed, governed migration, not opaque
+   replication.
+4. **Local-first sync ≠ multi-instance server consistency** — lifting
+   `--max-instances=1` needs a shared authoritative backend (managed cloud /
+   libsql-server), a different mode.
+5. **Owned by Runtime Runway, injected into apps; Bedrock stays storage-free** —
+   no app-local clones (Marquee Contract #1).
+6. **Heavy deps stay out of this path** — Polars / Burn / SurrealDB belong in
+   production Docker sidecars. SurrealDB's graph/multi-model role is **not**
+   covered by Turso (relational) — confirm usage before assuming replacement.
+
 ## Why this exists
 
 Today the fleet is storage-thin: `runway-storage` is used narrowly (Quorum uses
