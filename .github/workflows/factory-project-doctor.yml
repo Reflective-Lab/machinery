@@ -1,0 +1,57 @@
+name: factory-project-doctor
+
+# Reusable factory workflow — offered by Build-Depot (machinery) to every repo.
+# Runs the release-train-driven project-doctor: RP-LAYERING, RP-CRATE-SIZE-BUDGET,
+# RP-SNAPSHOT-PORTABLE, RP-RUSTC-DRIFT-CONTAINED, repo-boundary layering, branch
+# hygiene, and the RP-HELMS-SUBSTRATE-SEAM check. Generic: project-doctor derives
+# its workspace set from the CALLER's release-train.yaml (fresh_workspaces); fleet-
+# only checks (yank trail) skip gracefully where the artifact is absent.
+#
+# This is the check bundle the root used to run against Bedrock. Adopting it here
+# means the repo keeps those quality mechanics once the root is retired.
+#
+# Uses `cargo metadata --no-deps` (parse only, no build), so no native prep needed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      toolchain:
+        description: Rust toolchain to install
+        type: string
+        default: "1.96.0"
+
+permissions:
+  contents: read
+
+jobs:
+  project-doctor:
+    name: project-doctor
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain (for cargo metadata)
+        env:
+          TOOLCHAIN: ${{ inputs.toolchain || '1.96.0' }}
+        run: rustup toolchain install "$TOOLCHAIN" --profile minimal
+      - name: Fetch project-doctor from build-depot
+        uses: actions/checkout@v4
+        with:
+          repository: Reflective-Lab/machinery
+          sparse-checkout: build-depot/scripts/factory/project-doctor.sh
+          sparse-checkout-cone-mode: false
+          path: .factory-kit
+      - name: Run project-doctor (release-train-driven)
+        run: |
+          # Prefer the repo-local script (machinery hosts build-depot); otherwise
+          # use the copy fetched from machinery (consumers like Bedrock).
+          if [ -f build-depot/scripts/factory/project-doctor.sh ]; then
+            bash build-depot/scripts/factory/project-doctor.sh
+          else
+            bash .factory-kit/build-depot/scripts/factory/project-doctor.sh
+          fi

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # project-doctor — canonical implementation owned by Build-Depot
-# (machinery/build-depot). Invoked as a thin runner from the root
-# workspace Justfile with cwd = workspace root. Semantics:
-# build-depot/docs/operations/quality-gates.md
+# (machinery/build-depot). Release-train-driven and reusable: it derives the
+# workspace set from `release-train.yaml` in cwd (fresh_workspaces), so it works
+# from the fleet root (which lists framework/bedrock + machinery/* dirs) AND from
+# any single consumer repo (whose fresh_workspaces is `dir: .`). Invoked as a thin
+# runner with cwd = repo root, or via the reusable factory-project-doctor.yml.
+# Semantics: build-depot/docs/operations/quality-gates.md
 set -uo pipefail
 fails=0
 echo "── project-doctor ──"
 
-# 1. RP-RELEASE-TRAIN-INTEGRITY — release-train.yaml is the only source
-#    of truth (QF-2026-06-06-02, closed 2026-06-08). The Justfile reads
-#    `release_order` and `_release-dir` from it at runtime via awk, so the
-#    old sync-against-Justfile half is gone. This check validates: yaml
-#    parseable + every named member directory exists.
+# 1. RP-RELEASE-TRAIN-INTEGRITY — release-train.yaml is the only source of truth.
+#    Validates: yaml parseable + every named member directory exists.
 train_yaml="release-train.yaml"
 if [[ ! -f "$train_yaml" ]]; then
     echo "✗ $train_yaml missing"
@@ -46,24 +46,34 @@ else
     fi
 fi
 
+# Derive the Rust workspace roots from release-train.yaml `fresh_workspaces`.
+# Fleet root → framework/bedrock + machinery/runtime-runway + machinery/commerce-rails
+# (reproduces the previous hardcoded train_dirs); a single consumer repo → its own
+# workspace(s), typically ".". Everything below iterates this set — no repo hardcoded.
+WORKSPACES=()
+if [[ -f "$train_yaml" ]]; then
+    while IFS= read -r d; do
+        [[ -n "$d" ]] && WORKSPACES+=("$d")
+    done < <(awk '
+        /^fresh_workspaces:/ { in_sec=1; next }
+        /^[^[:space:]]/ { in_sec=0 }
+        in_sec { for (i=1;i<=NF;i++) if ($i=="dir:") { print $(i+1); break } }
+    ' "$train_yaml" | sort -u)
+fi
+export PD_WORKSPACES="${WORKSPACES[*]:-}"
+
 # 2. RP-LAYERING — a publishable crate may not path-dep an unpublishable
-#    (publish=false / UNLICENSED) one. Walks every train workspace via
-#    cargo metadata. Motivated by QF-2026-06-02-08 (commerce-rails-stripe
-#    blocking runway-accounts).
+#    (publish=false / UNLICENSED) one. Walks every workspace via cargo metadata.
 layer_viol=$(python3 - <<'PY'
 import json, os, subprocess
-workspaces = [
-    "framework/bedrock",
-    "machinery/build-depot", "machinery/runtime-runway",
-    "machinery/commerce-rails", "machinery/chart-room",
-]
+workspaces = os.environ.get("PD_WORKSPACES", "").split()
 for ws in workspaces:
     if not os.path.isfile(os.path.join(ws, "Cargo.toml")):
         continue
     try:
         out = subprocess.check_output(
             ["cargo", "metadata", "--no-deps", "--format-version", "1"],
-            cwd=ws, stderr=subprocess.DEVNULL, timeout=30,
+            cwd=ws, stderr=subprocess.DEVNULL, timeout=60,
         )
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print(f"{ws}: cargo metadata failed")
@@ -87,18 +97,14 @@ else
     fails=$((fails+1))
 fi
 
-# 3. RP-CRATE-SIZE-BUDGET — leading indicator for the crates.io 10 MiB
-#    ceiling. Any git-tracked file > 1 MiB in a publishable workspace
-#    is a smell. Walks `git ls-files` (not `find`) so gitignored caches —
-#    `.fastembed_cache`, `.terraform/` providers, vendored solver
-#    binaries, local databases — are correctly excluded: `cargo package`
-#    respects `.gitignore` so untracked files never ship anyway.
-#    Motivated by QF-2026-06-02-09 (runway-storage-contract hit the
-#    10 MiB cap with real shipping bytes).
-train_dirs="framework/bedrock machinery/runtime-runway machinery/commerce-rails"
+# 3. RP-CRATE-SIZE-BUDGET — leading indicator for the crates.io 10 MiB ceiling.
+#    Any git-tracked file > 1 MiB in a workspace is a smell. Uses `git ls-files`
+#    so gitignored caches are excluded. Resolves each workspace to its enclosing
+#    git repo, so sub-workspaces of a monorepo are handled too.
 big_files=()
-for d in $train_dirs; do
-    [[ -d "$d/.git" ]] || continue
+for d in "${WORKSPACES[@]}"; do
+    [[ -d "$d" ]] || continue
+    repo_root=$(git -C "$d" rev-parse --show-toplevel 2>/dev/null) || continue
     while IFS= read -r f; do
         [[ -z "$f" ]] && continue
         fullpath="$d/$f"
@@ -118,21 +124,22 @@ else
 fi
 
 # 4. RP-SNAPSHOT-PORTABLE — trybuild .stderr fixtures must not contain
-#    machine-specific absolute paths. Catches the failure mode where local
-#    blessing leaks /Users/<name>/ into fixtures that then fail on CI or
-#    on another contributor's machine (QF-2026-06-02-06).
+#    machine-specific absolute paths.
 leaks=()
-while IFS= read -r f; do
-    [[ -z "$f" ]] && continue
-    hits=$(grep -nE '/Users/|/home/[a-z]+/|/private/var/folders/|/tmp/[A-Za-z0-9]{6,}' "$f" 2>/dev/null | head -3)
-    if [[ -n "$hits" ]]; then
-        while IFS= read -r h; do
-            leaks+=("${f}:${h}")
-        done <<<"$hits"
-    fi
-done < <(find framework/bedrock machinery/runtime-runway machinery/commerce-rails \
-    \( -path '*/target' -o -path '*/.git' -o -path '*/node_modules' \) -prune \
-    -o -type f -name '*.stderr' -print 2>/dev/null)
+for d in "${WORKSPACES[@]}"; do
+    [[ -d "$d" ]] || continue
+    while IFS= read -r f; do
+        [[ -z "$f" ]] && continue
+        hits=$(grep -nE '/Users/|/home/[a-z]+/|/private/var/folders/|/tmp/[A-Za-z0-9]{6,}' "$f" 2>/dev/null | head -3)
+        if [[ -n "$hits" ]]; then
+            while IFS= read -r h; do
+                leaks+=("${f}:${h}")
+            done <<<"$hits"
+        fi
+    done < <(find "$d" \
+        \( -path '*/target' -o -path '*/.git' -o -path '*/node_modules' \) -prune \
+        -o -type f -name '*.stderr' -print 2>/dev/null)
+done
 if [[ ${#leaks[@]} -eq 0 ]]; then
     echo "✓ no absolute paths in .stderr fixtures"
 else
@@ -141,12 +148,10 @@ else
     fails=$((fails+1))
 fi
 
-# 5. RP-RUSTC-DRIFT-CONTAINED (pinning half) — every train workspace root
-#    must pin rustc to an exact channel ("1.X.Y" or a dated nightly), never
-#    "stable" / "nightly" / "beta". Lets rustc bumps land in dedicated PRs
-#    with classified diffs instead of slipping in via `rustup update`.
+# 5. RP-RUSTC-DRIFT-CONTAINED (pinning half) — every workspace root must pin rustc
+#    to an exact channel ("1.X.Y" or a dated nightly).
 pinning_misses=()
-for d in framework/bedrock machinery/runtime-runway machinery/commerce-rails; do
+for d in "${WORKSPACES[@]}"; do
     [[ -f "$d/Cargo.toml" ]] || continue
     toolchain="$d/rust-toolchain.toml"
     if [[ ! -f "$toolchain" ]]; then
@@ -161,81 +166,63 @@ for d in framework/bedrock machinery/runtime-runway machinery/commerce-rails; do
     fi
 done
 if [[ ${#pinning_misses[@]} -eq 0 ]]; then
-    echo "✓ every train workspace pins rustc to an exact channel"
+    echo "✓ every workspace pins rustc to an exact channel"
 else
-    echo "✗ ${#pinning_misses[@]} train workspace(s) have unpinned rustc:"
+    echo "✗ ${#pinning_misses[@]} workspace(s) have unpinned rustc:"
     printf '    %s\n' "${pinning_misses[@]}"
     fails=$((fails+1))
 fi
 
-# 6. RP-YANK-DISCOVERABLE — KB/release-history.md is the yank trail.
-#    Every `### <crate> v<ver>` entry must declare the four required
-#    fields (Yanked, Reason, Successor, Migration). Lints structure
-#    only — content is reviewed at PR time. The actual crates.io
-#    cross-check (every yanked version on crates.io has a row here)
-#    is a future tightening and lives outside this fast lint.
-yank_viol=$(python3 - <<'PY'
+# 6. RP-YANK-DISCOVERABLE — KB/release-history.md is the yank trail (fleet-level
+#    artifact). Every `### <crate> v<ver>` entry must declare the four required
+#    fields. Skipped where the repo carries no release-history (not every consumer
+#    owns the fleet yank trail).
+if [[ ! -f "KB/release-history.md" ]]; then
+    echo "○ RP-YANK-DISCOVERABLE skipped (no KB/release-history.md in this repo)"
+else
+    yank_viol=$(python3 - <<'PY'
 import re
 from pathlib import Path
-p = Path("KB/release-history.md")
-if not p.exists():
-    print("FILE_MISSING")
-else:
-    text = p.read_text()
-    # Split into entry blocks. Header is "### <crate-name> v<version>"
-    # where crate-name matches Cargo's allowed name set.
-    pattern = re.compile(r'^### ([a-zA-Z0-9][a-zA-Z0-9_-]*) v(\S+)\s*$', re.MULTILINE)
-    matches = list(pattern.finditer(text))
-    for i, m in enumerate(matches):
-        name, ver = m.group(1), m.group(2)
-        start = m.end()
-        end = matches[i+1].start() if i+1 < len(matches) else len(text)
-        block = text[start:end]
-        for field in ("Yanked:", "Reason:", "Successor:", "Migration:"):
-            if f"- {field}" not in block:
-                print(f"{name} v{ver}: missing required field '{field}'")
+text = Path("KB/release-history.md").read_text()
+pattern = re.compile(r'^### ([a-zA-Z0-9][a-zA-Z0-9_-]*) v(\S+)\s*$', re.MULTILINE)
+matches = list(pattern.finditer(text))
+for i, m in enumerate(matches):
+    name, ver = m.group(1), m.group(2)
+    start = m.end()
+    end = matches[i+1].start() if i+1 < len(matches) else len(text)
+    block = text[start:end]
+    for field in ("Yanked:", "Reason:", "Successor:", "Migration:"):
+        if f"- {field}" not in block:
+            print(f"{name} v{ver}: missing required field '{field}'")
 PY
 )
-if [[ "$yank_viol" == "FILE_MISSING" ]]; then
-    echo "✗ KB/release-history.md missing"
-    fails=$((fails+1))
-elif [[ -z "$yank_viol" ]]; then
-    echo "✓ KB/release-history.md entries have required fields"
-else
-    line_count=$(echo "$yank_viol" | wc -l | tr -d ' ')
-    echo "✗ $line_count release-history entry/entries missing required field(s):"
-    echo "$yank_viol" | sed 's/^/    /'
-    fails=$((fails+1))
+    if [[ -z "$yank_viol" ]]; then
+        echo "✓ KB/release-history.md entries have required fields"
+    else
+        line_count=$(echo "$yank_viol" | wc -l | tr -d ' ')
+        echo "✗ $line_count release-history entry/entries missing required field(s):"
+        echo "$yank_viol" | sed 's/^/    /'
+        fails=$((fails+1))
+    fi
 fi
 
-# 7. Repository-boundary layering — foundation, extension, showcase, and
-#    test workspaces (platform layer) must NOT path-dep into product
-#    workspaces (marquee-apps, studio-apps, beacon-sites, mobile-apps).
-#    Products consume the platform; never the other way. Same shape as
-#    check 2 (RP-LAYERING) but checks a different axis — repository
-#    boundary rather than publish status.
-#
+# 7. Repository-boundary layering — an upstream (platform) workspace must NOT
+#    path-dep into a product (end-user app) workspace. Scans the derived workspace
+#    set; passes trivially in a repo that has no product path-deps.
 #    Standard: KB/05-engineering/standards/repo-layering.md.
 boundary_viol=$(python3 - <<'PY'
 import json, os, subprocess
-# Workspaces that sit upstream of product apps in the architecture.
-upstream_only = [
-    "framework/bedrock",
-    "machinery/runtime-runway",
-    "machinery/commerce-rails",
-]
-# Path fragments that designate product (end-user app) workspaces.
+workspaces = os.environ.get("PD_WORKSPACES", "").split()
 product_dirs = ["marquee", "studio", "mobile"]
-for ws in upstream_only:
+for ws in workspaces:
     if not os.path.isfile(os.path.join(ws, "Cargo.toml")):
         continue
     try:
         out = subprocess.check_output(
             ["cargo", "metadata", "--no-deps", "--format-version", "1"],
-            cwd=ws, stderr=subprocess.DEVNULL, timeout=30,
+            cwd=ws, stderr=subprocess.DEVNULL, timeout=60,
         )
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-        # cargo metadata failure is reported by check 2; skip here.
         continue
     meta = json.loads(out)
     for p in meta["packages"]:
@@ -256,14 +243,7 @@ else
     fails=$((fails+1))
 fi
 
-# 8. RP-BRANCH-HYGIENE — no stranded work outside traceable branches
-#    (QF-2026-07-02-06). Stashes carry no intent and rot on one machine;
-#    WIP belongs on an e{N}/lin-XX-slug branch as (wip:) commits. Any
-#    stash anywhere in the fleet fails the check. Dirty tracked files
-#    are a warning only: normal mid-session, and CI checkouts are
-#    always clean — the warning is the local tight-loop nudge.
-#
-#    Standard: KB/05-engineering/standards/branch-hygiene.md.
+# 8. RP-BRANCH-HYGIENE — no stranded stashes across nested repos under cwd.
 stash_viol=""
 hygiene_warn=""
 while IFS= read -r gitdir; do
@@ -290,22 +270,23 @@ if [[ -n "$hygiene_warn" ]]; then
     echo -n "$hygiene_warn" | sed 's/^/    /'
 fi
 
-# 9. RP-HELMS-SUBSTRATE-SEAM — Foundation crates (framework/bedrock/)
-#    must not path-dep machinery/runtime-runway without an explicit
-#    `# RP-HELMS-SUBSTRATE-SEAM` exemption comment in the same Cargo.toml.
-#    Approved edges: helm-coordination, helm-governed-jobs, helm-session-host
-#    (all carry the comment; documented in repo-layering.md seam table).
-#
-#    Standard: KB/05-engineering/standards/repo-layering.md (check added RFL-128, 2026-07-04).
+# 9. RP-HELMS-SUBSTRATE-SEAM — a workspace Cargo.toml must not path-dep
+#    `runtime-runway` without an explicit `# RP-HELMS-SUBSTRATE-SEAM` exemption.
+#    Scans the derived workspace set; in a repo with no runtime-runway path-deps
+#    (e.g. bedrock's own checkout) it passes trivially.
+#    Standard: KB/05-engineering/standards/repo-layering.md.
 seam_viol=""
-while IFS= read -r cargo_toml; do
-    if grep -qE 'path\s*=\s*"[^"]*runtime-runway' "$cargo_toml"; then
-        if ! grep -q '# RP-HELMS-SUBSTRATE-SEAM' "$cargo_toml"; then
-            crate=$(awk -F'"' '/^name[[:space:]]*=/ {print $2; exit}' "$cargo_toml")
-            seam_viol+="${cargo_toml}: ${crate} path-deps runtime-runway without # RP-HELMS-SUBSTRATE-SEAM"$'\n'
+for d in "${WORKSPACES[@]}"; do
+    [[ -d "$d" ]] || continue
+    while IFS= read -r cargo_toml; do
+        if grep -qE 'path\s*=\s*"[^"]*runtime-runway' "$cargo_toml"; then
+            if ! grep -q '# RP-HELMS-SUBSTRATE-SEAM' "$cargo_toml"; then
+                crate=$(awk -F'"' '/^name[[:space:]]*=/ {print $2; exit}' "$cargo_toml")
+                seam_viol+="${cargo_toml}: ${crate} path-deps runtime-runway without # RP-HELMS-SUBSTRATE-SEAM"$'\n'
+            fi
         fi
-    fi
-done < <(find framework/bedrock -name "Cargo.toml" -not -path "*/target/*" 2>/dev/null | sort)
+    done < <(find "$d" -name "Cargo.toml" -not -path "*/target/*" 2>/dev/null | sort)
+done
 if [[ -z "$seam_viol" ]]; then
     echo "✓ no unapproved Foundation→runtime-runway path-deps (RP-HELMS-SUBSTRATE-SEAM)"
 else
