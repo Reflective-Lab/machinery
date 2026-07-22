@@ -138,3 +138,4 @@ lifecycles, and sync semantics** — and conflating them is the failure mode.
 - [[Commerce Rails Boundary]] — sibling authority split; QF-CR-11 persistent store
 - Bedrock seam: `framework/bedrock/kb/06-consumption/marquee-app-seam.md`
 - Bedrock machinery seam: `framework/bedrock/kb/06-consumption/marquee-app-machinery-seam.md`
+- Bedrock ADR: `framework/bedrock/kb/07-decisions/adr/ADR-011-storage-sync-boundary.md` — the accepted decision record for this boundary
