@@ -1,0 +1,93 @@
+# Organizational Intelligence
+*Individual intelligence and organizational intelligence are different things. One is hired. The other is engineered.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 4 of 10: The Organizational Capability Series
+
+---
+
+The most expensive assumption in business is a quiet one.
+
+It runs underneath almost every meeting, every team design, every hiring decision: that smart people, put in a room together, will produce smart decisions. The assumption is not examined because it seems self-evident. Hire capable people. Give them the right information. Let them discuss. Good judgment will follow.
+
+It doesn't. Not reliably. Not by default.
+
+Decades of research — in psychology, decision science, organizational behavior — have found that groups of individually capable people consistently produce worse decisions than those same individuals could produce under better conditions. Not worse than perfect. Worse than what the individuals in the room were actually capable of, given what they knew, if the conditions had been different.
+
+The gap between what an organization knows and what it decides is not a talent problem. It is a design problem.
+
+---
+
+## The measurement we don't take
+
+Organizations measure their outputs obsessively. Revenue, growth rate, margin, churn, market share, customer satisfaction. The measurement infrastructure for organizational performance is vast and continues to expand.
+
+The measurement infrastructure for organizational judgment is almost nonexistent.
+
+Organizational judgment — the collective ability of a group to form a well-reasoned decision, surface the relevant knowledge, weigh the evidence honestly, and commit with appropriate confidence — is not measured. It is assumed. Hire smart people, the reasoning goes, and good judgment will follow from their intelligence and experience.
+
+This assumption has a cost that is almost never calculated. When an organization makes a poor strategic decision, the post-mortem typically asks what was wrong with the information available, or who held the wrong view, or what external circumstances conspired against a good outcome. It almost never asks what was wrong with the process through which a group of capable people turned that information into a decision. That process is invisible, because it has never been designed.
+
+---
+
+## What the research found
+
+The study of group decision-making has produced findings that should have changed how organizations design their meetings, their leadership teams, and their decision processes. They largely have not.
+
+**The HiPPO effect.** In most groups, the opinion that dominates is not the best-supported opinion. It is the opinion of the highest-paid person in the room. Authority and seniority anchor the group's reasoning before anyone has spoken. Dissent becomes professionally costly. The group converges not on the best available judgment but on the safest available position.
+
+**Groupthink.** Irving Janis identified in 1972 the tendency of cohesive groups to suppress dissent and converge prematurely on inferior decisions. The mechanisms are social: expressing doubt feels disloyal to the group's shared confidence. Raising alternatives feels obstructive. The group signals, through tone and body language, what kind of contribution is welcome — and individuals self-censor accordingly. The decision that emerges is not the product of the group's collective knowledge. It is the product of what the group was willing to say aloud.
+
+**The hidden profile problem.** This is the most consequential and least known failure. Garold Stasser and William Titus demonstrated in 1985 that groups disproportionately discuss information that everyone already shares — and systematically fail to surface information that only one or two individuals hold. In a room of ten people, the nine pieces of evidence everyone has seen dominate the conversation. The one piece of evidence only one person has — which might be the evidence that changes everything — tends not to surface.
+
+This means the people with unique knowledge are systematically disadvantaged in group settings. The person who knows something nobody else in the room knows is the most valuable person there — and is structurally least likely to be heard.
+
+**Noise.** Daniel Kahneman, Olivier Sibony, and Cass Sunstein documented in 2021 that human judgment is far noisier than people believe. Ask the same person to judge the same case twice, and they will often reach different conclusions — depending on their mood, the order in which they considered evidence, whether they ate lunch. Ask two equally experienced professionals to judge the same case, and the variation is often as large as the variation between a novice and an expert. Groups do not average out this noise. They often amplify it by anchoring on the first confident opinion voiced.
+
+---
+
+## The engineering insight
+
+What is striking about this research is not the failures it documents. It is what works.
+
+Specific, structured interventions consistently improve group decision quality. The Nominal Group Technique, developed by Delbecq and Van de Ven in 1971, prescribes silent individual generation before group discussion, round-robin sharing before debate, and structured voting before commitment. The explicit purpose is to neutralize the HiPPO effect and create conditions for hidden information to surface. It works.
+
+Anita Woolley and colleagues published a study in Science in 2010 finding that groups have a consistent collective intelligence factor — a capacity for performance that transfers across different tasks. What predicted this factor was not the average IQ of the group's members, nor the intelligence of the smartest person in the room. The consistent predictors were social sensitivity — the capacity to read and respond to others — and balanced participation, where multiple members contributed rather than one or two dominating.
+
+The implication is exact. Organizational intelligence is not a function of individual intelligence. It is a function of the conditions under which individual intelligences interact. Those conditions can be designed. Most organizations have never designed them.
+
+---
+
+## The assumption that runs the world
+
+The reason this research has not changed organizational practice is that the assumption it contradicts — that smart people produce smart decisions — feels too fundamental to question.
+
+Organizations hire for individual capability because individual capability is observable. You can test it, reference-check it, assess it in an interview. You cannot hire for "good group conditions." Group conditions are not a property of any individual. They are a property of how individuals are arranged, prompted, and protected in the moments when consequential judgment is required.
+
+The result is organizations that are locally intelligent and collectively unreliable. Individual contributors often know exactly what is wrong with the strategic decision made two levels above them. They knew it before the decision was made. The information existed inside the organization. It did not enter the decision process, because the decision process was not designed to extract it.
+
+A room full of smart people is not an intelligent organization. It is the raw material for one.
+
+Making the room intelligent requires something the room does not produce on its own: a deliberate structure that neutralizes dominance, extracts hidden knowledge, captures genuine confidence levels, and protects dissent rather than punishing it. That structure does not arrive with the talent. It must be built.
+
+---
+
+## What this means going forward
+
+If organizational intelligence is engineered rather than inherited, then the question that follows is architectural: what does a system designed around this insight actually look like?
+
+The answer is not a better meeting format, though better meeting formats help at the margin. The answer is a recognition that the process through which a group forms a judgment is as consequential as the judgment itself — and that process, like any other consequential organizational process, can be designed, measured, and improved.
+
+The next essay asks what it would mean to build decision systems that take this recognition seriously.
+
+---
+
+*This is the fourth essay in a series exploring how organizations reason, decide, and govern the gap between intent and execution.*
+
+---
+
+**Core thesis:** Organizational intelligence is produced by conditions, not inherited from individuals. Those conditions can be designed.
+**The idea you can't unsee:** A room full of smart people is not an intelligent organization. It is the raw material for one.
+**Vocabulary shift:** "smart team" → "engineered group conditions"
+**Connects to:** Article 3 (From Workflows to Intent), Article 5 (Decision Systems), Article 6 (Institutionalizing Disagreement)
+**Version:** 1.0 / 2026-06-29

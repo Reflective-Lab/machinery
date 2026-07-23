@@ -1,0 +1,117 @@
+# From Workflows to Intent
+*Thirty years of workflow software optimized the steps. Nobody asked what the steps were supposed to achieve.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 3 of 10: The Organizational Capability Series
+
+---
+
+Name the last time software asked you what outcome you were trying to achieve.
+
+Not which steps to follow. Not which fields to fill in. Not which team to route the request to. The outcome — the thing that would actually constitute success.
+
+Most people cannot name a single example. Every software system you have ever used for work knew what process to execute. None of them knew what you were trying to accomplish.
+
+This is not an oversight. It is a design choice that thirty years of workflow software has made consistently and almost without exception. The choice has a logic behind it. It also has consequences that are now difficult to ignore.
+
+---
+
+## The shape of workflow software
+
+For three decades, enterprise software has been built around a deceptively simple model: describe the process, then enforce it.
+
+The model has genuine logic behind it. Processes are visible. You can watch them, draw them, map them, and sequence them. They can be agreed upon in a room, tested, and audited. When something goes wrong, you can point to the step where it failed. For organizations that needed to coordinate work across many people and systems, encoding the process in software was a real breakthrough — it moved coordination from informal custom into enforced consistency.
+
+Business process management tools in the 1990s made this model explicit. Draw a flowchart. Define the conditions. Assign the roles. The software runs the chart. When a document needs approval, the software routes it to the right person. When an exception occurs, the software escalates it. The process runs reliably, without depending on anyone remembering how it works.
+
+This was real progress. And it concealed a problem that took another decade to become fully visible.
+
+The problem is not that the process runs incorrectly. The problem is that the software knows the process and nothing else. It knows the path. It does not know the destination. And when the destination changes — which it does, constantly, with every strategic shift, every regulatory change, every reorganization — the software has no way to adapt. It continues running the old path toward a destination that no longer exists.
+
+---
+
+## The programming parallel
+
+The same problem appeared in software development itself — and programming found its way through it.
+
+In the earliest computing era, programmers wrote instructions in the machine's own terms. Assembly language specified every operation exactly: move this value to this register, compare these two values, jump to this address if the result is zero. The programmer controlled everything, and everything had to be specified. Nothing could be left to inference.
+
+The abstraction ladder that followed — from assembly to COBOL to structured languages to the languages in use today — was built on a single principle: hide more of the HOW and expose more of the WHAT. Each layer let programmers describe what they wanted the computer to do without specifying every detail of how the computer should do it. The how became the compiler's problem.
+
+SQL is the clearest example of this principle in practice. When you write a database query, you describe the data you want — its shape, its conditions, its relationships — not the steps the database should follow to retrieve it. The query optimizer reads your description of what you want and determines how to satisfy it. You could not describe a query in assembly language without also specifying every step of how to execute it. SQL separated the two.
+
+Enterprise workflow software never made this transition. Every major workflow tool in the market is, at its core, an assembly language for organizational process. The process designer must specify every step, every condition, every routing rule, every exception path. The software executes exactly what was specified. When what was specified is no longer what the organization needs, the software cannot adapt.
+
+The organization has been writing assembly code while every other domain moved to something higher.
+
+---
+
+## When the path changes
+
+The practical consequence appears every time an organization changes — which is to say, constantly.
+
+A reorganization restructures which teams own which responsibilities. The workflow software, which encoded the old org chart, now routes approvals to roles that no longer exist. Someone spends weeks remapping the flowcharts to the new structure. In the meantime, work stalls or finds informal workarounds the system cannot see.
+
+A regulatory change adds new requirements to an existing process. Every downstream route that depended on the old process must be examined and potentially redesigned. The process continues to run while the redesign is underway, which means it runs incorrectly.
+
+A strategic decision changes what the organization is optimizing for. The workflow that was designed for speed must now be redesigned for compliance. The one designed for thoroughness must be redesigned for velocity. The workflow encoded the old priority. It has no mechanism for adopting the new one without being redrawn entirely.
+
+In every case, the workflow fails not because the process was wrong when it was designed, but because process was the wrong level of abstraction to encode in the first place. The path was captured. The destination was not.
+
+---
+
+## What intent-first looks like
+
+The alternative is not to abolish process. Work still moves through steps, still requires decisions, still needs routing. The question is what the software holds.
+
+Workflow software holds the path. Intent-first software holds what should be true — and lets the path be determined by the situation.
+
+The difference in practice is concrete.
+
+A workflow says: *When a purchase request arrives, route it to the department head for approval if it exceeds €5,000, and to the finance director if it exceeds €50,000, using the org chart current as of the last update.*
+
+An intent statement says: *Every purchase above €50,000 must be approved by both a Finance Controller and the relevant Budget Owner, with documentation of the rationale.*
+
+The first encodes a routing rule that depends on the org chart, on the system knowing who holds which role, and on someone maintaining the rule as those things change. The second describes what must be true — who must approve, what must be documented — without prescribing the exact mechanism. When roles change, when the org chart shifts, when a new system handles routing, the intent statement survives. The workflow does not.
+
+Spreadsheets have been surprisingly durable for exactly this reason. A spreadsheet encodes relationships — this cell equals the sum of those cells, this value must not exceed that threshold — not sequences. When the organization changes, the relationships often still hold even if the process around them has shifted. Intent is what makes them reusable.
+
+SQL survived for the same reason. The language has outlasted every platform it ran on, every database engine, every generation of hardware. It survived because it describes what, not how. The how is negotiated fresh each time.
+
+---
+
+## The reason every reorg destroys software
+
+Every major organizational change produces a wave of software remediation. Workflows are redrawn. Processes are remapped. Systems are reconfigured to reflect the new structure. This work is expensive, disruptive, and almost entirely predictable — and yet it surprises organizations every time.
+
+The reason is that workflow software encodes structure. It knows which role approves which request. It knows which team handles which exception. When the structure changes, the encoding is wrong. The software must be redrawn to match.
+
+Intent survives reorganization. The outcome *every significant purchase has authorized approval with documented rationale* is true whether the organization has two approval levels or five, whether the finance team reports to the CFO or the COO, whether the process runs through one system or three. The structure that satisfies the intent can change without the intent changing.
+
+Software that describes how work happens cannot tell you what should be true. Software that holds what should be true can accommodate many different hows — and can adapt when the how changes without losing sight of the destination.
+
+---
+
+## What this requires
+
+If intent is the right abstraction for organizational software, then the question that follows is harder than it sounds.
+
+Stating intent clearly is a form of organizational reasoning. It requires knowing what outcomes matter, what constraints are non-negotiable, what tradeoffs are acceptable. It requires the kind of judgment that is easy to assume an organization has and surprisingly difficult to exercise in practice.
+
+Most organizations discover, when they try to state intent explicitly, that the intent was never as clear as the process implied. The process ran. That was taken as evidence that everyone agreed on what it was for. But a process encodes the answer to *how* — and the answer to how can run indefinitely without anyone having agreed on *what*.
+
+The gap between process and intent is not a software problem. It is an organizational reasoning problem. Building software that holds intent rather than process does not create the intent. The organization must form it — which requires the kind of reasoning that most organizations have never been asked to do in a structured way.
+
+The next essay asks what that kind of reasoning actually looks like.
+
+---
+
+*This is the third essay in a series exploring how organizations reason, decide, and govern the gap between intent and execution.*
+
+---
+
+**Core thesis:** Workflow software encodes the path. Intent-first software holds what should be true. Only one survives when the path changes.
+**The idea you can't unsee:** Workflow describes how. Intent describes what should be true.
+**Vocabulary shift:** "fix the workflow" → "clarify the intent"
+**Connects to:** Article 2 (Why More Data), Article 4 (Organizational Intelligence), Article 7 (Business Truths)
+**Version:** 1.0 / 2026-06-29

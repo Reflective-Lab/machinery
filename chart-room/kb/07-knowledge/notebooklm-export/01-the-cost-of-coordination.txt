@@ -1,0 +1,109 @@
+# The Cost of Coordination
+*Every generation of enterprise software promised to reduce organizational friction. Each one moved it up a layer.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 1 of 10: The Organizational Capability Series
+
+---
+
+Every organization I have ever spoken with believes its biggest problem is execution.
+
+The strategy is clear. The people are capable. Something keeps getting in the way.
+
+When you press them on what that something is, the answers cluster around the same phenomenon, described in different vocabularies. Too many handoffs. Nobody owns the decision. We keep relitigating the same question. Information lives in someone's head and nowhere else. By the time approval comes through, the context has changed. The left hand and right hand are not talking.
+
+What they are describing is organizational friction — the accumulated drag between an organization's intent and its ability to act on it. Coordination cost is the most visible form, but it is one among many. Friction also arrives as ambiguity (nobody is certain what was actually decided), translation loss (the strategy means four different things to four different functions), waiting (the right person is unavailable), and duplicated reasoning (three teams independently working through the same question without knowing it).
+
+Friction doesn't waste time. It wastes organizational capability — the compound ability to form a judgment, commit to it, execute faithfully, and learn from the result.
+
+---
+
+## The pattern most people miss
+
+For the past thirty years, the dominant response to organizational friction has been to add a new layer of software.
+
+This response has a logic to it. Each new layer does, in fact, reduce one specific friction at one specific point. The mistake is in what gets counted and what gets ignored.
+
+The layer that fixes friction usually introduces a new layer of friction to manage itself.
+
+I first saw this pattern clearly in the late 1990s, building B2B marketplaces during the first wave of e-commerce infrastructure. Commerce One, Ariba, and their peers raised billions on a premise that felt self-evident: if purchasing friction is the problem, an electronic marketplace is the solution. Connect buyers and sellers through XML. Automate the negotiation. Eliminate the procurement coordinator.
+
+What happened instead was instructive. The procurement coordinator didn't disappear. She became the XML integration coordinator. Someone had to map the data schemas between the buyer's ERP and the seller's catalog. Someone had to manage the exceptions when the schema didn't match. Someone had to own the relationship when the automation produced an answer nobody trusted.
+
+Commerce One went bankrupt in 2004, thirteen months after its peak market capitalization. The usual explanation is the dot-com collapse and the failure to achieve the network effects the model required. That is true. But a less examined truth is that the friction the marketplace was designed to eliminate kept reappearing in new forms, each requiring human attention at a different layer.
+
+---
+
+## Every generation moves the problem
+
+This is not a story about one company in one era. It is a pattern that has repeated across every generation of enterprise software.
+
+**EDI** in the 1980s promised to eliminate the paper friction in supply chains. It succeeded — and introduced the friction of maintaining EDI translation tables, partner agreements, and the specialized talent who could debug an 856 transaction set at midnight before a warehouse deadline.
+
+**ERP** in the 1990s promised to eliminate the integration friction between islands of departmental software. It succeeded — and introduced the friction of implementation projects that ran for years, customizations that made upgrades terrifying, and the organizational reality that the system could only reflect the business if someone maintained the master data, which meant: someone owned a new category of work.
+
+**SaaS** in the 2000s promised to eliminate the maintenance friction of on-premise software. It succeeded — and introduced the friction of a sprawling SaaS stack where the average enterprise now runs hundreds of tools, each with its own data model, its own login, its own API, and its own team of administrators who exist to move information between systems that cannot talk to each other.
+
+**Workflow automation** in the 2010s promised to eliminate the coordination friction between all those SaaS tools. It partly succeeded — and introduced the friction of maintaining the automations, debugging the failures, and managing the silent drift when a connected system changes its API and the automation keeps running as if nothing happened, routing the wrong data to the wrong place for three weeks before anyone notices.
+
+The pattern is consistent: **every generation of enterprise software reduced one coordination cost while introducing another.**
+
+What changes is where the friction lives. What doesn't change is that it exists, that it is expensive, and that humans absorb it.
+
+---
+
+## Why the pattern persists
+
+The pattern persists because most enterprise software is built around a question that sounds productive but is slightly wrong.
+
+The question is: **how does work move?**
+
+The answer to that question produces workflow tools, automation platforms, routing engines, handoff trackers, and notification systems — all useful, all capturing a piece of the real problem, none reaching the core of it.
+
+The core question is different: **what should be true?**
+
+These are not the same question. A workflow describes the steps through which work passes. A statement of what should be true describes the outcome that all those steps are supposed to serve.
+
+When software answers the first question, it produces a description of current process. When that process changes — and it always changes — the software requires modification. The friction moves into the gap between the system's model of how work moves and the actual current practice.
+
+When software could answer the second question, it would produce something more durable: an explicit statement of what the organization has committed to, verifiable against reality, independent of any particular workflow.
+
+This is why the same organizational friction survives every new layer of tooling. The tooling optimizes the path. The destination remains implicit, scattered across emails, presentations, institutional memory, and the private judgment of the people who were in the room when the decision was made.
+
+---
+
+## The shape of what's missing
+
+The progression of enterprise software has produced three distinct categories. Systems of record: where things are stored. Systems of action: where things are routed. Neither category treats the commitment itself — the actual outcome an organization has chosen to pursue — as a first-class object.
+
+A strategy deck is not a system. A decision memo is not a system. A goal in a tracker is not a system. None of them can tell you, six months later, whether execution remained faithful to the original commitment, what assumptions have since been proven wrong, or which roles are operating against contradictory interpretations of the same decision.
+
+The friction that accumulates in that gap — between what was committed and what is actually happening — is the friction that enterprise software has not yet learned to govern.
+
+That is not an observation about any particular product or vendor. It is an observation about what has been built and what has not.
+
+Every generation of tooling has made the how more efficient. The what has been left to the humans who remember the meeting — because no system was ever built to hold it.
+
+---
+
+## What this means for how we think about software
+
+The reflex response to organizational friction — build a new layer, automate a new step, add a new notification — is not wrong. It solves a real problem in the moment. The error is in treating coordination cost as the disease rather than the symptom.
+
+The disease is the gap between organizational intent and the systems that are supposed to serve it. Coordination cost is what fills that gap — it is the labor required to compensate for the fact that the software doesn't know what the organization is trying to accomplish.
+
+Close the gap, and much of the coordination disappears. Not because a new automation ran. Because the system knows what the outcome must be, and can tell you when reality is drifting away from it.
+
+The question for the next generation of software is not which new layer will finally eliminate organizational friction. The question is whether the layer can be built at the level of **what should be true** rather than **how work moves** — and whether organizations that understand the difference will build for it before those who don't.
+
+---
+
+*This is the first essay in a series exploring how organizations reason, decide, and govern the gap between intent and execution.*
+
+---
+
+**Core thesis:** Coordination cost is a symptom. The disease is the gap between organizational intent and the systems meant to serve it.
+**The idea you can't unsee:** Coordination cost migrates; it doesn't disappear.
+**Vocabulary shift:** "coordination overhead" → "organizational friction"
+**Connects to:** Article 2 (Why More Data Doesn't Produce Better Decisions), Article 3 (From Workflows to Intent), Article 7 (Business Truths)
+**Version:** 1.0 / 2026-06-28

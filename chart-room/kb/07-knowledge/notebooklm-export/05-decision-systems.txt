@@ -1,0 +1,107 @@
+# Decision Systems
+*We have built software for records, for actions, and for communication. We have not built software for the act of forming a consequential judgment.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 5 of 10: The Organizational Capability Series
+
+---
+
+There is a category of enterprise software that does not exist.
+
+We have names for almost every other kind. Customer relationship management. Enterprise resource planning. Business intelligence. Content management. Human resource information systems. Workflow automation. Revenue operations.
+
+We do not have a name — and we do not have a category — for software that engineers the conditions under which organizations make better decisions. Not software that records decisions after they are made. Not software that communicates decisions once made. Not software that routes tasks that follow from decisions. Software that treats the act of forming a consequential group judgment as a first-class problem worth designing around.
+
+The gap is not an accident. It is a consequence of what enterprise software has always found easier to build.
+
+---
+
+## What the existing categories actually do
+
+Every major category of enterprise software does one of two things.
+
+Systems of record — CRM, ERP, HRIS, document management — remember what happened. They capture state, hold it reliably, and make it retrievable. Their value is memory and consistency. They were built for an era when the hardest problem was that organizations could not hold information consistently across people and time.
+
+Systems of action — workflow tools, ticketing systems, approval chains, automation platforms — move work. They route, escalate, assign, notify, and progress. Their value is coordination without requiring human intervention at every step. They were built for an era when the hardest problem was that coordinating people was too slow and too expensive.
+
+These two categories have generated most of the enterprise software value of the past forty years. Records and actions address real problems. The investment was warranted.
+
+What neither category addresses is what happens in the moment between them: the formation of the decision that the record will capture and the action will execute. The conversation in the room. The judgment that commits the organization to a path. The reasoning process through which people with different information, different confidence levels, and different stakes arrive — or fail to arrive — at a shared understanding of what should be true.
+
+That moment is where organizational capability is most consequential. It is the only moment where software has never been pointed.
+
+---
+
+## What meeting software actually does
+
+There is software designed specifically for the moment when consequential judgment happens. Calendaring tools schedule the gathering. Video conferencing enables it across distances. Collaboration tools allow simultaneous editing. Meeting intelligence tools transcribe what was said, summarize it, and extract action items.
+
+None of this is decision software.
+
+Recording what was said is not the same as engineering how it was reached. A transcription of a poor meeting is a perfect record of a poor decision process. Making transcripts faster, more searchable, more shareable does not address the process that produced what was transcribed.
+
+The previous essay described the structural pathologies of group judgment: the HiPPO effect anchoring the room before others have formed their views, groupthink suppressing dissent socially rather than evidentially, the hidden profile problem leaving unique knowledge unvoiced, noise producing inconsistency that no individual in the room can detect. These pathologies do not appear in the transcript. The transcript shows what was said. It cannot show what was not said — the insight that stayed in one person's notes, the doubt that went unexpressed, the confidence that was performed rather than earned.
+
+Meeting intelligence, as a category, has made organizations better at remembering their decisions. It has made no measurable difference to the quality of those decisions, because it was never designed to.
+
+---
+
+## What decision software would need to do
+
+If organizational intelligence requires specific conditions — as the previous essay established — then software designed to support it would need to engineer those conditions rather than simply record what happened in their absence.
+
+Concretely, that means several things.
+
+It would need to prevent the highest-authority voice from anchoring the room before others have formed independent views. The mechanism is sequencing: silent individual generation before group discussion. Anonymous initial input before attributed discussion. Both require the software to manage the order of information flow — to hold some voices back until others have been heard first.
+
+It would need to surface information that individuals hold uniquely. The hidden profile problem is not a failure of individual courage. It is a failure of group structure. The intervention is structural: prompting each participant explicitly for what they know that others might not. This is not a cultural intervention. It does not require trust, safety, or a particular organizational climate. It requires a prompt and a moment.
+
+It would need to capture genuine confidence levels rather than performed ones. In most organizations, expressing uncertainty is professionally costly — it can read as weakness, hedging, or lack of conviction. Software that makes confidence calibration anonymous and structured changes the incentive without requiring the culture to change first. The information flows because the structure protects it.
+
+It would need to preserve dissent as a first-class element of the outcome — not as a footnote that was overruled, but as an explicit part of the decision record. A dissent that is named and preserved can be returned to when reality proves it right. A dissent that was silenced cannot be reconstructed. The difference, over time, is organizational learning.
+
+None of these mechanisms require advanced technology. Some of them are older than computing. What they require is software that treats decision formation as a structured process with deliberate stages — rather than a conversation that happens to be captured by a microphone.
+
+---
+
+## Why this category is hard
+
+The reason decision systems do not exist as a named category is not that the need is unrecognized. Anyone who has run a decision post-mortem has identified the same pathologies. The need is visible. The cost is calculable.
+
+The reason is that building this category is genuinely harder than building records or actions.
+
+A system of record has tractable requirements: store data reliably, retrieve it accurately, hold it consistently. The failure modes are well understood. The success criteria are measurable.
+
+A system of action has harder requirements but tractable design: route work correctly, enforce conditions, handle exceptions. The failure modes are operational. The success criteria are observable.
+
+A decision system requires something qualitatively different: designing a process that produces better group cognition than the group would produce without it. That is simultaneously a design problem, a cognitive science problem, and an organizational behavior problem. The failure modes are subtle — they manifest as decisions that seemed reasonable at the time and proved wrong later, which is indistinguishable from good decisions that faced bad luck. The success criteria are contested. And the resistance is significant: people whose judgment is being structured often experience the structure as an imposition on something that feels personal and intuitive.
+
+Difficulty has two consequences. It explains why the category has attracted less commercial investment than records and actions. It also means that building this category well is genuinely defensible. The same difficulty that has kept the category empty is what makes it worth occupying.
+
+---
+
+## The gap, named
+
+Looking across these five essays, a single pattern becomes visible.
+
+Organizations have built vast capability for recording how work happens. They have built vast capability for moving and automating work. They have accumulated enormous quantities of data about what their businesses are doing.
+
+What they have not built is the capability to reason — as organizations — about what should happen next. What outcome to commit to. What evidence is being ignored. What tradeoff is being made implicitly rather than explicitly. What the person in the room with the most relevant information actually thinks.
+
+**Organizations have become better at describing how work happens than at forming and acting on what should be true.**
+
+That gap is where the most consequential problems in organizational life persist — not because they are unsolvable, but because the software category that would address them has not been built.
+
+The next essay looks at one specific mechanism that a decision system would need to incorporate — and that has the longest history and the most consistent evidence of any intervention in group judgment. It is not a technology. It has been available to every organization for centuries. Almost none of them use it deliberately.
+
+---
+
+*This is the fifth essay in a series exploring how organizations reason, decide, and govern the gap between intent and execution.*
+
+---
+
+**Core thesis:** Decision formation is the one moment in organizational life that software has never been designed to improve.
+**The idea you can't unsee:** Group decision failure is structural, not personal. Structural failures require structural interventions.
+**Vocabulary shift:** "better meetings" → "decision systems"
+**Connects to:** Article 4 (Organizational Intelligence), Article 6 (Institutionalizing Disagreement), Article 7 (Business Truths)
+**Version:** 1.0 / 2026-06-29

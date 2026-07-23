@@ -1,0 +1,97 @@
+# Why More Data Doesn't Produce Better Decisions
+*Organizations have more analytics than ever. Decision quality hasn't kept pace. The gap reveals something fundamental about what data can and cannot do.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 2 of 10: The Organizational Capability Series
+
+---
+
+The average Fortune 500 company now runs more than a hundred analytics tools.
+
+Executive teams have never had more data about their business than they do today — more dashboards, more reports, more real-time metrics, more data scientists, more automated alerts telling them when something moves. The investment has been enormous and largely sincere. Organizations genuinely believed that more data would produce better decisions.
+
+The belief has not held.
+
+Decision quality — the ability of an organization to form a well-reasoned judgment, commit to it, and execute faithfully against it — has not meaningfully improved in proportion to the data available. Organizations that can tell you their revenue by segment, by region, by product, by customer cohort, by hour of the day still routinely make the same strategic mistakes, still run the same post-mortems, still find that execution drifted from intent in ways the dashboards never surfaced.
+
+Something in the underlying theory is wrong.
+
+---
+
+## The theory we inherited
+
+The implicit model behind the data-driven movement was seductive and not unreasonable: more information leads to better decisions. It had the weight of scientific management behind it, the rigor of Frederick Taylor's time-and-motion studies, the authority of Robert McNamara quantifying everything from production lines to battlefield outcomes. If you could measure it, you could manage it. If you could manage it, you could improve it.
+
+The data-driven culture that grew up around this belief was not irrational. In domains where the relationship between measurement and decision is clear — inventory management, logistics, quality control — it worked. The data told you something specific about a specific process, and you could act on it specifically.
+
+The problem arrived when organizations extended this logic to the decisions that actually determine their fate: strategy, direction, commitment. The assumption was that the same relationship held. It doesn't.
+
+Strategic decisions are not like inventory decisions. They are not about optimizing a process against known variables. They are about forming a judgment under uncertainty — about markets that don't yet exist, customers who can't yet articulate what they want, competitors who haven't yet moved, technologies that haven't yet arrived. More data about the present does not resolve uncertainty about the future. It often increases it.
+
+---
+
+## What Shannon actually said
+
+Claude Shannon's information theory, published in 1948, gives us the most precise language for what went wrong.
+
+Shannon defined information not as data, but as the reduction of uncertainty. Information is what you learn when an unknown becomes known. A message carries information in proportion to how much it surprises you — how much it reduces what you didn't know. A message that tells you something you already knew carries no information at all, regardless of how many bytes it consumes.
+
+By this definition, most of what organizations call "data" is not information. It is confirmation of what was already suspected, rendered in greater detail. A dashboard showing that revenue declined last quarter does not tell you why it declined, what to do about it, or whether the decline was expected. It confirms that a number moved. The question it cannot answer — the question that requires judgment — is what that movement means for what the organization has committed to.
+
+Organizations have spent thirty years building systems that produce more data. They have not built systems that reduce uncertainty about what to do. Those are not the same problem, and solving the first does not address the second.
+
+---
+
+## The history of answers
+
+The pattern in data infrastructure looks familiar from the previous essay.
+
+Each generation of data tooling solved a genuine limitation of the generation before it. And each generation left the core problem untouched.
+
+**Relational databases** in the 1970s and 1980s gave organizations a way to store structured data reliably and query it precisely. They solved the problem of data scattered across incompatible systems. They did not solve the problem of knowing what to do with the data once retrieved.
+
+**Business intelligence** in the 1990s gave organizations a way to aggregate that structured data into reports and dashboards — to see patterns across time, across geography, across product lines. BI solved the problem of data that was stored but not visible. It did not solve the problem of data that was visible but not actionable.
+
+**Data warehouses and lakehouses** in the 2000s and 2010s gave organizations a way to bring all of their data into one place, regardless of source or structure — to ask questions that crossed system boundaries that had previously been impassable. The warehouse solved the problem of data that was visible in silos but not in aggregate. It did not solve the problem of knowing which question to ask.
+
+**Real-time analytics and semantic layers** in the most recent decade gave organizations a way to query that aggregate data instantly and consistently — to define a single source of truth for metrics that had previously meant different things to different teams. The semantic layer solved the problem of data that meant different things to different people. It did not solve the problem of knowing what the data is supposed to decide.
+
+More data. More visibility. More consistency. The decision quality problem is exactly where it was.
+
+---
+
+## Seeing is not deciding
+
+The distinction that data infrastructure has never been built to address is the difference between seeing and deciding.
+
+Business intelligence answers two questions well: *what happened?* and *what is happening?* Both are valuable. Neither is sufficient for the decisions that determine an organization's trajectory.
+
+The questions that determine that trajectory are different in kind: *what should we do?* and *what should be true?* These questions cannot be answered by looking at more data. They require judgment — a view about what matters, what tradeoffs are acceptable, what commitments are worth making, and what evidence would indicate that a commitment needs revisiting.
+
+A dashboard can tell you that customer acquisition cost increased last quarter. It cannot tell you whether that increase is acceptable given the strategy you committed to, which assumptions in that strategy have now been proven wrong, or what the implications are for the teams that have been operating against that strategy's projections. Those questions require the commitment to exist as something the data can be held against. And that is precisely what data infrastructure has never been designed to hold.
+
+Organizations are left with the same gap they have always had, now surrounded by more evidence of its existence.
+
+---
+
+## What reducing uncertainty would actually require
+
+If the problem is not data volume but decision quality, what would a system designed to address it actually look like?
+
+It would need to know, for any piece of data, what outcome that data is meant to serve. Not just "revenue by segment" but "is revenue by segment moving in a direction consistent with the outcome we committed to in Q2, and if not, what needs to reopen?" It would need to hold the commitment as a first-class object — stable enough to compare against, specific enough to generate meaningful signals when reality drifts.
+
+This is not a data problem. It is a reasoning problem. The question is not what data to collect or how to store it or how to make it consistent across systems. The question is what the organization has committed to and whether the data is being held against that commitment or simply accumulated alongside it.
+
+More data and better decisions are not the same problem. We have spent a decade solving the first while the second got harder.
+
+---
+
+*The next essay asks why the problem persists in a different form: not in the data layer but in the workflow layer, where software has been built to describe how work moves rather than what should be true.*
+
+---
+
+**Core thesis:** Data volume and decision quality are different problems. More data does not reduce uncertainty about what to do.
+**The idea you can't unsee:** More data doesn't reduce organizational uncertainty. Better reasoning does.
+**Vocabulary shift:** "we have a data problem" → "we have a reasoning problem"
+**Connects to:** Article 1 (The Cost of Coordination), Article 3 (From Workflows to Intent), Article 5 (Decision Systems)
+**Version:** 1.0 / 2026-06-29
