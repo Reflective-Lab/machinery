@@ -3,10 +3,10 @@
 # bedrock-platform checkout instead of the pinned release tag.
 # Adjust the path to your reflective monorepo layout.
 [patch."ssh://git@github.com/Reflective-Lab/bedrock-platform"]
-converge-core = { path = "../../framework/bedrock/foundation/converge/crates/core" }
-converge-provider = { path = "../../framework/bedrock/foundation/converge/crates/provider" }
-converge-experience = { path = "../../framework/bedrock/foundation/converge/crates/experience" }
-converge-optimization = { path = "../../framework/bedrock/foundation/converge/crates/optimization" }
-converge-storage = { path = "../../framework/bedrock/foundation/converge/crates/storage" }
-helm-module-contracts = { path = "../../framework/bedrock/foundation/helm/contracts/crates/helm-module-contracts" }
-helm-event-substrate = { path = "../../framework/bedrock/foundation/helm/contracts/crates/helm-event-substrate" }
+converge-core = { path = "../../bedrock/foundation/converge/crates/core" }
+converge-provider = { path = "../../bedrock/foundation/converge/crates/provider" }
+converge-experience = { path = "../../bedrock/foundation/converge/crates/experience" }
+converge-optimization = { path = "../../bedrock/foundation/converge/crates/optimization" }
+converge-storage = { path = "../../bedrock/foundation/converge/crates/storage" }
+helm-module-contracts = { path = "../../bedrock/foundation/helm/contracts/crates/helm-module-contracts" }
+helm-event-substrate = { path = "../../bedrock/foundation/helm/contracts/crates/helm-event-substrate" }
