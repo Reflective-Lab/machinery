@@ -1,0 +1,67 @@
+# Release train — membership, publish order, ship state.
+# Referenced by KB/release-naming.md and the release docs in this folder.
+# Publish order is dependency order: converge first.
+
+release: acapulco
+target_ship: 2026-08-28
+status: in-progress
+
+# TRAIN PUBLISHED 2026-07-02 (RFL-125): the whole train was bumped and
+# published to crates.io in dependency order, from each repo's `next` head.
+# Release commits + annotated v-tags are LOCAL on each repo's `next`
+# (nothing pushed to main without confirmation). Publish order executed:
+# converge -> organism -> ferrox -> axiom -> prism/arbiter/mnemos/manifold
+# -> atelier domain crates -> helms.
+#
+# helms FIRST publish (0.2.1) COMPLETE 2026-07-03: all 40 crates live on
+# crates.io (index-verified). The 5-crate helm-* cone passed full verify
+# against registry-only deps — proves the JobsRuntime seam composes from
+# crates.io alone. helms next + main pushed to origin (merge 6f12549).
+# Tag conflict RESOLVED 2026-07-03: Karl force-moved v0.2.1 to the
+# release head ca70b0d (local + origin verified identical). RFL-125
+# closed as Done — promise 4 fully kept.
+#
+# Runway layering fork RESOLVED 2026-07-02 (was: 5 cone crates held on
+# publish=false runway-app-host): dependency-inversion seam — app-host
+# declares a minimal JobsRuntime trait (zero runway-ambient refs);
+# runway-ambient implements it (AmbientJobs), injected at build time.
+# Published to unblock the cone: runtime-runway 3.5.0 (10 crates) and
+# commerce-rails 0.2.2 (runway-accounts dep floor) — off-train publishes.
+# Seam pattern: KB/05-engineering/standards/repo-layering.md; contract
+# extraction debt tracked as RFL-128.
+#
+# organism-domain skew RESOLVED: atelier republished 1.5.0 past the stale
+# pre-atelier 1.4.0 on crates.io (organism-domain now publish=true).
+
+train:
+  - name: converge
+    repo: bedrock-platform/converge
+    version: 3.9.3   # PUBLISHED 2026-07-02, 10 crates, tag v3.9.3 (local)
+  - name: organism
+    repo: bedrock-platform/organism
+    version: 1.9.4   # PUBLISHED 2026-07-02, 12 crates, tag v1.9.4 (local)
+  - name: axiom    # publishes as axiom-truth
+    repo: bedrock-platform/axiom
+    version: 0.15.3  # PUBLISHED 2026-07-02, tag v0.15.3 (local)
+  - name: helms
+    repo: bedrock-platform/helms
+    version: 0.2.1   # PUBLISHED 2026-07-03, all 40 crates; next+main pushed; v0.2.1 tagged at ca70b0d; RFL-125 Done
+  - name: ferrox-solver   # publishes as converge-ferrox-solver (+ 2 sys crates)
+    repo: mosaic-extensions/ferrox-solvers
+    version: 0.7.3   # PUBLISHED 2026-07-02 (promoted from candidate — head was coupled to converge 3.9.3 APIs), tag v0.7.3 (local)
+
+# Extensions + atelier ride the train (all PUBLISHED 2026-07-02, tags local):
+extensions:
+  - { name: prism-analytics,   crate: converge-prism-analytics,   version: 2.0.3 }
+  - { name: arbiter-policy,    crate: converge-arbiter-policy,    version: 2.0.3 }
+  - { name: mnemos-knowledge,  crate: converge-mnemos-knowledge,  version: 1.2.4 }
+  - { name: manifold-adapters, crate: converge-manifold-adapters, version: 1.1.3 }
+  - { name: atelier-showcase,  crate: converge-atelier-domain + organism-domain, version: 1.5.0 }
+
+gates:
+  - cargo publish --dry-run clean for every member (CP0, RFL-127 — run 2026-07-02) — DONE
+  - clean-room `cargo add` consumes the floor from crates.io only — no path deps, no patches (RFL-125) — rerun after helms uploads finish
+
+at_ship:
+  - annotated tag `acapulco` on each train repo's released commit
+  - flip the Status row in KB/release-naming.md to Shipped (date)

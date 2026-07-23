@@ -1,0 +1,99 @@
+# Business Truths
+*Every consequential decision fails twice. The first failure is visible. The second is almost invisible — and far more common.*
+
+By Kenneth Pernyér — Stockholm, Sweden
+Part 7 of 10: The Organizational Capability Series
+
+---
+
+Every consequential decision fails twice.
+
+The first failure is visible. The decision was wrong — wrong strategy, wrong market, wrong timing, wrong assumptions. This failure gets studied, post-mortemed, and turned into case studies. The literature on strategic failure is vast. We have frameworks for detecting it, processes for avoiding it, and entire consulting practices built around the question of why smart people make bad choices.
+
+The second failure is almost invisible. The decision was right — or right enough, given what was known — but it never became shared operating reality. Leadership ratified something. Engineering, legal, HR, sales, finance, and the affected employees each formed their own working theory of what was decided. None of those working theories is wrong on its face. None of them is the canonical commitment. The organization drifts — not because people are disloyal or incompetent, but because the decision never became the same thing to the people who were supposed to act on it.
+
+The first failure is expensive. The second is more common. And unlike the first, it is almost entirely invisible to the tools organizations currently use.
+
+---
+
+## The anatomy of translation failure
+
+When a decision leaves the boardroom and travels through an organization, it encounters a series of translation moments — each reasonable, each a small distortion of the original.
+
+Suppose the decision is strategic: the company is moving upmarket, toward enterprise customers, with premium positioning and a focus on contracts above a certain size.
+
+Leadership hears aspiration: we are becoming the company we always intended to be.
+
+Engineering hears extra work: enterprise customers have higher reliability requirements, longer integration cycles, and security reviews we have not built for. The features we need do not exist yet.
+
+Legal hears exposure: enterprise contracts involve negotiated terms, indemnification clauses, and regulatory territory we have not navigated. The deals we will now pursue require review we do not currently have capacity for.
+
+HR hears reorg risk: our team is structured for a different type of customer. The skills required for enterprise sales, enterprise implementation, and enterprise support are not the same as the ones we hired for.
+
+Sales hears a quota story: deal sizes will be larger, but sales cycles will be longer and existing pipeline may not qualify under the new criteria. The numbers that were discussed in the planning meeting may not survive contact with the current funnel.
+
+Finance hears margin pressure: the investment required to serve enterprise customers will appear before the revenue does.
+
+None of these interpretations is wrong. Each is a reasonable reading of the same decision through the lens of a different function with different concerns and different stakes. And yet each function is now operating against a different strategy — the strategy as it appeared to them, not the strategy as it was committed to.
+
+The organization will discover the divergence at the quarterly review, when the execution results don't match the strategic intent and everyone has a different explanation for why.
+
+---
+
+## Why this happens
+
+The problem is not communication. It is not that the decision was poorly presented, or that the memo was unclear, or that the all-hands was badly run. Organizations that communicate decisions well still experience this failure, because the problem is structural rather than rhetorical.
+
+Every function that receives a decision interprets it through its own existing concerns, priorities, and risk models. This is not a failure of good faith. It is how organizations process information. The interpretation that engineering produces is shaped by the technical constraints engineering already knows about. The interpretation legal produces is shaped by the regulatory exposure legal is already tracking. Neither group is wrong to interpret through these lenses. They are doing their jobs.
+
+The problem is that no mechanism keeps their interpretations faithful to the canonical commitment. Each function builds its own working theory, operates against it for weeks or months, and discovers the divergence only when execution results make it visible — by which point the organization has spent significant effort moving in directions nobody ratified.
+
+Susan Leigh Star and James Griesemer described this dynamic in 1989 with the concept of the boundary object: an artifact stable enough for shared reference across different communities, yet plastic enough to be locally meaningful in each. A well-functioning boundary object — a map, a clinical guideline, a scientific specimen — holds a shared core while accommodating different uses at the periphery.
+
+A decision is a boundary object. It must be stable at the core — the actual commitment, with its evidence, constraints, authority, and tradeoffs — and adaptable at the edges, where each role interprets its consequences. The failure mode is when the core is not held stable — when each role's interpretation quietly rewrites not just the implications but the commitment itself.
+
+Most organizations have no mechanism for distinguishing the stable core from the plastic edges. The result is that decisions, like whispers in a long chain, arrive at the periphery as something other than what they were at the center.
+
+---
+
+## The two failures, side by side
+
+The first failure — a wrong decision — is detectable. Performance diverges from expectation. The market responds differently than anticipated. A product fails to find customers. A strategy fails to produce results. The feedback loop, though often slow, eventually closes. The error becomes visible. The organization learns, or at least has the opportunity to.
+
+The second failure — a right decision that fails in translation — is far harder to detect. The performance may diverge from expectation, but the diagnosis will be contested: was the strategy wrong, or was the execution off? Was the commitment sound, or did the organization execute against a distorted version of it? These questions are almost impossible to answer when no mechanism preserved the canonical commitment in a form that can be compared against what actually happened.
+
+Organizations routinely spend months in strategic post-mortems asking whether they made the right decision, when the more answerable question — whether the decision was executed against its actual terms — was never recorded in a way that would permit an honest answer.
+
+A decision that doesn't survive translation isn't a decision. It's an aspiration.
+
+---
+
+## What would preserve it
+
+Preserving a decision through translation requires two things that most organizations have never built.
+
+The first is a canonical record of the commitment itself — not the meeting notes, not the slide deck, not the summary email, but a structured record of what was decided, under what authority, on what evidence, with what constraints that cannot be negotiated away, with what uncertainty acknowledged, and with what dissent preserved. A record specific enough that a function receiving it could check their interpretation against it and discover the divergence before acting on it.
+
+The second is a mechanism for generating role-specific explanations of that canonical commitment — explanations that adapt the language and framing to each audience without altering the substance. The explanation that engineering receives should be different from the one that legal receives, not because the truth is different, but because the relevant implications are different. The mechanism that produces those explanations must be bound to the canonical record in a way that prevents silent distortion — what might be called governed decision translation.
+
+This is not a communication problem with a communication solution. It is a structural problem that requires a structural solution. The category of software that would address it does not yet exist under that name — though the need it serves has been present in every organization that has ever tried to execute a consequential commitment at scale.
+
+---
+
+## What comes next
+
+Articles 4 through 7 have described the problem of organizational reasoning at three levels: the conditions that produce good group judgment, the software category built to support it, the mechanism of structured disagreement that makes it more reliable, and now the translation failure that destroys its output even when it works.
+
+The next two essays turn to architecture: what a system designed to address these problems would actually look like, and what role human judgment plays inside it.
+
+---
+
+*This is the seventh essay in a series exploring how organizations reason, decide, and govern the gap between intent and execution.*
+
+---
+
+**Core thesis:** Decisions fail twice — when they are wrong, and when they are right but don't survive translation into shared operating reality.
+**The idea you can't unsee:** Every decision fails twice — when it's wrong, and when it doesn't survive translation.
+**Vocabulary shift:** "we need better communication" → "we need governed translation"
+**Connects to:** Article 6 (Institutionalizing Disagreement), Article 8 (Formations), Article 10 (The Capable Organization)
+**Version:** 1.0 / 2026-06-29

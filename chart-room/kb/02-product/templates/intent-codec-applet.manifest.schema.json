@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reflective.local/schemas/intent-codec-applet.manifest.schema.json",
+  "title": "Intent Codec Applet Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "job_name",
+    "primary_job_key",
+    "status",
+    "trigger",
+    "current_workaround",
+    "functional_need",
+    "emotional_need",
+    "relational_need",
+    "failure_modes",
+    "authority",
+    "evidence_contract",
+    "runtime_needs",
+    "commercial_needs",
+    "projection",
+    "non_goals",
+    "layer_mapping"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "const": "intent-codec-applet.v1"
+    },
+    "job_name": { "type": "string", "minLength": 1 },
+    "primary_job_key": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "code-backed", "executable", "retired"]
+    },
+    "source_schema": { "type": "string" },
+    "human_readable": { "type": "string" },
+    "trigger": { "type": "string", "minLength": 1 },
+    "current_workaround": { "type": "string", "minLength": 1 },
+    "source_evidence": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "functional_need": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "inputs", "output", "constraints", "success_signal"],
+      "properties": {
+        "outcome": { "type": "string", "minLength": 1 },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "output": { "type": "string", "minLength": 1 },
+        "constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "success_signal": { "type": "string", "minLength": 1 }
+      }
+    },
+    "emotional_need": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator_anxiety", "desired_confidence", "tolerance"],
+      "properties": {
+        "operator_anxiety": { "type": "string", "minLength": 1 },
+        "desired_confidence": { "type": "string", "minLength": 1 },
+        "tolerance": { "type": "string", "minLength": 1 }
+      }
+    },
+    "relational_need": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dependent_parties", "trust_obligation", "handoff_created"],
+      "properties": {
+        "dependent_parties": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "trust_obligation": { "type": "string", "minLength": 1 },
+        "handoff_created": { "type": "string", "minLength": 1 }
+      }
+    },
+    "failure_modes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requester",
+        "approvers",
+        "allowed_actions",
+        "forbidden_actions",
+        "approval_points",
+        "reversibility",
+        "expiry",
+        "audit_visibility"
+      ],
+      "properties": {
+        "requester": { "type": "string", "minLength": 1 },
+        "approvers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "allowed_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "forbidden_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "approval_points": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reversibility": {
+          "type": "string",
+          "enum": ["reversible", "partially_reversible", "irreversible"]
+        },
+        "expiry": { "type": "string", "minLength": 1 },
+        "audit_visibility": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_sources",
+        "disallowed_sources",
+        "confidence_floor",
+        "conflict_policy",
+        "sensitive_fields"
+      ],
+      "properties": {
+        "required_sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source", "freshness", "authority"],
+            "properties": {
+              "source": { "type": "string", "minLength": 1 },
+              "freshness": { "type": "string", "minLength": 1 },
+              "authority": {
+                "type": "string",
+                "enum": ["primary", "corroborating", "advisory"]
+              }
+            }
+          }
+        },
+        "disallowed_sources": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "confidence_floor": { "type": "string", "minLength": 1 },
+        "conflict_policy": {
+          "type": "string",
+          "enum": ["stop", "ask_operator", "prefer_primary", "run_adversarial_review"]
+        },
+        "sensitive_fields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "runtime_needs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "commercial_needs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator_view"],
+      "properties": {
+        "operator_view": { "type": "string", "minLength": 1 },
+        "customer_or_partner_view": { "type": "string" }
+      }
+    },
+    "non_goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "layer_mapping": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    }
+  }
+}
