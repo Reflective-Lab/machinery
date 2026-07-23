@@ -1,0 +1,131 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/{{project}}-domain",
+    "crates/{{project}}-kernel",
+    "crates/{{project}}-truths",
+    "crates/{{project}}-app",
+    "crates/{{project}}-platform",
+    "crates/{{project}}-server",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+license = "UNLICENSED"
+publish = false
+
+[workspace.dependencies]
+# Platform floor — matches ~/dev/CLAUDE.md "Platform Floor".
+# Foundation: converge-* @ 3.8.1, organism-* @ 1.5.0, axiom-truth @ 0.7.0.
+# Extensions follow the canonical naming `converge-<brand>-<topic>`:
+#   converge-arbiter-policy, converge-atelier-domain, converge-embassy-pack,
+#   converge-ferrox-solver, converge-manifold-adapters, converge-mnemos-knowledge,
+#   converge-prism-analytics.
+converge-core         = "3.8.1"
+converge-pack         = "3.8.1"
+converge-kernel       = "3.8.1"
+converge-model        = "3.8.1"
+converge-provider     = "3.8.1"
+converge-experience   = "3.8.1"
+converge-optimization = "3.8.1"
+converge-runtime      = "3.8.1"
+
+# Extension renames (use `package = "..."` so existing source `use converge_X::*` keeps working).
+converge-knowledge          = { package = "converge-mnemos-knowledge",  version = "1.0.0" }  # ~/dev/reflective/mosaic-extensions/mnemos-knowledge
+converge-analytics          = { package = "converge-prism-analytics",   version = "1.0.0" }  # ~/dev/reflective/mosaic-extensions/prism-analytics
+converge-policy             = { package = "converge-arbiter-policy",    version = "1.0.0" }  # ~/dev/reflective/mosaic-extensions/arbiter-policy
+converge-domain             = { package = "converge-atelier-domain",    version = "1.0.0" }  # ~/dev/reflective/mosaic-extensions/atelier-showcase
+converge-ferrox-solver      = { version = "0.4.1", default-features = false }                # ~/dev/reflective/mosaic-extensions/ferrox-solvers
+# Old `converge-provider-adapters` source imports map to the new manifold crate.
+converge-provider-adapters  = { package = "converge-manifold-adapters", version = "1.0.0", default-features = false, features = ["anthropic", "gemini", "openai", "openrouter", "mistral", "brave", "tavily", "kong"] }
+# Direct-name extensions (no alias):
+converge-embassy-pack       = "1.0.0"  # ~/dev/reflective/mosaic-extensions/embassy-ports
+converge-embassy-linkedin   = "1.0.0"  # ~/dev/reflective/mosaic-extensions/embassy-ports
+
+organism-pack       = "1.5.0"
+organism-runtime    = "1.5.0"
+organism-planning   = "1.5.0"
+organism-intent     = "1.5.0"
+organism-domain     = "1.5.0"  # lives under extensions/atelier-showcase
+
+axiom-truth         = "0.7.0"
+
+# Helms (application-layer) — re-add `application-kernel` / `workbench-backend`
+# when Helms resolves. Today `helms/truth-catalog` has stale `organism-domain`
+# / extension paths that break `cargo check`.
+
+# Common deps
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+anyhow = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# HTTP server (used by {{project}}-server)
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+too_many_lines = "allow"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.release-fast]
+inherits = "release"
+lto = "thin"
+codegen-units = 4
+
+# Track unreleased platform head until each crate ships to crates.io.
+# Remove this whole block when the floor versions are published.
+[patch.crates-io]
+# Foundation crates
+converge-client       = { path = "../../work/converge/crates/client" }
+converge-core         = { path = "../../work/converge/crates/core" }
+converge-experience   = { path = "../../work/converge/crates/experience" }
+converge-kernel       = { path = "../../work/converge/crates/kernel" }
+converge-model        = { path = "../../work/converge/crates/model" }
+converge-optimization = { path = "../../work/converge/crates/optimization" }
+converge-pack         = { path = "../../work/converge/crates/pack" }
+converge-protocol     = { path = "../../work/converge/crates/protocol" }
+converge-provider     = { path = "../../work/converge/crates/provider" }
+converge-runtime      = { path = "../../work/converge/crates/runtime" }
+converge-storage      = { path = "../../work/converge/crates/storage" }
+# Extensions — canonical name `converge-<brand>-<topic>`, each in its own repo.
+converge-mnemos-knowledge  = { path = "../../extensions/mnemos-knowledge/crates/mnemos" }
+converge-prism-analytics   = { path = "../../extensions/prism-analytics/crates/prism" }
+converge-arbiter-policy    = { path = "../../extensions/arbiter-policy/crates/arbiter" }
+converge-atelier-domain    = { path = "../../extensions/atelier-showcase/crates/atelier-domain" }
+converge-manifold-adapters = { path = "../../extensions/manifold-adapters/crates/manifold" }
+converge-embassy-pack      = { path = "../../extensions/embassy-ports/crates/pack" }
+converge-embassy-linkedin  = { path = "../../extensions/embassy-ports/crates/linkedin" }
+converge-ferrox-solver       = { path = "../../extensions/ferrox-solvers/crates/ferrox" }
+converge-ferrox-server       = { path = "../../extensions/ferrox-solvers/crates/ferrox-server" }
+converge-ferrox-highs-sys    = { path = "../../extensions/ferrox-solvers/crates/highs-sys" }
+converge-ferrox-ortools-sys  = { path = "../../extensions/ferrox-solvers/crates/ortools-sys" }
+# Organism platform
+organism-pack         = { path = "../../work/organism/crates/pack" }
+organism-runtime      = { path = "../../work/organism/crates/runtime" }
+organism-planning     = { path = "../../work/organism/crates/planning" }
+organism-intent       = { path = "../../work/organism/crates/intent" }
+organism-domain       = { path = "../../extensions/atelier-showcase/crates/organism-domain" }
+# Other platform
+axiom-truth           = { path = "../../work/axiom" }
+# application-kernel / workbench-backend disabled — helms still has stale
+# extension paths after the rename. Re-enable when Helms is fixed.

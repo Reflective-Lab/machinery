@@ -1,0 +1,23 @@
+default:
+    @just --list
+
+# Canonical CI aggregate for the template wrapper.
+ci: template-check security-audit
+
+# Verify template entrypoints and release-grade local gates stay present.
+template-check:
+    test -f converge-extension/Cargo.toml
+    test -f converge-extension/Justfile
+    test -f converge-engagement/_ARCHIVED.md
+    grep -q '^security-audit:' converge-extension/Justfile
+    grep -q '^release-check:' converge-extension/Justfile
+
+# Lightweight committed-secret scan for template material.
+security-audit:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if git grep -nE '(ghp_|sk-[A-Za-z0-9]|BEGIN (RSA|OPENSSH) PRIVATE KEY|STRIPE_SECRET_KEY=|SENTRY_DSN=)' -- .; then
+        echo "Potential committed secret marker found"
+        exit 1
+    fi
+    echo "No obvious committed secret markers found"
