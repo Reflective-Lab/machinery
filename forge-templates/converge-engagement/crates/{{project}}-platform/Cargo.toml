@@ -1,0 +1,65 @@
+[package]
+name = "{{project}}-platform"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+{{project}}-domain = { path = "../{{project}}-domain" }
+
+# Platform stack — wired in when the platform floor resolves cleanly. Today
+# `axiom-truth` HEAD pulls a phantom `converge-provider-adapters`, so the
+# optional deps are commented out to keep `cargo check` green out of the box.
+# Re-enable per crate as the platform stabilizes.
+#
+# converge-kernel       = { workspace = true, optional = true }
+# converge-pack         = { workspace = true, optional = true }
+# converge-policy       = { workspace = true, optional = true }
+# converge-provider     = { workspace = true, optional = true }
+# converge-analytics    = { workspace = true, optional = true }
+# converge-knowledge    = { workspace = true, optional = true }
+# converge-optimization = { workspace = true, optional = true }
+#
+# organism-pack         = { workspace = true, optional = true }
+# organism-runtime      = { workspace = true, optional = true }
+# organism-planning     = { workspace = true, optional = true }
+# organism-intent       = { workspace = true, optional = true }
+#
+# axiom-truth           = { workspace = true, optional = true }
+# ferrox-solver         = { workspace = true, optional = true }
+#
+# Helms (re-add when helms/truth-catalog organism-domain path is fixed):
+# application-kernel    = { workspace = true, optional = true }
+# workbench-backend     = { workspace = true, optional = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+
+[features]
+default = []
+# Re-enable when platform deps come back above:
+# platform-local = [
+#     "dep:converge-kernel",
+#     "dep:converge-pack",
+#     "dep:converge-policy",
+#     "dep:converge-provider",
+#     "dep:converge-analytics",
+#     "dep:converge-knowledge",
+#     "dep:converge-optimization",
+#     "dep:organism-pack",
+#     "dep:organism-runtime",
+#     "dep:organism-planning",
+#     "dep:organism-intent",
+#     "dep:axiom-truth",
+#     "dep:ferrox-solver",
+# ]
+# helms = [
+#     "dep:application-kernel",
+#     "dep:workbench-backend",
+# ]
+
+[lints]
+workspace = true
